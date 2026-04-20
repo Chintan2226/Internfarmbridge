@@ -1,0 +1,836 @@
+@{
+    ViewData["Title"] = "Crop Type Catalog";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+
+<style>
+    @* @@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap'); *@
+
+    :root {
+        --g700: #1b5e20;
+        --g600: #2e7d32;
+        --g500: #388e3c;
+        --g400: #43a047;
+        --g300: #66bb6a;
+        --g200: #a5d6a7;
+        --g100: #c8e6c9;
+        --g50:  #f1f8f1;
+        --black:  #111411;
+        --ink:    #1c241c;
+        --muted:  #637063;
+        --white:  #ffffff;
+        --border: #daeada;
+        --danger: #c62828;
+        --warn:   #e65100;
+        --blue:   #1565c0;
+        --radius: 10px;
+        --radius-sm: 6px;
+        --shadow-card: 0 1px 2px rgba(0,0,0,.06), 0 3px 12px rgba(0,0,0,.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        background: #eef3ee;
+        font-family: 'DM Sans', sans-serif;
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══ PAGE HEADER ══ */
+    .pg-header {
+        background: var(--black);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+    .pg-header::after {
+        content: '';
+        position: absolute;
+        right: -60px; top: -60px;
+        width: 260px; height: 260px;
+        background: radial-gradient(circle, rgba(67,160,71,.28) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .pg-header-left { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+    .pg-icon {
+        width: 42px; height: 42px;
+        background: var(--g500);
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(56,142,60,.45);
+    }
+    .pg-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.35rem; font-weight: 800;
+        color: #ffffff; letter-spacing: -.02em; line-height: 1.2;
+    }
+    .pg-subtitle { font-size: .8rem; color: rgba(255,255,255,.45); margin-top: 2px; }
+    .pg-header-actions { display: flex; gap: 8px; position: relative; z-index: 1; flex-shrink: 0; }
+
+    /* ══ BUTTONS ══ */
+    .btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        border: none; border-radius: var(--radius-sm);
+        padding: 9px 18px;
+        font-family: 'DM Sans', sans-serif; font-size: .84rem; font-weight: 600;
+        cursor: pointer; transition: all .17s ease;
+        text-decoration: none; white-space: nowrap; line-height: 1;
+    }
+    .btn-primary { background: var(--g400); color: #fff; box-shadow: 0 2px 6px rgba(67,160,71,.35); }
+    .btn-primary:hover { background: var(--g500); }
+    .btn-ghost-white {
+        background: rgba(255,255,255,.08); color: rgba(255,255,255,.75);
+        border: 1px solid rgba(255,255,255,.18);
+    }
+    .btn-ghost-white:hover { background: rgba(255,255,255,.15); color: #fff; border-color: rgba(255,255,255,.35); }
+    .btn-light { background: #fff; color: var(--ink); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .btn-light:hover { background: var(--g50); border-color: var(--g200); }
+
+    .btn-xs {
+        padding: 5px 11px; font-size: .75rem;
+        border-radius: 5px; border: 1px solid transparent;
+        cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600;
+        transition: all .13s; display: inline-flex; align-items: center; gap: 4px; line-height: 1;
+    }
+    .btn-xs-edit  { background: var(--g50);  color: var(--g700); border-color: var(--g100); }
+    .btn-xs-edit:hover  { background: var(--g100); border-color: var(--g200); }
+    .btn-xs-del   { background: #fef2f2; color: var(--danger); border-color: #fecaca; }
+    .btn-xs-del:hover   { background: #fee2e2; }
+    .btn-xs-deact { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .btn-xs-deact:hover { background: #ffedd5; }
+    .btn-xs-act   { background: #eff6ff; color: var(--blue); border-color: #bfdbfe; }
+    .btn-xs-act:hover   { background: #dbeafe; }
+
+    /* ══ FILTER BAR ══ */
+    .filter-bar {
+        background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 16px 18px; margin-bottom: 16px;
+        display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+        box-shadow: var(--shadow-card);
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--g600); }
+
+    /* Kendo DropDownList override in filter */
+    .filter-group .k-dropdown,
+    .filter-group .k-dropdownlist { min-width: 160px; }
+    .filter-group .k-input-inner { font-family: 'DM Sans', sans-serif; font-size: .84rem; }
+
+    .filter-input {
+        height: 36px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+        padding: 0 11px; font-family: 'DM Sans', sans-serif; font-size: .84rem;
+        color: var(--ink); background: var(--g50); outline: none;
+        transition: border-color .15s, background .15s; min-width: 175px;
+    }
+    .filter-input:focus { border-color: var(--g400); background: #fff; box-shadow: 0 0 0 3px rgba(67,160,71,.10); }
+
+    /* ══ KENDO LISTVIEW CARD GRID ══ */
+    #catalogListView { padding: 2px; }
+
+    .k-listview-content {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 16px;
+        padding: 16px !important;
+        background: transparent !important;
+    }
+
+    /* ══ CROP CARD ══ */
+    .crop-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: var(--shadow-card);
+        transition: box-shadow .2s, transform .2s;
+        display: flex;
+        flex-direction: column;
+    }
+    .crop-card:hover {
+        box-shadow: 0 6px 24px rgba(0,0,0,.11);
+        transform: translateY(-3px);
+    }
+    .crop-card-img {
+        width: 100%; height: 140px;
+        object-fit: cover; display: block;
+    }
+    .crop-card-img-placeholder {
+        width: 100%; height: 140px;
+        background: var(--g50);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.8rem;
+    }
+    .crop-card-body {
+        padding: 14px 15px 13px;
+        display: flex; flex-direction: column; gap: 0; flex: 1;
+    }
+    .crop-card-top {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        margin-bottom: 2px;
+    }
+    .crop-card-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.05rem; font-weight: 800;
+        color: var(--black); line-height: 1.2;
+    }
+    .crop-card-cat {
+        font-size: .77rem; color: var(--muted);
+        margin-bottom: 11px; margin-top: 1px;
+    }
+    .crop-card-meta { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
+    .crop-meta-row {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: .8rem;
+    }
+    .crop-meta-label { color: var(--muted); }
+    .crop-meta-val { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 5px; }
+
+    .crop-card-actions {
+        display: flex; gap: 7px; align-items: center;
+        margin-top: auto; padding-top: 2px;
+    }
+    .crop-card-actions .btn-xs { flex: 1; justify-content: center; }
+
+    /* ══ BADGES ══ */
+    .badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 10px; border-radius: 20px;
+        font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .badge-active   { background: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; }
+    .badge-active   .badge-dot { background: #16a34a; }
+    .badge-inactive { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+    .badge-inactive .badge-dot { background: #9ca3af; }
+
+    /* ══ KENDO PAGER ══ */
+    #catalogPager {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-top: 4px;
+        box-shadow: var(--shadow-card);
+        padding: 6px 14px;
+    }
+    #catalogPager .k-pager-wrap,
+    #catalogPager .k-pager { background: transparent !important; border: none !important; }
+    #catalogPager .k-pager-info { font-family: 'DM Sans', sans-serif; font-size: .8rem; color: var(--muted); }
+    #catalogPager .k-selected { background: var(--g600) !important; color: #fff !important; border-radius: 6px !important; }
+    #catalogPager .k-button { border-radius: 6px !important; font-family: 'DM Sans', sans-serif !important; font-size: .82rem !important; }
+
+    /* ══ KENDO WINDOW / DIALOG ══ */
+    .k-window { border-radius: 14px !important; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.18) !important; border: none !important; }
+    .k-window-titlebar, .k-dialog-titlebar {
+        background: #1c2b1c !important; color: #fff !important;
+        font-family: 'Syne', sans-serif !important; font-size: .95rem !important; font-weight: 700 !important;
+        padding: 15px 20px !important; border: none !important; border-bottom: 2px solid var(--g500) !important;
+    }
+    .k-window-title, .k-dialog-title { color: #e8f5e9 !important; }
+    .k-window-titlebar .k-button,
+    .k-dialog-titlebar .k-button { color: rgba(255,255,255,.5) !important; border-radius: 5px !important; }
+    .k-window-titlebar .k-button:hover,
+    .k-dialog-titlebar .k-button:hover { color: #fff !important; background: rgba(255,255,255,.12) !important; }
+    .k-dialog-buttongroup {
+        background: var(--g50) !important; border-top: 1px solid var(--border) !important;
+        padding: 12px 18px !important; gap: 8px !important;
+    }
+    .k-dialog-buttongroup .k-button { border-radius: var(--radius-sm) !important; font-family: 'DM Sans', sans-serif !important; font-weight: 600 !important; padding: 8px 20px !important; }
+    .k-dialog-buttongroup .k-primary { background: var(--g500) !important; border-color: var(--g500) !important; color: #fff !important; box-shadow: 0 2px 6px rgba(56,142,60,.3) !important; }
+    .k-dialog-buttongroup .k-primary:hover { background: var(--g600) !important; border-color: var(--g600) !important; }
+    .k-window-content, .k-dialog-content { padding: 20px 20px 10px !important; }
+
+    /* ══ FORM ══ */
+    .form-row  { margin-bottom: 13px; }
+    .form-cols { display: flex; gap: 12px; }
+    .form-cols .form-row { flex: 1; }
+    .form-divider { border: none; border-top: 1px dashed var(--border); margin: 16px 0 14px; }
+    .form-label {
+        display: block; font-size: .72rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .07em; color: var(--g700); margin-bottom: 5px;
+    }
+    .form-label .req  { color: var(--danger); margin-left: 2px; }
+    .form-label .hint { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); font-size: .72rem; }
+    .field {
+        width: 100%; height: 37px;
+        border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+        padding: 0 11px; font-family: 'DM Sans', sans-serif; font-size: .85rem;
+        color: var(--ink); background: #fafcfa; outline: none;
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .field:focus { border-color: var(--g400); box-shadow: 0 0 0 3px rgba(67,160,71,.12); background: #fff; }
+    textarea.field { height: auto; min-height: 68px; padding: 9px 11px; resize: vertical; }
+    select.field {
+        cursor: pointer; appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23637063'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 11px center; padding-right: 28px;
+    }
+
+    .warning-box {
+        background: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 7px;
+        padding: 9px 13px; font-size: .81rem; margin-bottom: 14px; display: none; color: #78350f;
+    }
+
+    .qp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+    .qp-row label {
+        display: block; font-size: .72rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .06em; color: var(--g700); margin-bottom: 4px;
+    }
+
+    .img-zone {
+        border: 2px dashed var(--border); border-radius: 9px;
+        padding: 18px 14px; text-align: center; cursor: pointer;
+        transition: border-color .2s, background .2s; background: #fafcfa;
+    }
+    .img-zone:hover { border-color: var(--g400); background: var(--g50); }
+    .img-zone input[type=file] { display: none; }
+    .img-zone-icon  { font-size: 1.8rem; display: block; margin-bottom: 5px; opacity: .45; }
+    .img-zone-label { font-size: .8rem; color: var(--muted); pointer-events: none; }
+    .img-zone-label strong { color: var(--g600); }
+
+    #imgPreview {
+        max-width: 100%; max-height: 110px; border-radius: 7px; object-fit: cover;
+        margin-top: 9px; display: none; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    }
+    #imgRemoveBtn {
+        background: var(--danger); color: #fff; border: none; border-radius: 5px;
+        padding: 4px 11px; font-size: .75rem; font-weight: 600; cursor: pointer;
+        margin-top: 7px; display: none; font-family: 'DM Sans', sans-serif;
+    }
+    #imgRemoveBtn:hover { background: #b91c1c; }
+
+    .toggle-row {
+        display: flex; align-items: center; gap: 10px;
+        padding: 9px 13px; background: var(--g50); border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm); cursor: pointer; user-select: none;
+    }
+    .toggle-row:hover { background: #dff0df; border-color: var(--g200); }
+    .toggle-label { font-size: .85rem; font-weight: 500; color: var(--ink); line-height: 1.3; }
+    .toggle-label small { display: block; font-size: .75rem; color: var(--muted); font-weight: 400; }
+
+    /* ══ KENDO NOTIFICATION ══ */
+    .k-notification { border-radius: 8px !important; font-family: 'DM Sans', sans-serif !important; font-size: .84rem !important; }
+
+    /* ══ KENDO SWITCH ══ */
+    .k-switch-on .k-switch-track  { background: var(--g500) !important; border-color: var(--g500) !important; }
+    .k-switch-off .k-switch-track { background: #e5e7eb !important; border-color: #d1d5db !important; }
+
+    /* ══ EMPTY STATE ══ */
+    .empty-state {
+        text-align: center; padding: 60px 20px;
+        color: var(--muted); font-size: .9rem; grid-column: 1 / -1;
+    }
+    .empty-state-icon { font-size: 3rem; opacity: .35; margin-bottom: 12px; display: block; }
+</style>
+
+@* ══ PAGE HEADER ══ *@
+<div class="pg-header">
+    <div class="pg-header-left">
+        <div class="pg-icon">🌾</div>
+        <div>
+            <div class="pg-title">Crop Type Catalog</div>
+            <div class="pg-subtitle">Manage crop types for Farmers &amp; Vendors</div>
+        </div>
+    </div>
+    <div class="pg-header-actions">
+        <button class="btn btn-primary" onclick="openAddModal()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add Crop Type
+        </button>
+        <a href="/Admin/CatalogProduct/Logs" class="btn btn-ghost-white">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M4 4.5h5M4 6.5h5M4 8.5h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            Logs
+        </a>
+    </div>
+</div>
+
+@* ══ FILTER BAR (Kendo DropDownLists + TextBox) ══ *@
+<div class="filter-bar">
+    <div class="filter-group">
+        <span class="filter-label">Search Crop</span>
+        <input id="filterSearch" type="text" class="filter-input" placeholder="Search by name..." style="min-width:175px" />
+    </div>
+    <div class="filter-group">
+        <span class="filter-label">Category</span>
+        <select id="filterCategory"></select>
+    </div>
+    <div class="filter-group">
+        <span class="filter-label">Status</span>
+        <select id="filterStatus"></select>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+        <button class="btn btn-primary" onclick="applyFilters()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M9 9l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Search
+        </button>
+        <button class="btn btn-light" onclick="clearFilters()">Clear</button>
+    </div>
+</div>
+
+@* ══ KENDO LISTVIEW (Card Grid) ══ *@
+<div id="catalogListView"></div>
+
+@* ══ KENDO PAGER ══ *@
+<div id="catalogPager"></div>
+
+@* ══ CARD ITEM TEMPLATE ══ *@
+<script id="cardTemplate" type="text/x-kendo-template">
+    <div class="crop-card">
+        # if (imageUrl) { #
+            <img class="crop-card-img" src="#: imageUrl #" alt="#: name #" onerror="imgFallback(this)" />
+        # } else { #
+            <div class="crop-card-img-placeholder">🌾</div>
+        # } #
+        <div class="crop-card-body">
+            <div class="crop-card-top">
+                <div class="crop-card-name">#: name #</div>
+                # if (isActive) { #
+                    <span class="badge badge-active"><span class="badge-dot"></span>Active</span>
+                # } else { #
+                    <span class="badge badge-inactive"><span class="badge-dot"></span>Inactive</span>
+                # } #
+            </div>
+            <div class="crop-card-cat">#: category || "Uncategorized" #</div>
+            <div class="crop-card-meta">
+                <div class="crop-meta-row">
+                    <span class="crop-meta-label">Unit</span>
+                    <span class="crop-meta-val">#: unitOfMeasure #</span>
+                </div>
+                <div class="crop-meta-row">
+                    <span class="crop-meta-label">Created By</span>
+                    <span class="crop-meta-val" style="font-weight:500;font-size:.77rem">#: createdByName || "—" #</span>
+                </div>
+            </div>
+            <div class="crop-card-actions">
+                <button class="btn-xs btn-xs-edit" onclick="openEditModal(#: id #)">✏️ Edit</button>
+                <button class="btn-xs btn-xs-del"  onclick="confirmDelete(#: id #)">🗑️ Delete</button>
+                # if (isActive) { #
+                    <button class="btn-xs btn-xs-deact" onclick="toggleStatus(#: id #, false)">⏸ Deactivate</button>
+                # } else { #
+                    <button class="btn-xs btn-xs-act"   onclick="toggleStatus(#: id #, true)">▶ Activate</button>
+                # } #
+            </div>
+        </div>
+    </div>
+</script>
+
+@* ══ EMPTY TEMPLATE ══ *@
+<script id="emptyTemplate" type="text/x-kendo-template">
+    <div class="empty-state">
+        <span class="empty-state-icon">🌾</span>
+        No crop types found. Try adjusting your filters or add a new crop type.
+    </div>
+</script>
+
+@* ══ DIALOG FORM TEMPLATE ══ *@
+<script id="productDialogTemplate" type="text/x-kendo-template">
+<div>
+    <div id="depWarning" class="warning-box"></div>
+    <input type="hidden" id="fId" />
+    <input type="hidden" id="fExistingImageUrl" />
+
+    <div class="form-row">
+        <label class="form-label">Product Name <span class="req">*</span></label>
+        <input id="fName" class="field" maxlength="200" placeholder="e.g. Basmati Rice" />
+    </div>
+    <div class="form-cols">
+        <div class="form-row">
+            <label class="form-label">Category</label>
+            <input id="fCategory" class="field" maxlength="100" placeholder="e.g. Grain, Vegetable" />
+        </div>
+        <div class="form-row">
+            <label class="form-label">Unit of Measure <span class="req">*</span></label>
+            <input id="fUnit" class="field" maxlength="20" placeholder="e.g. kg, MT" />
+        </div>
+    </div>
+    <div class="form-row">
+        <label class="form-label">Description</label>
+        <textarea id="fDescription" class="field" maxlength="1000" placeholder="Optional description..."></textarea>
+    </div>
+    <div class="form-row">
+        <label class="form-label">
+            Product Image
+            <span class="hint"> — Cloudinary · jpg / png / webp · max 5 MB</span>
+        </label>
+        <div class="img-zone" id="imgZone" onclick="document.getElementById('fImageFile').click()">
+            <input type="file" id="fImageFile" accept="image/jpeg,image/png,image/webp" onchange="previewImage(this)" />
+            <span class="img-zone-icon">🖼️</span>
+            <div class="img-zone-label" id="imgPlaceholder"><strong>Click to upload</strong> or drag &amp; drop</div>
+            <img id="imgPreview" alt="Preview" />
+        </div>
+        <button id="imgRemoveBtn" onclick="removeImage(event)">✕ Remove</button>
+    </div>
+
+    <hr class="form-divider" />
+
+    <div class="form-row">
+        <label class="form-label">Quality Parameters <span class="hint">(auto-generated)</span></label>
+        <div class="qp-grid">
+            <div class="qp-row">
+                <label>Grade</label>
+                <select id="qpGrade" class="field">
+                    <option value="">Select</option>
+                    <option>A</option><option>B</option><option>Premium</option>
+                </select>
+            </div>
+            <div class="qp-row">
+                <label>Size</label>
+                <select id="qpSize" class="field">
+                    <option value="">Select</option>
+                    <option>Small</option><option>Medium</option><option>Large</option>
+                </select>
+            </div>
+            <div class="qp-row">
+                <label>Moisture %</label>
+                <input id="qpMoisture" class="field" placeholder="e.g. 14" />
+            </div>
+            <div class="qp-row">
+                <label>Purity %</label>
+                <input id="qpPurity" class="field" placeholder="e.g. 98" />
+            </div>
+            <div class="qp-row">
+                <label>Color</label>
+                <input id="qpColor" class="field" placeholder="e.g. Green" />
+            </div>
+            <div class="qp-row">
+                <label>Variety</label>
+                <input id="qpVariety" class="field" placeholder="e.g. Hybrid" />
+            </div>
+        </div>
+    </div>
+
+    <hr class="form-divider" />
+
+    <label class="toggle-row" for="fIsActive">
+        <input type="checkbox" id="fIsActive" style="width:16px;height:16px;accent-color:var(--g500);cursor:pointer;flex-shrink:0;" />
+        <div class="toggle-label">
+            Active
+            <small>Visible to Farmers &amp; Vendors</small>
+        </div>
+    </label>
+</div>
+</script>
+
+@section Scripts {
+<script>
+    let listView, dataSource;
+    let editMode = false;
+
+    /* ─── Kendo DataSource ─── */
+    $(function () {
+
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: { url: "/Admin/GetAll", dataType: "json" }
+            },
+            schema: {
+                model: {
+                    fields: {
+                        id:            { type: "number"  },
+                        name:          { type: "string"  },
+                        category:      { type: "string"  },
+                        unitOfMeasure: { type: "string"  },
+                        imageUrl:      { type: "string"  },
+                        isActive:      { type: "boolean" },
+                        createdByName: { type: "string"  },
+                        createdAt:     { type: "date"    }
+                    }
+                }
+            },
+            pageSize: 12,
+            serverPaging: false,
+            serverFiltering: false,
+            serverSorting: false
+        });
+
+        /* ── Kendo ListView ── */
+        listView = $("#catalogListView").kendoListView({
+            dataSource: dataSource,
+            template:      kendo.template($("#cardTemplate").html()),
+            altTemplate:   kendo.template($("#cardTemplate").html()),
+            noRecords:     { template: kendo.template($("#emptyTemplate").html()) }
+        }).data("kendoListView");
+
+        /* ── Kendo Pager (standalone, bound to same DataSource) ── */
+        $("#catalogPager").kendoPager({
+            dataSource: dataSource,
+            input: true,
+            numeric: true,
+            previousNext: true,
+            info: true,
+            messages: { display: "Showing {0}-{1} of {2} crops", empty: "No crops to display" }
+        });
+
+        /* ── Filter DropDownLists ── */
+        $("#filterCategory").kendoDropDownList({
+            dataSource: ["", "Grains", "Vegetables", "Fruits", "Pulses", "Spices", "Oilseeds"],
+            optionLabel: "All Categories",
+            change: applyFilters
+        });
+        $("#filterStatus").kendoDropDownList({
+            dataSource: [
+                { text: "All Status", value: "" },
+                { text: "Active",     value: "active"   },
+                { text: "Inactive",   value: "inactive" }
+            ],
+            dataTextField:  "text",
+            dataValueField: "value",
+            change: applyFilters
+        });
+
+        /* Live search on keyup */
+        $("#filterSearch").on("keyup", applyFilters);
+    });
+
+    /* ─── Filter Logic ─── */
+    function applyFilters() {
+        const search = ($("#filterSearch").val() || "").toLowerCase();
+        const cat    = $("#filterCategory").data("kendoDropDownList").value();
+        const status = $("#filterStatus").data("kendoDropDownList").value();
+
+        const filters = [];
+
+        if (search) {
+            filters.push({
+                logic: "or",
+                filters: [
+                    { field: "name",     operator: "contains", value: search },
+                    { field: "category", operator: "contains", value: search }
+                ]
+            });
+        }
+        if (cat)    filters.push({ field: "category", operator: "eq", value: cat });
+        if (status === "active")   filters.push({ field: "isActive", operator: "eq", value: true  });
+        if (status === "inactive") filters.push({ field: "isActive", operator: "eq", value: false });
+
+        dataSource.filter(filters.length ? { logic: "and", filters } : {});
+    }
+
+    function clearFilters() {
+        $("#filterSearch").val("");
+        $("#filterCategory").data("kendoDropDownList").value("");
+        $("#filterStatus").data("kendoDropDownList").value("");
+        dataSource.filter({});
+    }
+
+    /* ─── Image helpers ─── */
+    function previewImage(input) {
+        if (!input.files?.[0]) return;
+        if (input.files[0].size > 5 * 1024 * 1024) { showToast("Image must be under 5 MB.", "error"); input.value = ""; return; }
+        const r = new FileReader();
+        r.onload = e => { $("#imgPreview").attr("src", e.target.result).show(); $("#imgPlaceholder").hide(); $("#imgRemoveBtn").show(); };
+        r.readAsDataURL(input.files[0]);
+    }
+    function removeImage(e) {
+        e.stopPropagation();
+        $("#fImageFile").val("");
+        $("#imgPreview").attr("src", "").hide();
+        $("#imgPlaceholder").show();
+        $("#imgRemoveBtn").hide();
+        $("#fExistingImageUrl").val("");
+    }
+
+    /* ─── Add / Edit Modals ─── */
+    function openAddModal()  { editMode = false; resetForm(); openDialog("Add Crop Type"); }
+
+    function openEditModal(id) {
+        editMode = true; resetForm();
+        $.getJSON(`/Admin/CheckDependencies/${id}`, dep => {
+            if (dep.activeListingsCount > 0 || dep.openOrdersCount > 0)
+                $("#depWarning").html(`⚠️ <strong>Warning:</strong> ${dep.activeListingsCount} active listing(s) and ${dep.openOrdersCount} open order(s) reference this product.`).show();
+        });
+        $.getJSON(`/Admin/GetById/${id}`, p => {
+            $("#fId").val(p.id);
+            $("#fName").val(p.name);
+            $("#fCategory").val(p.category || "");
+            $("#fUnit").val(p.unitOfMeasure);
+            $("#fDescription").val(p.description || "");
+            $("#fIsActive").prop("checked", p.isActive);
+            $("#fExistingImageUrl").val(p.imageUrl || "");
+            if (p.imageUrl) {
+                $("#imgPreview").attr("src", p.imageUrl).show();
+                $("#imgPlaceholder").hide();
+                $("#imgRemoveBtn").show();
+            }
+            if (p.qualityParameters) {
+                let qp = p.qualityParameters;
+                if (typeof qp === "string") { try { qp = JSON.parse(qp); } catch { qp = {}; } }
+                $("#qpGrade").val(qp.grade || "");
+                $("#qpSize").val(qp.size || "");
+                $("#qpMoisture").val(qp.moisture || "");
+                $("#qpPurity").val(qp.purity || "");
+                $("#qpColor").val(qp.color || "");
+                $("#qpVariety").val(qp.variety || "");
+            }
+        });
+        openDialog("Edit Crop Type");
+    }
+
+    function openDialog(title) {
+        /* destroy previous */
+        const prev = $("#productDialog").data("kendoDialog");
+        if (prev) { prev.destroy(); $("#productDialog").remove(); }
+
+        $("body").append(`<div id="productDialog">${$("#productDialogTemplate").html()}</div>`);
+
+        $("#productDialog").kendoDialog({
+            width:    "600px",
+            height:   "auto",
+            maxHeight: "88vh",
+            title,
+            modal: true,
+            closable: true,
+            actions: [
+                { text: "Cancel" },
+                {
+                    text:    editMode ? "💾 Save Changes" : "✅ Add Crop Type",
+                    primary: true,
+                    action() { saveProduct(); return false; }
+                }
+            ],
+            open() {
+                $(".k-dialog-content").css({ "max-height": "62vh", "overflow-y": "auto" });
+            }
+        }).data("kendoDialog").open();
+    }
+
+    function resetForm() {
+        $("#fId,#fName,#fCategory,#fUnit,#fDescription,#fExistingImageUrl").val("");
+        $("#fIsActive").prop("checked", true);
+        $("#fImageFile").val("");
+        $("#imgPreview").attr("src", "").hide();
+        $("#imgPlaceholder").show();
+        $("#imgRemoveBtn").hide();
+        $("#depWarning").hide();
+        $("#qpGrade,#qpSize,#qpMoisture,#qpPurity,#qpColor,#qpVariety").val("");
+    }
+
+    /* ─── Save ─── */
+    function saveProduct() {
+        const name = $("#fName").val().trim();
+        const unit = $("#fUnit").val().trim();
+        if (!name)             { showToast("Product name is required.", "error"); return; }
+        if (name.length < 2)   { showToast("Name must be at least 2 characters.", "error"); return; }
+        if (name.length > 200) { showToast("Name must not exceed 200 characters.", "error"); return; }
+        if (!unit)             { showToast("Unit of measure is required.", "error"); return; }
+        if (unit.length > 20)  { showToast("Unit must not exceed 20 characters.", "error"); return; }
+
+        let qpObj = {
+            grade: $("#qpGrade").val(), size: $("#qpSize").val(),
+            moisture: $("#qpMoisture").val(), purity: $("#qpPurity").val(),
+            color: $("#qpColor").val(), variety: $("#qpVariety").val()
+        };
+        Object.keys(qpObj).forEach(k => { if (!qpObj[k]) delete qpObj[k]; });
+
+        const fd = new FormData();
+        fd.append("Id",               $("#fId").val() || "0");
+        fd.append("Name",             name);
+        fd.append("Category",         $("#fCategory").val().trim());
+        fd.append("UnitOfMeasure",    unit);
+        fd.append("Description",      $("#fDescription").val().trim());
+        fd.append("QualityParameters", JSON.stringify(qpObj));
+        fd.append("IsActive",         $("#fIsActive").prop("checked").toString());
+        fd.append("ExistingImageUrl", $("#fExistingImageUrl").val());
+        const img = $("#fImageFile")[0].files[0];
+        if (img) fd.append("ImageFile", img);
+
+        $.ajax({
+            url: editMode ? "/Admin/Edit" : "/Admin/Add",
+            type: "POST", data: fd, processData: false, contentType: false,
+            success(res) {
+                if (res.success) {
+                    $("#productDialog").data("kendoDialog")?.close();
+                    dataSource.read();
+                    showToast(res.message, "success");
+                    if (res.warning) showToast(res.warning, "warning");
+                } else {
+                    showToast(res.message || "Operation failed.", "error");
+                }
+            },
+            error(xhr) { showToast(xhr.responseJSON?.message || "Server error.", "error"); }
+        });
+    }
+
+    /* ─── Image fallback helper (avoids quote nesting inside Kendo template onerror) ─── */
+    function imgFallback(el) {
+        el.parentElement.innerHTML = '<div class="crop-card-img-placeholder">&#127807;</div>';
+    }
+
+    /* ─── Delete ─── */
+    function confirmDelete(id) {
+        /* Resolve name from dataSource to avoid passing it through template attribute quotes */
+        const item = dataSource.data().find(function(d) { return d.id === id; });
+        const name = item ? item.name : "this crop";
+        $("<div>")
+            .html("<p style='margin-bottom:8px;'>Delete <strong>" + kendo.htmlEncode(name) + "</strong>?</p>"
+                + "<p style='color:#b91c1c;font-size:.81rem;line-height:1.55;'>Blocked if active listings or open orders exist.<br>Cloudinary image will be permanently removed.</p>")
+            .kendoDialog({
+                title: "Confirm Delete", modal: true, width: "390px", closable: true,
+                actions: [
+                    { text: "Cancel" },
+                    { text: "\uD83D\uDDD1\uFE0F Delete", primary: true, action: function() { deleteProduct(id); return true; } }
+                ]
+            }).data("kendoDialog").open();
+    }
+
+    function deleteProduct(id) {
+        $.ajax({
+            url: `/Admin/Delete/${id}`, type: "POST",
+            success(res) {
+                if (res.success) { dataSource.read(); showToast(res.message, "success"); }
+                else              { showToast(res.message, "error"); }
+            },
+            error(xhr) { showToast(xhr.responseJSON?.message || "Delete failed.", "error"); }
+        });
+    }
+
+    /* ─── Toggle Status ─── */
+    function toggleStatus(id, val) {
+        $.ajax({
+            url: "/Admin/ToggleCatalogStatus",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ id, isActive: val }),
+            success(res) {
+                if (res.success) { dataSource.read(); showToast(res.message, "success"); }
+                else              { showToast(res.message, "error"); }
+            },
+            error() { showToast("Failed to update status.", "error"); }
+        });
+    }
+
+    /* ─── Kendo Notification Toast ─── */
+    let _toast;
+    function showToast(msg, type) {
+        if (!_toast) {
+            _toast = $("<span>").appendTo("body")
+                .kendoNotification({
+                    position: { pinned: true, top: 20, right: 20 },
+                    autoHideAfter: 3500,
+                    stacking: "down",
+                    templates: [
+                        { type: "success", template: '<div style="padding:4px 2px;display:flex;align-items:center;gap:8px;"><span>✅</span><span>#= message #</span></div>' },
+                        { type: "error",   template: '<div style="padding:4px 2px;display:flex;align-items:center;gap:8px;"><span>❌</span><span>#= message #</span></div>' },
+                        { type: "warning", template: '<div style="padding:4px 2px;display:flex;align-items:center;gap:8px;"><span>⚠️</span><span>#= message #</span></div>' }
+                    ]
+                }).data("kendoNotification");
+        }
+        _toast.show({ message: msg }, type === "error" ? "error" : type === "warning" ? "warning" : "success");
+    }
+</script>
+}

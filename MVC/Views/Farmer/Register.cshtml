@@ -1,0 +1,325 @@
+@{
+    ViewData["Title"] = "Farmer Registration · FarmBridge";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html class="h-full" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>@ViewData["Title"]</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#00450d",
+                        "primary-container": "#065f18",
+                        background: "#faf9f5",
+                        surface: "#faf9f5",
+                        "on-surface": "#1a1c1a",
+                        "on-surface-variant": "#41493e",
+                        "on-primary": "#ffffff",
+                    },
+                    fontFamily: {
+                        headline: ["Plus Jakarta Sans"],
+                        body: ["Plus Jakarta Sans"],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .form-input {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(0, 69, 13, 0.1);
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 2px rgba(0, 69, 13, 0.15);
+            outline: none;
+            border-color: #00450d;
+        }
+        .agri-gradient {
+            background: linear-gradient(145deg, #00450d 0%, #065f18 100%);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 69, 13, 0.2); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface m-0 p-0 h-screen overflow-y-auto sm:overflow-hidden relative">
+
+    <div id="notificationArea" class="fixed top-4 right-4 z-[9999] w-full max-w-sm flex flex-col gap-2 pointer-events-none"></div>
+
+    <a href="/" class="fixed top-4 sm:top-6 left-4 sm:left-6 z-[100] flex items-center gap-2 text-white/90 hover:text-white bg-white/15 hover:bg-white/25 px-4 py-2.5 rounded-full backdrop-blur-md border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 group text-decoration-none">
+        <span class="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+        <span class="text-sm font-bold tracking-wide">Home</span>
+    </a>
+
+    <div class="fixed inset-0 z-0">
+        <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRvWi1e4NeJcmz6oHu3OXQcJjULUuchjyEiyoXyyLvAbjhzMTOumJNseBeZ5jjXZosRad-s-8aJEHBf8-fJ8uTANnX0gpt8NdB_-YwdUSgLhAYmhOS9WeBVr6L-jrJpbXuP1kTUzIwxws-F0g9Rzv9FS5G1fbebtl9w9EJ446Oq4CyfqFYcFb8pzOjGt0N6XGWwd3G6wQQdVtyHUO12HDQQUmcc-JOD580AaIi9Y9fjh-SKomikSeJ8nRy_kjL7UM-5I1dY-RKZu4" alt="Farm Sunrise" />
+        <div class="absolute inset-0 bg-primary/10 backdrop-blur-[2px]"></div>
+    </div>
+
+    <main class="relative z-10 w-full min-h-screen flex items-center justify-center p-4 sm:px-6 py-6">
+        
+        <div class="glass-card w-full max-w-[560px] p-6 sm:p-8 rounded-[2rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] flex flex-col items-center my-auto">
+            
+            <div class="mb-5 flex flex-col items-center text-center">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-2 shadow-lg">
+                    <span class="material-symbols-outlined text-on-primary text-2xl" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-primary tracking-tighter">FarmBridge</h1>
+                <p class="text-on-surface-variant font-medium text-xs sm:text-sm mt-1 tracking-tight">Create your digital agronomy account</p>
+            </div>
+
+            <form id="registerForm" class="w-full space-y-3" onsubmit="event.preventDefault(); handleRegister(event); return false;" novalidate>
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Full Name <span class="text-red-600">*</span></label>
+                    <input id="fullName" class="form-input w-full px-5 py-3 rounded-full text-sm text-on-surface placeholder:text-on-surface-variant/50 shadow-inner" placeholder="Ramesh Kumar" type="text" required />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Email Address <span class="text-red-600">*</span></label>
+                        <input id="email" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="you@example.com" type="email" required />
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Mobile Number <span class="text-red-600">*</span></label>
+                        <input id="phone" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="9876543210" type="tel" maxlength="10" required />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">State</label>
+                        <input id="state" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="Gujarat" type="text" />
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">District</label>
+                        <input id="district" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="Anand" type="text" />
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Farm Address</label>
+                    <input id="address" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="Village Road, Sector 12, Farm #42" type="text" />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Create Password <span class="text-red-600">*</span></label>
+                        <div class="relative">
+                            <input id="password" class="form-input w-full pl-5 pr-10 py-3 rounded-full text-sm shadow-inner" placeholder="Min. 8 chars" type="password" required />
+                            <button type="button" onclick="togglePassword('password', 'eye1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary">
+                                <span id="eye1" class="material-symbols-outlined text-[18px]">visibility</span>
+                            </button>
+                        </div>
+                        <div class="flex gap-1 h-1 mt-1.5 mx-3" id="strengthBar">
+                            <div id="seg1" class="h-full flex-1 rounded-full bg-black/10 transition-colors"></div>
+                            <div id="seg2" class="h-full flex-1 rounded-full bg-black/10 transition-colors"></div>
+                            <div id="seg3" class="h-full flex-1 rounded-full bg-black/10 transition-colors"></div>
+                            <div id="seg4" class="h-full flex-1 rounded-full bg-black/10 transition-colors"></div>
+                        </div>
+                        <div id="strengthText" class="text-[10px] font-bold px-4 text-primary/60"></div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Confirm Password <span class="text-red-600">*</span></label>
+                        <div class="relative">
+                            <input id="confirmPassword" class="form-input w-full pl-5 pr-10 py-3 rounded-full text-sm shadow-inner" placeholder="Re-enter password" type="password" required />
+                            <button type="button" onclick="togglePassword('confirmPassword', 'eye2')" class="absolute right-3 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary">
+                                <span id="eye2" class="material-symbols-outlined text-[18px]">visibility</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="submitBtn" class="agri-gradient w-full py-3.5 rounded-full text-on-primary font-bold text-base mt-2 shadow-[0_20px_40px_-10px_rgba(0,69,13,0.3)] hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300" type="submit">
+                    Create My Account
+                </button>
+            </form>
+
+            <div class="mt-4 text-center">
+                <p class="text-sm text-on-surface-variant font-medium">
+                    Already have an account? 
+                    <a href="/Farmer/Login" class="text-primary font-bold hover:text-primary-container hover:underline underline-offset-4 ml-1 transition-all">Sign In</a>
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ── Eye toggles ──
+        window.togglePassword = function(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        };
+
+        // ── Universal Toast ──
+        window.showToast = function(title, message, isError = false) {
+            const container = document.getElementById('notificationArea');
+            if (!container) return;
+
+            const bgClass = isError ? 'bg-red-600' : 'bg-primary';
+            const icon = isError ? 'error' : 'check_circle';
+
+            const toast = document.createElement('div');
+            toast.className = `${bgClass} text-white px-5 py-4 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] flex items-center gap-3 transform transition-all duration-500 translate-x-full opacity-0 pointer-events-auto border border-white/20 backdrop-blur-md`;
+            
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-2xl drop-shadow-md">${icon}</span>
+                <div>
+                    <h4 class="font-bold text-sm tracking-wide">${title}</h4>
+                    <p class="text-xs text-white/90 mt-0.5">${message}</p>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 500);
+            }, 4500);
+        };
+
+        // ── Password Strength ──
+        document.addEventListener('DOMContentLoaded', function() {
+            const pwdInput = document.getElementById("password");
+            if(!pwdInput) return;
+
+            const colors = ['rgba(0,0,0,0.1)', '#dc2626', '#f97316', '#16a34a', '#14532d'];
+            const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+
+            pwdInput.addEventListener("input", function() {
+                const pw = this.value;
+                let s = 0;
+                
+                if (pw.length >= 8) s++;
+                if (pw.length >= 12) s++;
+                if (/[A-Z]/.test(pw)) s++;
+                if (/[0-9]/.test(pw)) s++;
+                if (/[^A-Za-z0-9]/.test(pw)) s++;
+                
+                const strength = pw.length === 0 ? 0 : Math.min(4, s);
+
+                for(let i = 1; i <= 4; i++) {
+                    document.getElementById('seg' + i).style.backgroundColor = (i <= strength) ? colors[strength] : colors[0];
+                }
+
+                const txt = document.getElementById('strengthText');
+                txt.textContent = pw.length > 0 ? labels[strength] : '';
+                txt.style.color = strength > 0 ? colors[strength] : 'inherit';
+            });
+        });
+
+        // ── Form Submission & Validation ──
+        window.handleRegister = function(e) {
+            if (e) e.preventDefault();
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const district = document.getElementById('district').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const pwd = document.getElementById('password').value;
+            const confirmPwd = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('submitBtn');
+
+            if (!fullName || !email || !phone || !pwd || !confirmPwd) {
+                window.showToast("Missing Fields", "Please fill out all required fields marked with *", true);
+                return false;
+            }
+
+            if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(email)) {
+                window.showToast("Invalid Email", "Please enter a valid email address.", true);
+                return false;
+            }
+
+            if (!/^[6-9][0-9]{9}$/.test(phone)) {
+                window.showToast("Invalid Phone", "Please enter a valid 10-digit mobile number.", true);
+                return false;
+            }
+
+            if (pwd.length < 8 || !/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) {
+                window.showToast("Weak Password", "Password must be at least 8 chars, contain 1 uppercase letter and 1 number.", true);
+                return false;
+            }
+
+            if (pwd !== confirmPwd) {
+                window.showToast("Password Mismatch", "Your passwords do not match.", true);
+                return false;
+            }
+
+            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<div class="flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined animate-spin">progress_activity</span> 
+                                Creating account...
+                             </div>`;
+
+            const payload = {
+                fullName: fullName,
+                email: email,
+                phone: phone,
+                state: state,
+                district: district,
+                address: address,
+                password: pwd,
+                confirmPassword: confirmPwd
+            };
+
+            fetch('/Farmer/Register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    window.showToast('Welcome!', 'Registration successful! Redirecting...', false);
+                    setTimeout(() => { window.location.href = '/Farmer/Login'; }, 1600);
+                } else {
+                    resetBtn();
+                    window.showToast('Registration Failed', res.message || 'Unable to register account.', true);
+                }
+            })
+            .catch(() => {
+                resetBtn();
+                window.showToast('Network Error', 'Cannot connect to server. Please try again.', true);
+            });
+
+            function resetBtn() {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+
+            return false;
+        }
+    </script>
+</body>
+</html>

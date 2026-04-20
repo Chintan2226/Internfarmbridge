@@ -1,0 +1,253 @@
+@{
+    Layout = null;
+    var role = "Farmer";
+    var title = (ViewData["Title"] ?? "Dashboard").ToString();
+    /* ── Detect current language from culture cookie ── */
+    var currentLang = "en";
+    var cultureCookie = Context.Request.Cookies[".AspNetCore.Culture"];
+    if (!string.IsNullOrEmpty(cultureCookie)) {
+        var match = System.Text.RegularExpressions.Regex.Match(cultureCookie, @"c=(\w+)");
+        if (match.Success) currentLang = match.Groups[1].Value;
+    }
+}
+<!DOCTYPE html>
+<html lang="@currentLang">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title — FarmBridge</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css" />
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/kendo/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/lib/kendo/kendo.default-v2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/layouts/farmer_layout.css" asp-append-version="true" />
+
+    <style>
+        .fv-drawer.open {
+            left: 0 !important;
+        }
+        .fv-overlay.open {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        .fv-notif.open {
+            right: 0 !important;
+        }
+    </style>
+
+    @RenderSection("Styles", required: false)
+</head>
+<body data-role="@role" data-title="@title">
+
+<div aria-hidden="true" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;">
+    <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(168,230,160,0.18) 0%,transparent 70%);top:-80px;left:-100px;filter:blur(40px);"></div>
+    <div style="position:absolute;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(181,221,245,0.12) 0%,transparent 70%);bottom:10%;right:-80px;filter:blur(40px);"></div>
+</div>
+
+    <nav class="fv-sidebar" id="fvSidebar">
+        <div class="fv-sidebar-logo">
+            <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge" />
+            <span class="fv-sidebar-name"><span style="color: #1b5e19;">Farm</span><span style="color: #2b6f87;">Bridge</span></span>
+        </div>
+        <div class="fv-role-badge" id="fvRoleBadge">@role</div>
+        <ul class="fv-nav" id="fvNav">
+        @{
+            var path = Context.Request.Path.ToString().ToLower();
+        }
+            <li><a href="/Farmer/Dashboard" class="fv-nav-link @(path.Contains("/farmer/dashboard") ? "active" : "")"><i class="fi fi-rr-apps"></i><span data-i18n="nav_dashboard">Dashboard</span></a></li>
+            <li><a href="/Farmer/Crops" class="fv-nav-link @(path.Contains("/farmer/crops") ? "active" : "")"><i class="fi fi-rr-leaf"></i><span data-i18n="nav_my_crops">My Crops</span></a></li>
+            <li><a href="/Farmer/QCSlots" class="fv-nav-link @(path.Contains("/farmer/qcslots") ? "active" : "")"><i class="fi fi-rr-calendar"></i><span data-i18n="nav_qc_slots">QC Slots</span></a></li>
+            <li><a href="/Farmer/Payments" class="fv-nav-link @(path.Contains("/farmer/payments") ? "active" : "")"><i class="fi fi-rr-credit-card"></i><span data-i18n="nav_payments">Payments</span></a></li>
+            <li><a href="/Farmer/Inquiries" class="fv-nav-link @(path.Contains("/farmer/inquiries") ? "active" : "")"><i class="fi fi-rr-envelope"></i><span data-i18n="nav_inquiries">Inquiries</span></a></li>
+            <li><a href="/Farmer/Profile" class="fv-nav-link @(path.Contains("/farmer/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span data-i18n="nav_profile">Profile</span></a></li>
+        </ul>
+        <div class="fv-sidebar-foot">
+            <a href="javascript:void(0)" onclick="logout()" class="fv-drawer-link fv-logout-mobile">
+                <i class="fi fi-rr-exit"></i>
+                <span data-i18n="nav_logout">Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="fv-main" id="fvMain">
+
+        <header class="fv-topbar" id="fvTopbar">
+            <div class="fv-topbar-left">
+                <button class="fv-menu-btn" id="fvMenuBtn" aria-label="Menu">
+                    <i class="fi fi-rr-bars-staggered"></i>
+                </button>
+                <h1 class="fv-page-title" id="fvPageTitle">@title</h1>
+            </div>
+            <div class="fv-topbar-right">
+                <div class="fb-lang-switcher">
+                    <button class="fv-action-btn fb-lang-btn" onclick="toggleLangDropdown(event)" aria-label="Language">
+                        <i class="fi fi-rr-globe"></i>
+                    </button>
+                    <div class="fb-lang-dropdown">
+                        <button class="fb-lang-option" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                        <button class="fb-lang-option" data-lang="hi" onclick="switchLang('hi')">🇮🇳 हिंदी</button>
+                        <button class="fb-lang-option" data-lang="gu" onclick="switchLang('gu')">🇮🇳 ગુજરાતી</button>
+                    </div>
+                </div>
+                <button class="fv-action-btn" id="fvBellBtn" aria-label="Notifications">
+                    <i class="fi fi-rr-bell"></i>
+                    <span class="fv-dot" id="fvBellDot" hidden></span>
+                </button>
+                <div class="fv-avatar" id="fvAvatar" onclick="location.href='/Farmer/Profile'" title="Profile">
+                    F
+                </div>
+            </div>
+        </header>
+
+        <main class="fv-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <div class="fv-overlay" id="fvOverlay"></div>
+
+    <div class="fv-drawer" id="fvDrawer">
+        <div class="fv-drawer-head">
+            <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge" />
+            <span><span style="color: #1b5e19;">Farm</span><span style="color: #2b6f87;">Bridge</span></span>
+            <button class="fv-drawer-close" id="fvDrawerClose"><i class="fi fi-rr-cross-small"></i></button>
+        </div>
+        <div class="fv-role-badge-mobile" id="fvRoleBadgeMobile">@role</div>
+        <ul class="fv-drawer-nav" id="fvDrawerNav">
+            <li><a href="/Farmer/Dashboard" class="fv-nav-link @(path.Contains("/farmer/dashboard") ? "active" : "")"><i class="fi fi-rr-apps"></i><span data-i18n="nav_dashboard">Dashboard</span></a></li>
+            <li><a href="/Farmer/Crops" class="fv-nav-link @(path.Contains("/farmer/crops") ? "active" : "")"><i class="fi fi-rr-leaf"></i><span data-i18n="nav_my_crops">My Crops</span></a></li>
+            <li><a href="/Farmer/QCSlots" class="fv-nav-link @(path.Contains("/farmer/qcslots") ? "active" : "")"><i class="fi fi-rr-calendar"></i><span data-i18n="nav_qc_slots">QC Slots</span></a></li>
+            <li><a href="/Farmer/Payments" class="fv-nav-link @(path.Contains("/farmer/payments") ? "active" : "")"><i class="fi fi-rr-credit-card"></i><span data-i18n="nav_payments">Payments</span></a></li>
+            <li><a href="/Farmer/Inquiries" class="fv-nav-link @(path.Contains("/farmer/inquiries") ? "active" : "")"><i class="fi fi-rr-envelope"></i><span data-i18n="nav_inquiries">Inquiries</span></a></li>
+            <li><a href="/Farmer/Profile" class="fv-nav-link @(path.Contains("/farmer/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span data-i18n="nav_profile">Profile</span></a></li>
+        </ul>
+        <div class="fv-drawer-foot">
+            <a href="javascript:void(0)" onclick="logout()" class="fv-drawer-link fv-logout-mobile">
+                <i class="fi fi-rr-exit"></i> <span data-i18n="nav_logout">Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <nav class="fv-bottom-nav" id="fvBottomNav" aria-label="Navigation"></nav>
+
+    <div class="fv-notif" id="fvNotif">
+        <div class="fv-notif-header">
+            <span data-i18n="nav_notifications">Notifications</span>
+            <button id="fvNotifClose"><i class="fi fi-rr-cross-small"></i></button>
+        </div>
+        <div class="fv-notif-actions">
+            <small><span id="fvUnread">0</span> <span data-i18n="notif_unread">unread</span></small>
+            <div style="display:flex; gap: 12px; align-items:center;">
+                <button onclick="fvMarkAllRead()" data-i18n="notif_mark_all">Mark all read</button>
+                <button onclick="fvClearAll()" style="color: #ff6b6b;" data-i18n="notif_clear_all">Clear all</button>
+            </div>
+        </div>
+        <div class="fv-notif-tabs">
+            <button class="active" onclick="fvTab('all', this)" data-i18n="notif_tab_all">All</button>
+            <button onclick="fvTab('unread', this)"><span data-i18n="notif_tab_unread">Unread</span> <span id="fvUnreadBadge">0</span></button>
+        </div>
+        <div class="fv-notif-list" id="fvNotifList"></div>
+    </div>
+
+    <div class="fv-toasts" id="fvToasts"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<link href="https://cdn.kendostatic.com/2020.3.1118/styles/kendo.common.min.css" rel="stylesheet"/>
+<link href="https://cdn.kendostatic.com/2020.3.1118/styles/kendo.default-v2.min.css" rel="stylesheet"/>
+
+<script src="https://cdn.kendostatic.com/2020.3.1118/js/kendo.all.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<script>
+function getToken() {
+    var match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+function parseJwt(token) {
+    try {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(atob(base64));
+    } catch (e) {
+        return null;
+    }
+}
+
+var token = getToken();
+var decoded = token ? parseJwt(token) : null;
+
+window.USER_ROLE = '@role';
+window.FARMER_ID = decoded ? parseInt(decoded.farmer_id || 0) : 0;
+window.API_BASE = "http://localhost:5020/api/FarmerApp";
+window.CURRENT_LANG = '@currentLang';
+
+if (!window.FARMER_ID || window.FARMER_ID === 0) {
+    window.location.href = "/Auth/Login";
+}
+console.log("Farmer ID:", window.FARMER_ID);
+</script>
+
+<script>
+    function logout() {
+        document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/Farmer/Login";
+    }
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Grab elements
+        const menuBtn = document.getElementById('fvMenuBtn');
+        const drawer = document.getElementById('fvDrawer');
+        const overlay = document.getElementById('fvOverlay');
+        const closeBtn = document.getElementById('fvDrawerClose');
+        const notifBtn = document.getElementById('fvBellBtn');
+        const notifDrawer = document.getElementById('fvNotif');
+        const notifCloseBtn = document.getElementById('fvNotifClose');
+
+        // 2. Drawer Toggle Logic
+        const toggleDrawerSafe = function(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (drawer) drawer.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+        };
+
+        // 3. Notification Toggle Logic
+        const toggleNotifSafe = function(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (notifDrawer) notifDrawer.classList.toggle('open');
+        };
+
+        // 4. Attach safe listeners
+        if (menuBtn) menuBtn.addEventListener('click', toggleDrawerSafe);
+        if (overlay) overlay.addEventListener('click', toggleDrawerSafe);
+        if (closeBtn) closeBtn.addEventListener('click', toggleDrawerSafe);
+        
+        if (notifBtn) notifBtn.addEventListener('click', toggleNotifSafe);
+        if (notifCloseBtn) notifCloseBtn.addEventListener('click', toggleNotifSafe);
+    });
+</script>
+
+<script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+<script src="~/js/layouts/farmer_layout.js" asp-append-version="true"></script>
+
+@RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,278 @@
+/* =====================================================
+   farmer-auth.css — FarmBridge Farmer Auth Pages
+   Mirrors vendor-auth.css theme with green farm tones
+   ===================================================== */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f7f0;
+    min-height: 100vh;
+}
+
+/* ── Layout ──────────────────────────────────────── */
+.container-auth {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ── Left Banner ─────────────────────────────────── */
+.auth-banner {
+    width: 42%;
+    background: linear-gradient(145deg, #2d6a2d 0%, #3a8a3a 40%, #4caf50 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-banner::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 280px;
+    height: 280px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+}
+
+.auth-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 220px;
+    height: 220px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+}
+
+.banner-logo {
+    margin-bottom: 2rem;
+    z-index: 1;
+}
+
+.banner-logo img {
+    width: 130px;
+    height: auto;
+    filter: brightness(0) invert(1);
+}
+
+.banner-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    z-index: 1;
+    letter-spacing: 0.5px;
+}
+
+.banner-description {
+    font-size: 1rem;
+    opacity: 0.88;
+    line-height: 1.6;
+    max-width: 300px;
+    z-index: 1;
+}
+
+.banner-features {
+    margin-top: 2.5rem;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.feature-item {
+    background: rgba(255,255,255,0.15);
+    border-radius: 24px;
+    padding: 0.45rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+}
+
+/* ── Right Form Panel ────────────────────────────── */
+.form-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 2rem;
+    background: #f4f7f0;
+    overflow-y: auto;
+}
+
+.form-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(45, 106, 45, 0.10);
+    padding: 2.5rem 2.2rem;
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #e2ece2;
+}
+
+.form-card h2 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #1a3d1a;
+    margin-bottom: 0.4rem;
+}
+
+.form-subtitle {
+    font-size: 0.92rem;
+    color: #6b7f6b;
+    margin-bottom: 1.6rem;
+}
+
+/* ── Kendo Form Overrides ────────────────────────── */
+.k-form {
+    padding: 0 !important;
+}
+
+.k-form .k-form-field {
+    margin-bottom: 1rem;
+}
+
+.k-form .k-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2d4a2d;
+    margin-bottom: 0.3rem;
+}
+
+.k-form .k-input,
+.k-form .k-textbox,
+.k-form textarea {
+    border-radius: 8px !important;
+    border-color: #c5d9c5 !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.k-form .k-input:focus,
+.k-form .k-textbox:focus {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15) !important;
+    outline: none;
+}
+
+.k-form-hint {
+    color: #7a927a;
+    font-size: 0.78rem;
+}
+
+/* ── Buttons ─────────────────────────────────────── */
+.k-button-solid-success {
+    background: linear-gradient(135deg, #2d6a2d, #4caf50) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px;
+    border-radius: 8px !important;
+    transition: opacity 0.2s, transform 0.1s !important;
+}
+
+.k-button-solid-success:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.btn-full {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+/* ── Forgot Password Link ────────────────────────── */
+.forgot-password {
+    text-align: right;
+    margin-top: -0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.forgot-password a {
+    font-size: 0.85rem;
+    color: #3a8a3a;
+    text-decoration: none;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+}
+
+/* ── Form Footer ─────────────────────────────────── */
+.form-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+    color: #6b7f6b;
+    font-size: 0.88rem;
+    border-top: 1px solid #e8f0e8;
+    padding-top: 1.2rem;
+}
+
+.form-footer a {
+    color: #3a8a3a;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+.back-home {
+    margin-top: 0.6rem;
+}
+
+.back-home a {
+    font-size: 0.82rem;
+    color: #7a927a;
+    font-weight: 400;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+    .container-auth {
+        flex-direction: column;
+    }
+
+    .auth-banner {
+        width: 100%;
+        padding: 2rem 1.5rem;
+        min-height: 200px;
+    }
+
+    .banner-features {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .banner-logo img {
+        width: 90px;
+    }
+
+    .banner-title {
+        font-size: 1.5rem;
+    }
+
+    .form-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .form-card {
+        padding: 1.8rem 1.2rem;
+    }
+}

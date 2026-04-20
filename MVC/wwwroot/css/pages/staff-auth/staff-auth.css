@@ -1,0 +1,189 @@
+/* =========================================================
+   FarmBridge — Staff Auth Pages
+   Agricultural & Organic Aesthetic (Standard Scale)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --green-900: #0d3b16;  --green-800: #154212;  --green-700: #1e5c1a;
+  --green-600: #2d7a27;  --green-500: #3b9434;  --green-400: #52b34a; --green-300: #84d17c;
+  
+  --bg-base: #f5f9f4; /* Same as landing page */
+  --bg-card: #ffffff;
+  
+  --text-primary: #0a2108; 
+  --text-secondary: #21351f; 
+  --text-muted: #5a7257;
+  
+  --font-display: 'Plus Jakarta Sans', sans-serif; 
+  --font-body: 'Inter', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-body); min-height: 100vh; background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+
+/* ── Split Layout ── */
+.sa-shell { display: flex; min-height: 100vh; position: relative; }
+
+/* Left Banner wrapper */
+.sa-banner {
+  width: 44%; 
+  position: relative; display: flex; flex-direction: column; padding: 4rem;
+  color: #fff; z-index: 1; overflow: hidden;
+}
+
+.sa-wave-separator {
+  position: absolute; top: 0; right: -1px; width: 3.5vw; height: 100%;
+  pointer-events: none; z-index: 5;
+}
+
+.sa-banner-bg { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: -2; }
+.sa-banner-overlay {
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(160deg, rgba(8,35,14,0.65) 0%, rgba(22,101,52,0.5) 60%, rgba(130,80,20,0.3) 100%);
+}
+
+.sa-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: auto; z-index: 2; position: relative; }
+.sa-logo img { height: 38px; filter: brightness(0) invert(1); }
+.sa-logo span { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.01em; }
+
+.sa-banner-content { margin-top: auto; margin-bottom: auto; z-index: 2; position: relative; }
+
+.sa-badge {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 100px; margin-bottom: 1.5rem; backdrop-filter: blur(8px);
+  font-family: var(--font-display); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.sa-badge i { color: var(--green-400); font-size: 14px; } 
+
+.sa-banner h1 {
+  font-family: var(--font-display); font-size: 3.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem;
+  letter-spacing: -0.02em; 
+}
+.sa-banner h1 span { color: var(--green-300); }
+.sa-banner p { font-size: 1.05rem; line-height: 1.6; opacity: 0.9; max-width: 440px; font-weight: 400; }
+
+/* ── Right Panel: The Agricultural Vibe ── */
+.sa-panel {
+  flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 2rem;
+  background: var(--bg-base);
+  /* Organic Field Pattern (Striped crops) + Sunburst */
+  background-image: 
+    radial-gradient(circle at 80% 20%, rgba(232, 114, 12, 0.05) 0%, transparent 30%),
+    radial-gradient(circle at 20% 80%, rgba(82, 179, 74, 0.06) 0%, transparent 40%);
+}
+
+/* Subtle crop lines drawn through the background */
+.sa-panel::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, rgba(82, 179, 74, 0.03) 0px, rgba(82, 179, 74, 0.03) 2px, transparent 2px, transparent 20px);
+    pointer-events: none; z-index: 0;
+}
+
+/* Normal Proportioned Card with organic touch */
+.sa-card {
+  width: 100%; max-width: 440px; background: var(--bg-card); padding: 3rem;
+  /* Slightly organic leaf-inspired corner rounding */
+  border-radius: 28px 8px 28px 8px; 
+  box-shadow: 0 16px 40px rgba(13, 59, 22, 0.08); border: 1px solid rgba(13,59,22,0.06);
+  position: relative; z-index: 10;
+  overflow: hidden; /* Fixes bleeding borders */
+}
+
+/* Full width green accent line */
+.sa-card::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+  background: linear-gradient(90deg, var(--green-600), var(--green-400));
+}
+
+.sa-card h2 {
+  font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: var(--text-primary);
+  margin-bottom: 0.5rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px;
+}
+.sa-card > p {
+  color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; font-weight: 500;
+}
+
+/* Forms */
+.sa-field { margin-bottom: 1.25rem; position: relative; }
+.sa-field label {
+  display: block; font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-secondary); margin-bottom: 0.5rem;
+}
+.sa-field span.req { color: #dc2626; margin-left: 2px; }
+
+.sa-input-wrap { position: relative; width: 100%; }
+.sa-input-wrap .input-icon {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  color: #94a3b8; font-size: 1rem; transition: color 0.3s; pointer-events: none;
+}
+
+.sa-input-wrap input {
+  width: 100%; height: 50px; padding: 0 16px 0 46px;
+  background: #f1f5f1; border: 2px solid transparent; 
+  border-radius: 12px; font-family: var(--font-body); font-size: 0.95rem; color: var(--text-primary); font-weight: 500;
+  outline: none; transition: all 0.2s ease;
+}
+.sa-input-wrap input:hover { background: #eaeee9; }
+.sa-input-wrap input:focus {
+  background: #fff; border-color: var(--green-500); box-shadow: 0 0 0 4px var(--green-50);
+}
+.sa-input-wrap input:focus ~ .input-icon { color: var(--green-500); }
+.sa-input-wrap input::placeholder { color: #94a3b8; font-weight: 500; }
+
+.sa-btn-submit {
+  width: 100%; height: 52px; margin-top: 1.5rem;
+  background: var(--green-600); color: white;
+  border: none; border-radius: 12px; font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 4px 12px rgba(45, 122, 39, 0.2);
+}
+.sa-btn-submit:hover {
+  background: var(--green-500); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(45, 122, 39, 0.3);
+}
+.sa-btn-submit:active { transform: translateY(0); }
+
+.forgot-link {
+  position: absolute; right: 0; top: 0; font-size: 0.85rem; font-weight: 600; color: var(--green-600);
+  text-decoration: none; transition: color 0.2s;
+}
+.forgot-link:hover { color: var(--green-800); text-decoration: underline; }
+
+.sa-eye-btn {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none;
+  cursor: pointer; color: #94a3b8; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; font-size: 1rem;
+}
+.sa-eye-btn:hover { color: var(--green-600); }
+
+.card-footer {
+  margin-top: 2rem; width: 100%; text-align: center; font-size: 0.85rem; color: var(--text-muted);
+  font-weight: 500;
+}
+.card-footer a { color: var(--green-600); font-weight: 600; text-decoration: none; transition: color 0.2s; }
+.card-footer a:hover { color: var(--green-800); text-decoration: underline; }
+.card-footer a.back-home { display: inline-flex; align-items: center; gap: 6px; color: #64748b; font-weight: 500; margin-top: 1.5rem; }
+.card-footer a.back-home:hover { color: var(--green-800); }
+
+/* Notifications */
+.sa-notification { display: none; position: fixed; top: 24px; right: 24px; padding: 14px 18px; border-radius: 12px; font-family: var(--font-display); font-size: 0.9rem; font-weight: 600; z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.1); background: #fff; animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border-left: 4px solid transparent; }
+.sa-notification.success { border-left-color: var(--green-500); color: var(--green-800); }
+.sa-notification.error { border-left-color: #ef4444; color: #991b1b; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+
+/* ── Responsive ── */
+@media (max-width: 1000px) {
+  .sa-banner { width: 50%; padding: 3rem; }
+  .sa-banner h1 { font-size: 2.8rem; }
+}
+
+@media (max-width: 768px) {
+  .sa-shell { flex-direction: column; }
+  .sa-banner { width: 100%; min-height: 280px; padding: 2.5rem; justify-content: center; }
+  .sa-wave-separator { display: none; }
+  .sa-banner h1 { font-size: 2.4rem; }
+  .sa-panel { padding: 2rem 1.5rem; align-items: flex-start; }
+  .sa-card { padding: 2rem; max-width: 100%; box-shadow: 0 4px 24px rgba(13, 59, 22, 0.08); }
+}

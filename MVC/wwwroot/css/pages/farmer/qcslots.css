@@ -1,0 +1,78 @@
+/* QC Slots Styles */
+.qc-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.qc-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    flex: 1;
+    min-width: 400px;
+}
+
+.qc-panel h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-main);
+}
+
+.warehouse-info {
+    background: #ebf8ff;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3182ce;
+}
+
+.warehouse-info h4 { margin: 0 0 8px 0; color: #2b6cb0; font-size: 16px; }
+.warehouse-info p { margin: 0; color: #4a5568; font-size: 14px; }
+
+.slot-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.slot-card:hover {
+    border-color: #3182ce;
+    background: #f7fafc;
+}
+
+.slot-card.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    background: #edf2f7;
+}
+
+.slot-details h5 { margin: 0 0 4px 0; font-size: 15px; font-weight: 600; }
+.slot-details p { margin: 0; font-size: 13px; color: #718096; }
+
+.capacity-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #e6fffa;
+    color: #319795;
+}
+
+.capacity-badge.full {
+    background: #fff5f5;
+    color: #e53e3e;
+}
+
+.status-up { background: #ebf8ff; color: #3182ce; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.status-comp { background: #f0fff4; color: #38a169; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.status-canc { background: #fff5f5; color: #e53e3e; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }

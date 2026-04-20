@@ -1,0 +1,359 @@
+@{
+    Layout = "_FieldOfficerLayout";
+    ViewData["Title"] = "Inspection Detail";
+}
+
+<div class="id-wrapper">
+
+    <!-- Page Header -->
+    <div class="id-page-header">
+        <div class="id-page-header-left">
+            <button class="id-back-btn" onclick="history.back()">
+                <i class="fa fa-arrow-left"></i>
+            </button>
+            <div>
+                <h2 class="id-page-title">Inspection Details</h2>
+                <p class="id-page-sub">Review & request payment for approved inspection</p>
+            </div>
+        </div>
+        <div class="id-status-badge" id="statusBadge">
+            Loading...
+        </div>
+    </div>
+
+    <!-- Farmer Info Card -->
+    <div class="id-info-card" id="farmerInfoCard">
+        <div class="id-info-loading">
+            <i class="fa fa-spinner fa-spin"></i> Loading inspection details...
+        </div>
+    </div>
+
+    <!-- Inspection Results Card -->
+    <div class="id-form-card">
+        <div class="id-form-section-title">
+            <i class="fa fa-flask"></i> Quality Results
+        </div>
+        <div class="id-results-grid" id="resultsGrid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- Payment Section (Only if inspection PASSED) -->
+    <div class="id-payment-card" id="paymentCard" style="display:none;">
+        <div class="id-payment-title">
+            <i class="fa fa-credit-card"></i> Payment Summary
+        </div>
+
+        <div class="id-payment-summary">
+            <div class="id-amount-row">
+                <span class="id-amount-label">Accepted Quantity</span>
+                <span class="id-amount-value" id="summaryQty">0 kg</span>
+            </div>
+            <div class="id-amount-row">
+                <span class="id-amount-label">Your Assessed Price</span>
+                <span class="id-amount-value" id="summaryPrice">₹0/kg</span>
+            </div>
+            <div class="id-divider"></div>
+            <div class="id-amount-row id-total-row">
+                <span class="id-amount-label">Total Value</span>
+                <span class="id-total-value" id="totalValue">₹0</span>
+            </div>
+
+            <div class="id-split-section">
+                <div class="id-split-item id-advance">
+                    <div class="id-split-label">30% Advance (Pay Now)</div>
+                    <div class="id-split-amount" id="advanceAmount">₹0</div>
+                </div>
+                <div class="id-split-item id-remaining">
+                    <div class="id-split-label">70% Remaining (Admin pays later)</div>
+                    <div class="id-split-amount" id="remainingAmount">₹0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Button -->
+        <div class="id-payment-actions">
+            <button class="id-cancel-btn" onclick="history.back()">Cancel</button>
+            <button class="id-pay-btn" id="payBtn" onclick="requestPayment()">
+                <i class="fa fa-credit-card"></i> Request 30% Payment
+            </button>
+        </div>
+    </div>
+
+    <!-- Inspection Failed Card (Only if inspection FAILED) -->
+    <div class="id-failed-card" id="failedCard" style="display:none;">
+        <div class="id-failed-header">
+            <i class="fa fa-times-circle"></i> Inspection Failed
+        </div>
+        <p class="id-failed-message">This inspection did not pass quality checks. No payment will be processed.</p>
+        <div class="id-defects-section" id="defectsSection" style="display:none;">
+            <p class="id-defects-title">Defects & Notes</p>
+            <div class="id-defects-text" id="defectsText"></div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function () {
+    var urlParams = new URLSearchParams(window.location.search);
+    var inspectionId = urlParams.get('id');
+
+    if (inspectionId) {
+        $.ajax({
+            url: foApiUrl('/inspection/' + inspectionId),
+            type: 'GET',
+            success: function (data) {
+                renderInspectionDetail(data);
+            },
+            error: function (xhr) {
+                if (handleFoUnauthorized(xhr)) return;
+                $('#farmerInfoCard').html(
+                    '<div class="id-info-loading" style="color:#e53935;">Failed to load inspection details.</div>'
+                );
+                showFoLoadFailedAlert("inspection details");
+            }
+        });
+    } else {
+        $('#farmerInfoCard').html(
+            '<div class="id-info-loading" style="color:#e53935;">No inspection ID provided.</div>'
+        );
+    }
+
+    function renderInspectionDetail(data) {
+        // Format date submitted
+        var submittedDate = new Date(data.submittedAt).toLocaleDateString('en-IN', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Farmer info card
+        $('#farmerInfoCard').html(`
+            <div class="id-info-grid">
+                <div class="id-info-item">
+                    <span class="id-info-label">Farmer</span>
+                    <span class="id-info-value">${data.farmerName}</span>
+                </div>
+                <div class="id-info-item">
+                    <span class="id-info-label">Crop</span>
+                    <span class="id-info-value">${data.cropName}</span>
+                </div>
+                <div class="id-info-item">
+                    <span class="id-info-label">Contact</span>
+                    <span class="id-info-value">${data.farmerPhone || '-'}</span>
+                </div>
+                <div class="id-info-item">
+                    <span class="id-info-label">Location</span>
+                    <span class="id-info-value">${data.farmerDistrict || '-'}</span>
+                </div>
+                <div class="id-info-item">
+                    <span class="id-info-label">Submitted</span>
+                    <span class="id-info-value">${submittedDate}</span>
+                </div>
+                <div class="id-info-item">
+                    <span class="id-info-label">Grade</span>
+                    <span class="id-info-value" style="font-weight:700;color:#2e7d32;">Grade ${data.grade}</span>
+                </div>
+            </div>
+        `);
+
+        // Status badge
+        var statusClass = data.passed ? 'id-status-pass' : 'id-status-fail';
+        var statusText = data.passed ? '✓ PASSED' : '✗ FAILED';
+        $('#statusBadge').html(`<span class="${statusClass}">${statusText}</span>`);
+
+        // Results grid
+        var resultsHtml = `
+            <div class="id-result-item">
+                <span class="id-result-label">Moisture Content</span>
+                <span class="id-result-value">${data.moisturePct}%</span>
+            </div>
+            <div class="id-result-item">
+                <span class="id-result-label">Foreign Matter</span>
+                <span class="id-result-value">${data.foreignMatterPct}%</span>
+            </div>
+            <div class="id-result-item">
+                <span class="id-result-label">Weight Checked</span>
+                <span class="id-result-value">${data.weightChecked} kg</span>
+            </div>
+            <div class="id-result-item">
+                <span class="id-result-label">Accepted Qty</span>
+                <span class="id-result-value" style="color:#2e7d32;font-weight:700;">${data.acceptedQuantity} kg</span>
+            </div>
+            <div class="id-result-item">
+                <span class="id-result-label">Rejected Qty</span>
+                <span class="id-result-value">${data.rejectedQuantity} kg</span>
+            </div>
+            <div class="id-result-item">
+                <span class="id-result-label">Assessed Price</span>
+                <span class="id-result-value" style="color:#2e7d32;font-weight:700;">₹${Number(data.foAssessedPrice).toLocaleString('en-IN')}/kg</span>
+            </div>
+        `;
+
+        if (data.variety) {
+            resultsHtml += `
+                <div class="id-result-item">
+                    <span class="id-result-label">Variety</span>
+                    <span class="id-result-value">${data.variety}</span>
+                </div>
+            `;
+        }
+
+        if (data.pestDisease) {
+            resultsHtml += `
+                <div class="id-result-item">
+                    <span class="id-result-label">Pest/Disease</span>
+                    <span class="id-result-value">${data.pestDisease}</span>
+                </div>
+            `;
+        }
+
+        $('#resultsGrid').html(resultsHtml);
+
+        // Show payment or failed card based on inspection result
+        if (data.passed) {
+            // Format currency
+            var totalFormatted = Number(data.totalValue).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            var advanceFormatted = Number(data.advanceAmount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            var remainingFormatted = Number(data.remainingAmount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+            $('#summaryQty').text(data.acceptedQuantity + ' kg');
+            $('#summaryPrice').text('₹' + Number(data.foAssessedPrice).toLocaleString('en-IN') + '/kg');
+            $('#totalValue').text('₹' + totalFormatted);
+            $('#advanceAmount').text('₹' + advanceFormatted);
+            $('#remainingAmount').text('₹' + remainingFormatted);
+
+            // Store data for payment
+            window.inspectionData = data;
+
+            $('#paymentCard').show();
+        } else {
+            // Show failed card
+            if (data.remarks || data.defectsNoted) {
+                $('#defectsSection').show();
+                var defectsText = '';
+                if (data.remarks) defectsText += '<p><strong>Remarks:</strong> ' + data.remarks + '</p>';
+                if (data.defectsNoted) defectsText += '<p><strong>Defects:</strong> ' + data.defectsNoted + '</p>';
+                $('#defectsText').html(defectsText);
+            }
+            $('#failedCard').show();
+        }
+    }
+});
+
+// Request Payment - AUTO PAYMENT (No admin approval needed)
+function requestPayment() {
+    if (!window.inspectionData) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Inspection data not loaded',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#28a745'
+        });
+        return;
+    }
+
+    var confirmMsg = 'Process 30% Advance Payment?\n\n' +
+        'Amount: ₹' + Number(window.inspectionData.advanceAmount).toLocaleString('en-IN') + '\n' +
+        'Farmer: ' + window.inspectionData.farmerName;
+
+    Swal.fire({
+        icon: 'question',
+        title: 'Confirm Payment',
+        html: 'Process 30% Advance Payment?<br><br><strong>Amount:</strong> ₹' + Number(window.inspectionData.advanceAmount).toLocaleString('en-IN') + '<br><strong>Farmer:</strong> ' + window.inspectionData.farmerName,
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Process',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#d33'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+    $('#payBtn').prop('disabled', true)
+              .html('<i class="fa fa-spinner fa-spin"></i> Processing Payment...');
+
+    $.ajax({
+        url: foApiUrl('/payment/advance'),
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            procurementRequestId: window.inspectionData.procurementRequestId,
+            farmerId: window.inspectionData.farmerId,
+            inspectionId: window.inspectionData.inspectionId,
+            advanceAmount: window.inspectionData.advanceAmount
+        }),
+        success: function (response) {
+            if (response.success) {
+                // ✅ Payment successful
+                showPaymentSuccess(response);
+                
+                // Hide button and show success message
+                $('#payBtn').html('<i class="fa fa-check-circle"></i> Payment Processed')
+                           .css({ 'background': '#388e3c', 'cursor': 'not-allowed' })
+                           .prop('disabled', true);
+
+                // Show payment details
+                showPaymentDetails(response);
+            } else {
+                // Payment failed
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Payment Failed',
+                    text: response.message || 'Payment processing failed',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
+                $('#payBtn').prop('disabled', false)
+                           .html('<i class="fa fa-credit-card"></i> Request 30% Payment');
+            }
+        },
+        error: function (xhr) {
+            if (handleFoUnauthorized(xhr)) return;
+            var msg = xhr.responseJSON?.message || 'Payment processing failed. Please try again.';
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: msg,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+            $('#payBtn').prop('disabled', false)
+                       .html('<i class="fa fa-credit-card"></i> Request 30% Payment');
+        }
+    });    });}
+
+// Show payment success notification
+function showPaymentSuccess(paymentData) {
+    var successHtml = `
+        <div style="background:#e8f5e9;border:2px solid #2e7d32;border-radius:8px;padding:16px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <i class="fa fa-check-circle" style="font-size:24px;color:#2e7d32;"></i>
+                <div>
+                    <h4 style="margin:0;color:#2e7d32;">Payment Successful!</h4>
+                    <p style="margin:4px 0 0 0;font-size:12px;color:#555;">Transaction completed</p>
+                </div>
+            </div>
+            <div style="background:#fff;border-radius:4px;padding:12px;font-family:monospace;font-size:13px;">
+                <div><strong>UTR/Reference:</strong> ${paymentData.utrReference}</div>
+                <div><strong>Amount:</strong> ₹${Number(paymentData.amount).toLocaleString('en-IN')}</div>
+                <div><strong>Time:</strong> ${new Date(paymentData.createdAt).toLocaleString('en-IN')}</div>
+            </div>
+        </div>
+    `;
+    
+    $('#paymentCard').prepend(successHtml);
+}
+
+// Show payment details modal/section
+function showPaymentDetails(paymentData) {
+    console.log('Payment Details:', paymentData);
+    // Could show a modal or drawer with full payment details
+    // For now, we'll just keep it in the success card above
+}
+</script>
+}

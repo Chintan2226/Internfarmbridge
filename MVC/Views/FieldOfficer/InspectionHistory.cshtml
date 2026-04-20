@@ -1,0 +1,211 @@
+@{
+    Layout = "_FieldOfficerLayout";
+    ViewData["Title"] = "Inspection History";
+}
+
+<div class="qc-wrapper">
+    <div class="card">
+        <div class="card-header">
+            <h3>Inspection History</h3>
+            <div class="badge-group">
+                <span class="hdr-badge hdr-complete" id="completedCount">0 Completed</span>
+            </div>
+        </div>
+        <div id="inspectionGridWrap">
+            <table class="ih-table">
+                <thead>
+                    <tr>
+                        <th>Farmer</th>
+                        <th>Crop</th>
+                        <th>Qty</th>
+                        <th>Asking Price</th>
+                        <th>Status</th>
+                        <th>Date & Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="inspectionGrid">
+                    <tr>
+                        <td colspan="7" class="ih-empty">Loading inspection history...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .ih-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .ih-table th {
+            text-transform: uppercase;
+            font-size: 12px;
+            color: #475569;
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e7efe9;
+        }
+        .ih-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f1f5f2;
+            vertical-align: middle;
+        }
+        .ih-empty {
+            text-align: center;
+            color: #999;
+            padding: 24px !important;
+        }
+        .ih-report-btn {
+            border: 1px solid #2e7d32;
+            color: #2e7d32;
+            border-radius: 20px;
+            padding: 6px 12px;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .ih-report-btn:hover {
+            background: #f0f7f0;
+        }
+        .ih-action-wrap {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        @@media (max-width: 768px) {
+            .ih-table thead {
+                display: none;
+            }
+            .ih-table,
+            .ih-table tbody,
+            .ih-table tr,
+            .ih-table td {
+                display: block;
+                width: 100%;
+            }
+            .ih-table tr {
+                border: 1px solid #e0ede5;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                padding: 8px 0;
+                background: #fff;
+            }
+            .ih-table td {
+                border-bottom: none;
+                padding: 8px 12px;
+            }
+            .ih-table td::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 11px;
+                font-weight: 700;
+                color: #666;
+                text-transform: uppercase;
+                margin-bottom: 4px;
+            }
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            function normalizeStatus(status) {
+                return (status || "").toLowerCase();
+            }
+
+            window.downloadReport = function (id) {
+                if (!id) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Invalid inspection ID',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#28a745'
+                    });
+                    return;
+                }
+                foOpenAuthorizedWindow("/inspection-report/" + id);
+            };
+
+            window.viewInspectionDetail = function (procurementRequestId) {
+                if (!procurementRequestId) {
+                    return;
+                }
+                window.location.href = "/FieldOfficer/InspectionDetail?id=" + procurementRequestId;
+            };
+
+            function statusPill(status) {
+                const s = normalizeStatus(status);
+                return "<span class='status-pill pill-completed'>Completed</span>";
+            }
+
+            function fmtDateTime(item) {
+                if (!item.slotDate) return "—";
+                try {
+                    var date = new Date(item.slotDate);
+                    var timeStr = item.startTime ? (" &#64; " + item.startTime.substring(0, 5)) : "";
+                    return date.toLocaleDateString("en-IN", {
+                        year: "numeric",
+                        month: "short",
+                        day: "2-digit"
+                    }) + timeStr;
+                } catch (e) {
+                    return "N/A";
+                }
+            }
+
+            function renderRows(rows) {
+                if (!rows || rows.length === 0) {
+                    $("#inspectionGrid").html('<tr><td colspan="7" class="ih-empty">No completed inspections found</td></tr>');
+                    return;
+                }
+
+                const html = rows.map(function (item) {
+                    return `
+                        <tr>
+                            <td data-label="Farmer">${item.farmerName || "N/A"}</td>
+                            <td data-label="Crop">${item.cropType || "N/A"}</td>
+                            <td data-label="Qty">${item.quantity || 0} ${item.unit || "kg"}</td>
+                            <td data-label="Asking Price">₹${Number(item.askingPrice || 0).toLocaleString('en-IN')}</td>
+                            <td data-label="Status">${statusPill(item.status)}</td>
+                            <td data-label="Date & Time">${fmtDateTime(item)}</td>
+                            <td data-label="Action">
+                                <div class="ih-action-wrap">
+                                    <button class="ih-report-btn" onclick="viewInspectionDetail(${item.procurementRequestId})">
+                                        <i class="fa fa-eye"></i> View Details
+                                    </button>
+                                    <button class="ih-report-btn" onclick="downloadReport(${item.procurementRequestId})">
+                                        <i class="fa fa-download"></i> Report
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join("");
+
+                $("#inspectionGrid").html(html);
+            }
+
+            // Load completed inspections only
+            $.ajax({
+                url: foApiUrl("/qc-requests"),
+                type: "GET",
+                success: function (data) {
+                    const rows = Array.isArray(data)
+                        ? data
+                        : (data && Array.isArray(data.data) ? data.data : []);
+                    const completed = rows.filter(x => normalizeStatus(x.status) === "completed");
+                    
+                    $("#completedCount").text(completed.length + " Completed");
+                    renderRows(completed);
+                },
+                error: function (xhr) {
+                    if (handleFoUnauthorized(xhr)) return;
+                    $("#inspectionGrid").html('<tr><td colspan="7" class="ih-empty">Failed to load inspection history</td></tr>');
+                    showFoLoadFailedAlert("inspection history");
+                }
+            });
+        });
+    </script>
+}

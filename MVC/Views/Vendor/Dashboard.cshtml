@@ -1,0 +1,533 @@
+@{
+    Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
+    ViewData["Title"] = "Dashboard";
+}
+
+<style>
+    /* ========== DASHBOARD PAGE ENHANCED STYLING ========== */
+    
+    .dashboard-header {
+        margin-bottom: 28px;
+    }
+
+    .dashboard-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: #0a2108;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dashboard-subtitle {
+        color: #5a7257;
+        font-size: 14px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07), 0 1px 4px rgba(21, 66, 18, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #2d7a27 0%, #52b34a 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 60px rgba(21, 66, 18, 0.14), 0 10px 30px rgba(21, 66, 18, 0.1);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1);
+    }
+
+    .stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #5a7257;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: #1b5e19;
+        font-family: 'Playfair Display', serif;
+    }
+
+    /* Charts Section */
+    .charts-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .chart-card {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07), 0 1px 4px rgba(21, 66, 18, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(21, 66, 18, 0.12);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+    }
+
+    .chart-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1b5e19;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #2d7a27 0%, #1b5e19 100%);
+        color: white;
+        letter-spacing: 0.5px;
+    }
+
+    .live-badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: white;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { opacity: 0.8; }
+        50% { opacity: 1; }
+    }
+
+    canvas {
+        max-height: 300px;
+    }
+
+    /* Recent Orders Card */
+    .recent-card {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07), 0 1px 4px rgba(21, 66, 18, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .recent-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+    }
+
+    .recent-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1b5e19;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .view-all-link {
+        color: #2d7a27;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .view-all-link:hover {
+        gap: 10px;
+        color: #1b5e19;
+    }
+
+    /* Table Styling */
+    .table-responsive {
+        overflow-x: auto;
+        border-radius: 12px;
+    }
+
+    .recent-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .recent-table thead {
+        background: var(--green-50, #eaf7e8);
+    }
+
+    .recent-table th {
+        padding: 14px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        color: #1b5e19;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+    }
+
+    .recent-table td {
+        padding: 14px;
+        border-bottom: 1px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+        color: #5a7257;
+        font-size: 14px;
+    }
+
+    .recent-table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .recent-table tbody tr:hover {
+        background: var(--green-50, #eaf7e8);
+    }
+
+    .recent-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .order-status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        border: 1px solid;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-delivered {
+        background: var(--green-50, #eaf7e8);
+        color: #1b5e19;
+        border-color: #d4f0d0;
+    }
+
+    .status-pending {
+        background: var(--saffron-light, #FDF0E3);
+        color: #9e4a00;
+        border-color: #f5d5b5;
+    }
+
+    .status-processing {
+        background: var(--blue-50, #e8f5fa);
+        color: #2d6a7a;
+        border-color: #cce8f2;
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-title {
+            font-size: 24px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .charts-row {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-card, .recent-card {
+            padding: 20px;
+        }
+
+        .recent-table {
+            font-size: 12px;
+        }
+
+        .recent-table th, .recent-table td {
+            padding: 10px;
+        }
+    }
+</style>
+
+<div class="dashboard-header">
+    <h1 class="dashboard-title">
+        <i class="fi fi-rr-chart-histogram"></i>
+        Your Dashboard
+    </h1>
+    <p class="dashboard-subtitle">Overview of your orders, spending, and activity</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, rgba(45, 122, 39, 0.1) 0%, rgba(212, 240, 208, 0.2) 100%); color: #2d7a27;">
+            <i class="fi fi-rr-shopping-cart"></i>
+        </div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" id="totalOrders">0</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, rgba(232, 114, 12, 0.1) 0%, rgba(253, 240, 227, 0.2) 100%); color: #E8720C;">
+            <i class="fi fi-rr-indian-rupee"></i>
+        </div>
+        <div class="stat-label">Total Spent</div>
+        <div class="stat-value" id="totalSpent">₹0</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, rgba(45, 122, 122, 0.1) 0%, rgba(200, 232, 242, 0.2) 100%); color: #2d7a7a;">
+            <i class="fi fi-rr-weight"></i>
+        </div>
+        <div class="stat-label">Total Quantity</div>
+        <div class="stat-value" id="totalQuantity">0 kg</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(254, 226, 226, 0.2) 100%); color: #dc2626;">
+            <i class="fi fi-rr-clock"></i>
+        </div>
+        <div class="stat-label">Pending Delivery</div>
+        <div class="stat-value" id="pendingDeliveries">0</div>
+    </div>
+</div>
+
+<div class="charts-row">
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-title">Monthly Purchase Trends</div>
+            <span class="live-badge">Live</span>
+        </div>
+        <canvas id="ordersChart" height="250"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-title">Spending by Category</div>
+        </div>
+        <canvas id="categoryChart" height="250"></canvas>
+    </div>
+</div>
+
+<div class="recent-card">
+    <div class="recent-header">
+        <div class="recent-title">Recent Orders</div>
+        <a href="/Vendor/Orders" class="view-all-link">View All Orders <i class="fi fi-rr-arrow-right"></i></a>
+    </div>
+    <div class="table-responsive">
+        <table class="recent-table">
+            <thead>
+                <tr>
+                    <th>ORDER ID</th>
+                    <th>AMOUNT</th>
+                    <th>STATUS</th>
+                    <th>DATE</th>
+                </tr>
+            </thead>
+            <tbody id="recentOrdersBody">
+                <tr>
+                    <td colspan="4" class="text-center" style="padding: 40px; color: #5a7257;">Loading orders...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5020/api/Vendor';
+        let ordersChart, categoryChart;
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        async function authorizedFetch(url, options = {}) {
+            const token = getCookie("authToken");
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            const response = await fetch(url, options);
+            if (response.status === 401) {
+                window.location.href = "/Vendor/Login";
+                return null;
+            }
+            return response;
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await authorizedFetch(`${API_URL}/dashboard`);
+                if (!response) return;
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const data = result.data;
+                    document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+                    document.getElementById('totalSpent').textContent = `₹${(data.totalSpent || 0).toLocaleString('en-IN')}`;
+                    document.getElementById('totalQuantity').textContent = `${(data.totalQuantity || 0).toLocaleString('en-IN')} kg`;
+                    document.getElementById('pendingDeliveries').textContent = data.pendingDeliveries || 0;
+
+                    displayCharts(data);
+                    displayRecentOrders(data.recentOrders || []);
+                }
+            } catch (error) {
+                console.error('Dashboard error:', error);
+            }
+        }
+
+        function displayCharts(data) {
+            const ctxOrders = document.getElementById('ordersChart').getContext('2d');
+            ordersChart = new Chart(ctxOrders, {
+                type: 'line',
+                data: {
+                    labels: data.monthlyLabels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Orders',
+                        data: data.monthlySalesData || [0, 0, 0, 0, 0, 0],
+                        borderColor: '#2d7a27',
+                        backgroundColor: 'rgba(45, 122, 39, 0.05)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#2d7a27',
+                        pointBorderWidth: 2,
+                        pointBorderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(45, 122, 39, 0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(ctxCategory, {
+                type: 'doughnut',
+                data: {
+                    labels: data.categoryLabels || ['Category 1', 'Category 2'],
+                    datasets: [{
+                        data: data.categoryData || [50, 50],
+                        backgroundColor: ['#2d7a27', '#f4a621', '#1565c0', '#dc2626'],
+                        borderColor: 'rgba(255, 255, 255, 0.95)',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 12, family: "'Poppins', sans-serif" }, padding: 15 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayRecentOrders(orders) {
+            if (!orders || orders.length === 0) {
+                document.getElementById('recentOrdersBody').innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 40px; color: #5a7257;">No orders yet</td></tr>';
+                return;
+            }
+
+            let html = orders.slice(0, 5).map(order => {
+                const status = (order.status || '').toLowerCase();
+                let statusClass = status === 'delivered' ? 'status-delivered' :
+                    (status === 'pending' || status === 'placed') ? 'status-pending' : 'status-processing';
+                const date = new Date(order.orderDate).toLocaleDateString('en-IN');
+
+                return `
+                    <tr>
+                        <td><strong>${order.orderId}</strong></td>
+                        <td>₹${order.totalAmount.toLocaleString('en-IN')}</td>
+                        <td><span class="order-status-badge ${statusClass}">${order.statusText || order.status}</span></td>
+                        <td>${date}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('recentOrdersBody').innerHTML = html;
+        }
+
+        $(document).ready(() => {
+            loadDashboard();
+        });
+    </script>
+}
+

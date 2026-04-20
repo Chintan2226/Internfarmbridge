@@ -1,0 +1,133 @@
+@{
+    ViewData["Title"] = "Notifications";
+    ViewData["UserRole"] = "Farmer";
+    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
+}
+
+<style>
+    .notif-container {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    
+    .notif-item {
+        padding: 16px;
+        border-bottom: 1px solid #edf2f7;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: all 0.2s;
+    }
+    
+    .notif-item:hover {
+        background: #f7fafc;
+    }
+    
+    .notif-item:last-child {
+        border-bottom: none;
+    }
+    
+    .notif-item.unread {
+        background: #ebf8ff;
+        border-left: 4px solid #3182ce;
+    }
+
+    .notif-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .icon-qc { background: #e6fffa; color: #319795; }
+    .icon-pay { background: #faf5ff; color: #805ad5; }
+    .icon-sys { background: #edf2f7; color: #4a5568; }
+
+    .notif-content { flex: 1; }
+    
+    .notif-content h4 {
+        margin: 0 0 4px 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+    
+    .notif-content p {
+        margin: 0;
+        font-size: 13px;
+        color: #4a5568;
+    }
+    
+    .notif-time {
+        font-size: 12px;
+        color: #a0aec0;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="notif-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <h2 style="font-size: 18px; font-weight: 600; margin: 0;">All Notifications</h2>
+        <button class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onclick="markAllRead()"><i class="fi fi-rr-check-double"></i> Mark All as Read</button>
+    </div>
+
+    <!-- Kendo ListView Container -->
+    <div id="listView"></div>
+</div>
+
+<script type="text/x-kendo-template" id="template">
+    <div class="notif-item #:IsRead ? '' : 'unread'#">
+        <div class="notif-icon #:Type == 'QC' ? 'icon-qc' : (Type == 'Payment' ? 'icon-pay' : 'icon-sys')#">
+            <i class="fi #:Icon#"></i>
+        </div>
+        <div class="notif-content">
+            <h4>#:Title#</h4>
+            <p>#:Message#</p>
+        </div>
+        <div class="notif-time">
+            #:Time#
+        </div>
+    </div>
+</script>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        // url: window.API_BASE + "/notifications",
+                    }
+                },
+                data: [] // Empty Array initially
+            });
+
+            $("#listView").kendoListView({
+                dataSource: dataSource,
+                autoBind: false,
+                template: kendo.template($("#template").html())
+            });
+            
+            // Temporary message till data comes
+            if(dataSource.data().length === 0) {
+                $("#listView").html("<div class='text-muted' style='text-align:center; padding: 20px;'>No new notifications.</div>");
+            }
+        });
+
+        function markAllRead() {
+            var list = $("#listView").data("kendoListView");
+            var data = list.dataSource.data();
+            for(var i=0; i<data.length; i++){
+                data[i].set("IsRead", true);
+            }
+        }
+    </script>
+}

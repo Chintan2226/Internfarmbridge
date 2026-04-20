@@ -1,0 +1,177 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title — FarmBridge Field Officer</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Flaticon Uicons -->
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css" />
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css" />
+
+    <!-- Font Awesome (for page content) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Kendo UI CSS -->
+    <link href="https://kendo.cdn.telerik.com/2023.1.117/styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="https://kendo.cdn.telerik.com/2023.1.117/styles/kendo.default.min.css" rel="stylesheet" />
+
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <!-- Field Officer Module CSS -->
+    <link rel="stylesheet" href="/css/fieldofficer.css" />
+
+</head>
+
+<body data-role="FieldOfficer" data-title="@ViewBag.Title">
+
+    <!-- Sidebar -->
+    <nav class="fo-sidebar" id="foSidebar">
+        <div class="fo-sidebar-logo">
+            <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge" />
+            <span class="fo-sidebar-name"><span style="color: #1b5e19;">Farm</span><span style="color: #2b6f87;">Bridge</span></span>
+        </div>
+        <div class="fo-role-badge">Field Officer</div>
+        <ul class="fo-nav" id="foNav"></ul>
+        <div class="fo-sidebar-foot">
+            <a href="javascript:void(0)" onclick="logout()" class="fo-nav-link fo-logout">
+                <i class="fi fi-rr-exit"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <div class="fo-main" id="foMain">
+
+        <!-- Topbar -->
+        <header class="fo-topbar" id="foTopbar">
+            <div class="fo-topbar-left">
+                <button class="fo-menu-btn" id="foMenuBtn" onclick="toggleFoDrawer()" aria-label="Menu">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div class="fo-mobile-brand" onclick="location.href='/FieldOfficer/Dashboard'">
+                    <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge" />
+                    <span>FarmBridge</span>
+                </div>
+                <h1 class="fo-page-title" id="foPageTitle">@ViewBag.Title</h1>
+            </div>
+            <div class="fo-topbar-right">
+                <button class="fo-action-btn" id="foBellBtn" onclick="toggleFoNotif(event)" aria-label="Notifications">
+                    <i class="fi fi-rr-bell"></i>
+                    <span class="fo-dot" id="foBellDot" hidden></span>
+                </button>
+                <div class="fo-avatar" id="foAvatar" onclick="location.href='/FieldOfficer/Profile'" title="Profile" style="background: linear-gradient(135deg, #1a5c2a, #0d4620); cursor:pointer;">FO</div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="fo-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Mobile overlay -->
+    <div class="fo-overlay" id="foOverlay" onclick="toggleFoDrawer()"></div>
+
+    <!-- Mobile drawer -->
+    <div class="fo-drawer" id="foDrawer">
+        <div class="fo-drawer-head">
+            <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge" />
+            <span>FarmBridge</span>
+            <button class="fo-drawer-close" onclick="toggleFoDrawer()"><i class="fi fi-rr-cross-small"></i></button>
+        </div>
+        <div class="fo-role-badge-mobile">Field Officer</div>
+        <ul class="fo-drawer-nav" id="foDrawerNav"></ul>
+        <div class="fo-drawer-foot">
+            <a href="javascript:void(0)" onclick="logout()" class="fo-logout-mobile">
+                <i class="fi fi-rr-exit"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Bottom nav (mobile) -->
+    <nav class="fo-bottom-nav" id="foBottomNav" aria-label="Navigation"></nav>
+
+    <!-- Notification drawer -->
+    <div class="fo-notif" id="foNotif" style="pointer-events: none;">
+        <div class="fo-notif-header" style="pointer-events: auto;">
+            <h3 style="margin:0; font-size:16px; font-weight:700; color:var(--fo-text);">Notifications</h3>
+            <button onclick="toggleFoNotif(event)" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--fo-muted);">✕</button>
+        </div>
+        <div id="foNotifList" style="flex:1; overflow-y:auto; padding:12px 0; pointer-events: auto;">
+            <div style="padding:32px;text-align:center;font-size:13px;color:var(--fo-muted)">No notifications</div>
+        </div>
+        <div class="fo-notif-actions" style="pointer-events: auto;">
+            <button onclick="foMarkAllRead()" style="flex:1;padding:8px;border:none;background:none;color:var(--fo-blue);font-size:12px;font-weight:600;cursor:pointer;">Mark all read</button>
+            <button onclick="foClearAll()" style="flex:1;padding:8px;border:none;background:none;color:var(--fo-blue);font-size:12px;font-weight:600;cursor:pointer;">Clear all</button>
+        </div>
+    </div>
+
+    <!-- jQuery (Must load first) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        window.showFoLoadFailedAlert = window.showFoLoadFailedAlert || function (entityName) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Load Failed',
+                text: 'Failed to load ' + (entityName || 'data') + '. Please try again.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+        };
+        
+        // Global fallback: if any FO GET API call fails, show SweetAlert.
+        // This ensures all FO pages get consistent error popup behavior.
+        $(document).ajaxError(function (event, jqxhr, settings) {
+            var method = ((settings && (settings.type || settings.method)) || 'GET').toUpperCase();
+            var url = (settings && settings.url) ? settings.url.toLowerCase() : '';
+            if (method !== 'GET') return;
+            if (!url.includes('/api/fieldofficer/')) return;
+            if (url.includes('/getnotifications')) return;
+            if (settings && settings.suppressGlobalLoadAlert) return;
+            window.showFoLoadFailedAlert('data');
+        });
+    </script>
+    <script>
+function logout() {
+
+    // Remove JWT cookie
+    document.cookie =
+        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+
+    // Clear storage (optional but recommended)
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Redirect to login
+    window.location.href = "/StaffAuth/Login";
+}
+</script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Kendo UI -->
+    <script src="https://kendo.cdn.telerik.com/2023.1.117/js/kendo.all.min.js"></script>
+
+    <!-- Field Officer Module JS -->
+    <script src="~/js/fieldofficer.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

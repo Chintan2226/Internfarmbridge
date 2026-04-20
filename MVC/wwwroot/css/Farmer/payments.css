@@ -1,0 +1,52 @@
+/* Farmer Payments Module */
+
+.payments-panel {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; min-width: 72px; text-align: center; letter-spacing: 0.03em; }
+.status-paid { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.status-pending { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.status-criteria { background: #f1f5f9; color: #64748b; font-size: 11px; border: 1px solid #e2e8f0; }
+
+.pay-tracker { display: flex; align-items: center; width: 100%; padding: 0 2px; }
+.tracker-step { width: 14px; height: 14px; border-radius: 50%; background: #e2e8f0; border: 2px solid #cbd5e1; position: relative; z-index: 2; flex-shrink: 0; transition: all 0.3s ease; }
+.tracker-step.initiated { background: #ecfdf5; border-color: #6ee7b7; box-shadow: 0 0 0 3px rgba(110, 231, 183, 0.2); }
+.tracker-step.active { background: #10b981; border-color: #059669; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+.tracker-step.settled { background: #0d9488; border-color: #0f766e; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2); }
+
+.tracker-line { flex-grow: 1; height: 4px; background: #e2e8f0; z-index: 1; margin: 0 -1px; border-radius: 4px; transition: background 0.4s ease; }
+.tracker-line.active { background: #10b981; }
+.tracker-line.settled { background: linear-gradient(90deg, #10b981, #0d9488); }
+.tracker-label { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; margin-top: 6px; letter-spacing: 0.01em; }
+
+.order-chip { display: inline-block; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; color: #334155; font-family: 'Courier New', monospace; letter-spacing: 0.03em; }
+
+.invoice-btn { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+.invoice-btn:hover { background: #f8fafc; border-color: #10b981; color: #059669; }
+
+.k-grid-pdf { background-color: #e53e3e; color: white; border: none; }
+.k-grid-pdf:hover { background-color: #c53030; }
+
+/* --- RESPONSIVE FIXES --- */
+.pay-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kendo-widget-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+@media (max-width: 600px) {
+    .pay-kpi-grid { grid-template-columns: 1fr; }
+    .f-action-row { flex-direction: column; align-items: flex-start !important; gap: 10px; }
+}

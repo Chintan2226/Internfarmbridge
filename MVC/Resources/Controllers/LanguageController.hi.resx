@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="nav_home" xml:space="preserve"><value>होम</value></data>
+  <data name="nav_how" xml:space="preserve"><value>यह कैसे काम करता है</value></data>
+  <data name="nav_who" xml:space="preserve"><value>यह किसके लिए है</value></data>
+  <data name="nav_ai" xml:space="preserve"><value>AI फीचर्स</value></data>
+  <data name="nav_why" xml:space="preserve"><value>क्यों FarmBridge</value></data>
+  <data name="btn_login" xml:space="preserve"><value>लॉगिन</value></data>
+  <data name="btn_contact" xml:space="preserve"><value>संपर्क करें</value></data>
+  <data name="hero_hindi_tag" xml:space="preserve"><value>सीधा, साफ और सच्चा।</value></data>
+  <data name="hero_badge" xml:space="preserve"><value>भारत का विश्वसनीय एग्री B2B</value></data>
+  <data name="hero_title" xml:space="preserve"><value>एक स्मार्ट भारत के लिए&lt;br/&gt;&lt;span&gt;केंद्रीकृत खरीद&lt;/span&gt;</value></data>
+  <data name="hero_sub" xml:space="preserve"><value>AI-संचालित खरीद के साथ भारत की कृषि आपूर्ति श्रृंखला को बदलना। किसानों, विक्रेताओं और फील्ड अधिकारियों को जोड़ने वाला एक मंच।</value></data>
+  <data name="btn_start" xml:space="preserve"><value>अभी शुरू करें</value></data>
+  <data name="btn_demo" xml:space="preserve"><value>डेमो देखें</value></data>
+  <data name="hero_trust" xml:space="preserve"><value>&lt;strong&gt;12,000+&lt;/strong&gt; किसान पहले से ही जुड़े हुए हैं</value></data>
+  <data name="hero_quality" xml:space="preserve"><value>गुणवत्ता सुनिश्चित</value></data>
+  <data name="hero_payments" xml:space="preserve"><value>पारदर्शी भुगतान</value></data>
+  <data name="float_supply" xml:space="preserve"><value>आपूर्ति दक्षता</value></data>
+  <data name="float_growth" xml:space="preserve"><value>↑ इस सीजन में विकास</value></data>
+  <data name="float_order" xml:space="preserve"><value>ऑर्डर #4821</value></data>
+  <data name="float_transit" xml:space="preserve"><value>दिल्ली के रास्ते में</value></data>
+  <data name="float_live" xml:space="preserve"><value>लाइव ट्रैकिंग सक्रिय</value></data>
+  <data name="float_price_alert" xml:space="preserve"><value>टमाटर · AI मूल्य</value></data>
+  <data name="float_msp" xml:space="preserve"><value>MSP से +8% ऊपर</value></data>
+  <data name="stat_farmers" xml:space="preserve"><value>पंजीकृत किसान</value></data>
+  <data name="stat_delivery" xml:space="preserve"><value>समय पर डिलीवरी</value></data>
+  <data name="stat_trans" xml:space="preserve"><value>लेनदेन संसाधित</value></data>
+  <data name="stat_states" xml:space="preserve"><value>जुड़े हुए राज्य</value></data>
+  <data name="how_badge" xml:space="preserve"><value>प्रक्रिया</value></data>
+  <data name="how_title" xml:space="preserve"><value>सरल, तेज़, पारदर्शी&lt;br/&gt;आपूर्ति श्रृंखला प्रवाह</value></data>
+  <data name="how_sub" xml:space="preserve"><value>कटाई से लेकर डिलीवरी तक — हर कदम ट्रैक किया जाता है, सत्यापित किया जाता है और पारदर्शी होता है। एक ही प्लेटफ़ॉर्म, पूरी सप्लाई चेन।</value></data>
+  <data name="step1_title" xml:space="preserve"><value>किसान उपज सूचीबद्ध करता है</value></data>
+  <data name="step1_desc" xml:space="preserve"><value>किसान वेब डैशबोर्ड के माध्यम से फसल विवरण, मात्रा और कटाई की तारीखें अपलोड करते हैं। AI सर्वोत्तम मूल्य की भविष्यवाणी करता है।</value></data>
+  <data name="step2_title" xml:space="preserve"><value>गोदाम सत्यापन</value></data>
+  <data name="step2_desc" xml:space="preserve"><value>किसान नजदीकी गोदाम में उपज पहुंचाते हैं। फील्ड ऑफिसर गुणवत्ता की जांच करते हैं और ऑन-साइट डिजिटल रिपोर्ट जमा करते हैं।</value></data>
+  <data name="step3_title" xml:space="preserve"><value>विक्रेता ऑर्डर देता है</value></data>
+  <data name="step3_desc" xml:space="preserve"><value>विक्रेता लाइव कैटलॉग ब्राउज़ करते हैं, कार्ट में जोड़ते हैं, और पारदर्शी मूल्य निर्धारण के साथ थोक खरीद ऑर्डर देते हैं।</value></data>
+  <data name="step4_title" xml:space="preserve"><value>डिलीवरी और भुगतान</value></data>
+  <data name="step4_desc" xml:space="preserve"><value>लॉजिस्टिक्स पिकअप होता है, रीयल-टाइम ट्रैकिंग शुरू होती है। डिलीवरी की पुष्टि होने पर भुगतान ऑटो-रिलीज़ हो जाता है।</value></data>
+  <data name="step_n" xml:space="preserve"><value>कदम</value></data>
+  <data name="mod_badge" xml:space="preserve"><value>प्लेटफ़ॉर्म मॉड्यूल</value></data>
+  <data name="mod_title" xml:space="preserve"><value>आपूर्ति श्रृंखला में&lt;br/&gt;सभी के लिए निर्मित</value></data>
+  <data name="mod_sub" xml:space="preserve"><value>4 समर्पित मॉड्यूल — प्रत्येक भारत के कृषि पारिस्थितिकी तंत्र में हर हितधारक की विशिष्ट आवश्यकताओं के अनुरूप।</value></data>
+  <data name="farmer_mod_title" xml:space="preserve"><value>किसान मॉड्यूल</value></data>
+  <data name="farmer_mod_sub" xml:space="preserve"><value>🌾 किसान — किसान पोर्टल</value></data>
+  <data name="farmer_mod_desc" xml:space="preserve"><value>किसानों को उपज प्रबंधित करने, AI का उपयोग करके बाजार मूल्यों की तुलना करने और ऑर्डर और भुगतान ट्रैक करने के लिए सशक्त बनाता है — सभी एक सरल डैशबोर्ड में।</value></data>
+  <data name="vendor_mod_title" xml:space="preserve"><value>विक्रेता मॉड्यूल</value></data>
+  <data name="vendor_mod_sub" xml:space="preserve"><value>🏪 व्यापारी — व्यापारी पोर्टल</value></data>
+  <data name="vendor_mod_desc" xml:space="preserve"><value>विक्रेताओं के लिए गुणवत्ता-सुनिश्चित उपज ब्राउज़ करने, थोक ऑर्डर देने, पिछले ऑर्डर दोहराने और वास्तविक समय में प्रत्येक डिलीवरी को ट्रैक करने के लिए एक ई-कॉमर्स-शैली का अनुभव।</value></data>
+  <data name="mod_feat_ai" xml:space="preserve"><value>AI-संचालित बाजार मूल्य तुलना</value></data>
+  <data name="mod_feat_listing" xml:space="preserve"><value>फसल सूची और ऑर्डर इतिहास डैशबोर्ड</value></data>
+  <data name="mod_feat_payment" xml:space="preserve"><value>भुगतान स्थिति और विश्लेषिकी ट्रैकिंग</value></data>
+  <data name="mod_feat_weather" xml:space="preserve"><value>मौसम भविष्यवक्ता एकीकरण</value></data>
+  <data name="mod_feat_catalog" xml:space="preserve"><value>उत्पाद विशिष्टताओं के साथ कैटलॉग ब्राउज़ करें</value></data>
+  <data name="mod_feat_bulk" xml:space="preserve"><value>थोक ऑर्डर कार्ट और त्वरित दोहराव ऑर्डर</value></data>
+  <data name="mod_feat_tracking" xml:space="preserve"><value>वास्तविक समय डिलीवरी ट्रैकिंग (लाइव)</value></data>
+  <data name="mod_feat_billing" xml:space="preserve"><value>एकीकृत भुगतान गेटवे और बिलिंग</value></data>
+  <data name="btn_join_farmer" xml:space="preserve"><value>किसान के रूप में जुड़ें</value></data>
+  <data name="btn_join_vendor" xml:space="preserve"><value>विक्रेता के रूप में जुड़ें</value></data>
+  <data name="ai_badge" xml:space="preserve"><value>AI संचालित</value></data>
+  <data name="ai_title" xml:space="preserve"><value>हर निर्णय के लिए&lt;br/&gt;स्मार्ट इंटेलिजेंस</value></data>
+  <data name="ai_sub" xml:space="preserve"><value>FarmBridge अनुमान को खत्म करने के लिए AI का उपयोग करता है — चाहे वह मूल्य निर्धारण हो, मांग का पूर्वानुमान हो या छूट अनुकूलन। हर किसान और विक्रेता के लिए डेटा-संचालित निर्णय।</value></data>
+  <data name="ai_dash_title" xml:space="preserve"><value>🤖 AI मूल्य इंटेलिजेंस डैशबोर्ड</value></data>
+  <data name="ai_dash_live" xml:space="preserve"><value>लाइव डेटा</value></data>
+  <data name="ai_crop_tomato" xml:space="preserve"><value>टमाटर</value></data>
+  <data name="ai_crop_onion" xml:space="preserve"><value>प्याज</value></data>
+  <data name="ai_crop_potato" xml:space="preserve"><value>आलू</value></data>
+  <data name="ai_crop_maize" xml:space="preserve"><value>मक्का</value></data>
+  <data name="ai_feat1_title" xml:space="preserve"><value>AI बाजार मूल्य भविष्यवाणी</value></data>
+  <data name="ai_feat1_desc" xml:space="preserve"><value>50+ फसलों के लिए रीयल-टाइम बाजार मूल्य विश्लेषण और भविष्य के मूल्य की भविष्यवाणियां — किसानों को सर्वोत्तम संभव मूल्य पर सूचीबद्ध करने में मदद करती हैं।</value></data>
+  <data name="ai_feat2_title" xml:space="preserve"><value>स्मार्ट डिस्काउंट इंजन</value></data>
+  <data name="ai_feat2_desc" xml:space="preserve"><value>एडमिन-नियंत्रित AI जो ऑर्डर पैटर्न, मौसमी रुझान और इन्वेंट्री सरप्लस के आधार पर विक्रेताओं के लिए प्लेटफ़ॉर्म छूट को गतिशील रूप से अनुकूलित करता है।</value></data>
+  <data name="why_badge" xml:space="preserve"><value>हमें क्यों चुनें</value></data>
+  <data name="why_title" xml:space="preserve"><value>क्यों FarmBridge?&lt;br/&gt;क्योंकि किसान बेहतर के हकदार हैं</value></data>
+  <data name="why_sub" xml:space="preserve"><value>भारत के 14 करोड़ किसान परिवार उनके लिए बनाए गए मंच के हकदार हैं — पारदर्शी, सुलभ और निष्पक्ष।</value></data>
+  <data name="why1_title" xml:space="preserve"><value>केंद्रीकृत खरीद</value></data>
+  <data name="why1_desc" xml:space="preserve"><value>किसानों, विक्रेताओं और फील्ड अधिकारियों के लिए एक एकीकृत मंच। सुव्यवस्थित ऑर्डरिंग, गुणवत्ता जांच और भुगतान — सभी अधिकतम दक्षता के लिए केंद्रीय रूप से प्रबंधित।</value></data>
+  <data name="why1_highlight" xml:space="preserve"><value>1 प्लेटफ़ॉर्म</value></data>
+  <data name="why2_title" xml:space="preserve"><value>गुणवत्ता की गारंटी</value></data>
+  <data name="why2_desc" xml:space="preserve"><value>भुगतान जारी होने से पहले हर बैच का प्रमाणित फील्ड ऑफिसर द्वारा भौतिक रूप से निरीक्षण किया जाता है। गुणवत्ता से कोई समझौता नहीं।</value></data>
+  <data name="why2_highlight" xml:space="preserve"><value>100% सत्यापित</value></data>
+  <data name="why3_title" xml:space="preserve"><value>सरकारी योजनाएं</value></data>
+  <data name="why3_desc" xml:space="preserve"><value>स्थानीय सरकारी कृषि सब्सिडी, अनुदान और वित्तीय सहायता के लिए आसान खोज और निर्देशित आवेदन सहायता।</value></data>
+  <data name="why3_highlight" xml:space="preserve"><value>सब्सिडी</value></data>
+  <data name="why4_title" xml:space="preserve"><value>पारदर्शी भुगतान</value></data>
+  <data name="why4_desc" xml:space="preserve"><value>स्वचालित भुगतान ट्रिगर। सत्यापित डिलीवरी पर किसानों को सीधे भुगतान किया जाता है। पूर्ण भुगतान इतिहास कभी भी दिखाई देता है।</value></data>
+  <data name="why4_highlight" xml:space="preserve"><value>ऑटो-पेमेंट</value></data>
+  <data name="why5_title" xml:space="preserve"><value>स्मार्ट सूचनाएं</value></data>
+  <data name="why5_desc" xml:space="preserve"><value>हर मील के पत्थर के लिए सिस्टम-व्यापी अलर्ट — ऑर्डर दिया गया, गुणवत्ता स्वीकृत, शिपमेंट उठाया गया, भुगतान जारी किया गया। हमेशा सूचित रहें।</value></data>
+  <data name="why5_highlight" xml:space="preserve"><value>हमेशा सूचित</value></data>
+  <data name="why6_title" xml:space="preserve"><value>मोबाइल-फर्स्ट एक्सेस</value></data>
+  <data name="why6_desc" xml:space="preserve"><value>क्षेत्र के लिए डिज़ाइन किया गया। किसान और विक्रेता अपने स्मार्टफोन से सब कुछ प्रबंधित कर सकते हैं — सरल, तेज़ और कहीं भी सुलभ।</value></data>
+  <data name="why6_highlight" xml:space="preserve"><value>सरલ અને तेज़</value></data>
+  <data name="tech_title" xml:space="preserve"><value>एंटरप्राइज&lt;br/&gt;ग्रेड स्टैक</value></data>
+  <data name="tech_sub" xml:space="preserve"><value>भारत के बढ़ते डिजिटल कृषि पारिस्थितिकी तंत्र के साथ स्केल करने के लिए निर्मित।</value></data>
+  <data name="reach_badge" xml:space="preserve"><value>हमारी पहुंच</value></data>
+  <data name="reach_title" xml:space="preserve"><value>पूरे भारत में</value></data>
+  <data name="reach_sub" xml:space="preserve"><value>पूरे भारत में फैला हुआ</value></data>
+  <data name="test_badge" xml:space="preserve"><value>क्षेत्र से आवाजें</value></data>
+  <data name="test_title" xml:space="preserve"><value>हमारे उपयोगकर्ता&lt;br/&gt;क्या कहते हैं</value></data>
+  <data name="test1_quote" xml:space="preserve"><value>पहले टमाटर ₹10 में बेचता था, अब FarmBridge पे ₹24 मिलता है। AI का सुझाव बहुत काम आया।</value></data>
+  <data name="test1_author" xml:space="preserve"><value>रमेश पटेल</value></data>
+  <data name="test1_role" xml:space="preserve"><value>सब्जी किसान</value></data>
+  <data name="test2_quote" xml:space="preserve"><value>थोक ऑर्डर प्रबंधित करना बहुत आसान हो गया है। रीयल-टाइम ट्रैकिंग के साथ, मुझे पता है कि स्टॉक कब आएगा — अब और इंतजार नहीं।</value></data>
+  <data name="test2_author" xml:space="preserve"><value>प्रिया मेहता</value></data>
+  <data name="test2_role" xml:space="preserve"><value>थोक विक्रेता</value></data>
+  <data name="test3_quote" xml:space="preserve"><value>क्वालिटी फॉर्म भरना और किसान के लिए भुगतान ऑटो-ट्रिगर हो जाता है। कोई कागजी कार्रवाई नहीं, कोई देरी नहीं। सिस्टम बहुत सुचारू है।</value></data>
+  <data name="test3_author" xml:space="preserve"><value>अजय कुमार</value></data>
+  <data name="test3_role" xml:space="preserve"><value>फील्ड ऑफिसर</value></data>
+  <data name="test3_state" xml:space="preserve"><value>📍 लखनऊ, उत्तर प्रदेश</value></data>
+  <data name="cta_title" xml:space="preserve"><value>भारतीय कृषि को बदलने&lt;br/&gt;के लिए तैयार हैं?</value></data>
+  <data name="cta_sub" xml:space="preserve"><value>हजारों किसानों और विक्रेताओं से जुड़ें जो पहले से ही FarmBridge पर हैं।&lt;br/&gt;&lt;span&gt;किसान को उसका हक मिलेगा — सीधा, साफ और सच्चा।&lt;/span&gt;</value></data>
+  <data name="btn_cta_farmer" xml:space="preserve"><value>किसान के रूप में जुड़ें</value></data>
+  <data name="btn_cta_vendor" xml:space="preserve"><value>विक्रेता के रूप में शुरू करें</value></data>
+  <data name="footer_desc" xml:space="preserve"><value>किसानों, विक्रेताओं और फील्ड अधिकारियों को जोड़ने वाला भारत का केंद्रीकृत कृषि-खरीद मंच।</value></data>
+  <data name="footer_tagline" xml:space="preserve"><value>किसान से वेंडर तक — सीधा, साफ, सच्चा।</value></data>
+  <data name="footer_col_platform" xml:space="preserve"><value>प्लेटफ़ॉर्म</value></data>
+  <data name="footer_col_features" xml:space="preserve"><value>विशेषताएं</value></data>
+  <data name="footer_col_support" xml:space="preserve"><value>सपोर्ट</value></data>
+  <data name="footer_helpline" xml:space="preserve"><value>📞 किसान हेल्पलाइन</value></data>
+  <data name="footer_tollfree" xml:space="preserve"><value>टोल फ्री · सुबह 9 बजे - शाम 6 बजे</value></data>
+  <data name="footer_copy" xml:space="preserve"><value>© 2026 &lt;strong&gt;FarmBridge&lt;/strong&gt; — किसानों का सशक्तिकरण 🌾 | भारत के लिए ❤️ के साथ बनाया गया</value></data>
+  <data name="footer_field_officer" xml:space="preserve"><value>फील्ड ऑफिसर</value></data>
+  <data name="footer_admin_panel" xml:space="preserve"><value>एडमिन पैनल</value></data>
+  <data name="footer_help_center" xml:space="preserve"><value>सहायता केंद्र</value></data>
+  <data name="footer_contact_us" xml:space="preserve"><value>संपર્ક करें</value></data>
+  <data name="footer_privacy_policy" xml:space="preserve"><value>गोपनीयता नीति</value></data>
+  <data name="footer_terms_of_service" xml:space="preserve"><value>सेवा की शर्तें</value></data>
+  <data name="footer_demand_forecasting" xml:space="preserve"><value>मांग पूर्वानुमान</value></data>
+  <data name="footer_farmer_portal" xml:space="preserve"><value>किसान पोर्टल</value></data>
+  <data name="footer_vendor_portal" xml:space="preserve"><value>विक्रेता पोर्टल</value></data>
+  <data name="footer_made_in_india" xml:space="preserve"><value>🇮🇳 मेड इन इंडिया</value></data>
+  <data name="footer_secure_platform" xml:space="preserve"><value>🔒 सुरक्षित प्लेटफ़ॉर्म</value></data>
+  <data name="footer_dpiit_recognized" xml:space="preserve"><value>✅ DPIIT मान्यता प्राप्त</value></data>
+  <data name="reach_farmer_hub" xml:space="preserve"><value>किसान हब</value></data>
+  <data name="reach_vendor_hub" xml:space="preserve"><value>विक्रेता हब</value></data>
+  <data name="reach_main_office" xml:space="preserve"><value>मुख्य कार्यालय (सूरत)</value></data>
+    <data name="fp_brand_title" xml:space="preserve"><value>पासवर्ड रीसेट करें</value></data>
+  <data name="fp_brand_sub" xml:space="preserve"><value>सुरक्षित और आसान</value></data>
+  <data name="fp_feat_otp" xml:space="preserve"><value>सुरक्षित OTP सत्यापन</value></data>
+  <data name="fp_feat_validity" xml:space="preserve"><value>10 मिनट OTP वैधता</value></data>
+  <data name="fp_feat_encrypted" xml:space="preserve"><value>एन्क्रिप्टेड पासवर्ड</value></data>
+  <data name="fp_back_login" xml:space="preserve"><value>लॉगिन पर वापस जाएं</value></data>
+  <data name="fp_title_email" xml:space="preserve"><value>पासवर्ड भूल गए?</value></data>
+  <data name="fp_sub_email" xml:space="preserve"><value>अपना पंजीकृत ईमेल दर्ज करें। हम 6-अंकीय कोड भेजेंगे।</value></data>
+  <data name="fp_label_email" xml:space="preserve"><value>ईमेल पता</value></data>
+  <data name="fp_hint_email" xml:space="preserve"><value>इस ईमेल पर सत्यापन कोड भेजा जाएगा</value></data>
+  <data name="fp_btn_send_otp" xml:space="preserve"><value>OTP भेजें</value></data>
+  <data name="fp_title_otp" xml:space="preserve"><value>OTP सत्यापित करें</value></data>
+  <data name="fp_sub_otp" xml:space="preserve"><value>भेजा गया 6-अंकीय कोड दर्ज करें</value></data>
+  <data name="fp_label_otp" xml:space="preserve"><value>सत्यापन कोड</value></data>
+  <data name="fp_otp_expires" xml:space="preserve"><value>कोड समाप्त होगा</value></data>
+  <data name="fp_btn_resend" xml:space="preserve"><value>कोड पुनः भेजें</value></data>
+  <data name="fp_btn_back" xml:space="preserve"><value>वापस</value></data>
+  <data name="fp_btn_verify" xml:space="preserve"><value>कोड सत्यापित करें</value></data>
+  <data name="fp_title_password" xml:space="preserve"><value>नया पासवर्ड सेट करें</value></data>
+  <data name="fp_sub_password" xml:space="preserve"><value>अपने खाते के लिए मजबूत पासवर्ड बनाएं।</value></data>
+  <data name="fp_label_new_pw" xml:space="preserve"><value>नया पासवर्ड</value></data>
+  <data name="fp_label_confirm_pw" xml:space="preserve"><value>पासवर्ड की पुष्टि करें</value></data>
+  <data name="fp_rule_length" xml:space="preserve"><value>कम से कम 8 अक्षर</value></data>
+  <data name="fp_rule_letter" xml:space="preserve"><value>अक्षर (a-z)</value></data>
+  <data name="fp_rule_number" xml:space="preserve"><value>संख्या (0-9)</value></data>
+  <data name="fp_rule_special" xml:space="preserve"><value>विशेष (!@#$)</value></data>
+  <data name="fp_btn_reset" xml:space="preserve"><value>पासवर्ड रीसेट करें</value></data>
+  <data name="fp_please_wait" xml:space="preserve"><value>कृपया प्रतीक्षा करें...</value></data>
+  <data name="fp_success_title" xml:space="preserve"><value>पासवर्ड रीसेट सफल!</value></data>
+  <data name="fp_success_msg" xml:space="preserve"><value>आपका पासवर्ड अपडेट हो गया। आपको लॉगिन पर भेजा जाएगा।</value></data>
+
+  <data name="fp_ph_email" xml:space="preserve"><value>जैसे farmer@example.com</value></data>
+  <data name="fp_ph_new_pw" xml:space="preserve"><value>नया पासवर्ड दर्ज करें</value></data>
+  <data name="fp_ph_confirm_pw" xml:space="preserve"><value>पासवर्ड दोबारा दर्ज करें</value></data>
+  <data name="video_badge" xml:space="preserve"><value>&lt;i class="fi fi-rr-play-alt"&gt;&lt;/i&gt; हमारा दृष्टिकोण</value></data>
+  <data name="video_title" xml:space="preserve"><value>भारतीय कृषि को&lt;br /&gt;बदलना</value></data>
+  <data name="video_sub" xml:space="preserve"><value>फार्मब्रिज में, हमारा मानना है कि हर किसान पारदर्शी मूल्य निर्धारण और सीधे बाजार पहुंच का हकदार है। हमारा प्लेटफॉर्म एक ऐसी आपूर्ति श्रृंखला बनाने के लिए नवीन प्रौद्योगिकी को टिकाऊ प्रथाओं के साथ जोड़ता है जो सशक्त बनाती है और लंबी चलती है।</value></data>
+  <data name="footer_fo_portal" xml:space="preserve"><value>एफ.ओ पोर्टल</value></data>
+  <data name="footer_admin_portal" xml:space="preserve"><value>एडमिन पोर्टल</value></data>
+</root>

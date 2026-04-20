@@ -1,0 +1,206 @@
+@{
+    ViewData["Title"] = "Farmer Management";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/farmer-management.css" />
+
+<div class="page">
+    <div class="page-top">
+        <div>
+            <div class="page-title">Farmer Directory</div>
+            <div class="page-sub">Verify, activate, and monitor farmer accounts across the platform</div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--green-main)"></div>
+            <div class="stat-label">Registered Farmers</div>
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-note" style="color:var(--green-main)" id="stat-week">Loading...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--green-main)"></div>
+            <div class="stat-label">Active Accounts</div>
+            <div class="stat-value" id="stat-active">—</div>
+            <div class="stat-note" style="color:var(--green-main)" id="stat-rate">Loading...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--red)"></div>
+            <div class="stat-label">Deactivated</div>
+            <div class="stat-value" id="stat-deact">—</div>
+            <div class="stat-note" style="color:var(--red)" id="stat-month">Loading...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--amber)"></div>
+            <div class="stat-label">Pending Verification</div>
+            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-note" style="color:var(--amber)">Action needed</div>
+        </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+            <input type="text" id="search-input" class="search-input" placeholder="Search by name, phone, or location..." oninput="handleSearch()" />
+        </div>
+        <button class="btn-primary" onclick="loadFarmers()" style="padding: 10px 16px;">Search</button>
+    </div>
+
+    <!-- FARMER GRID -->
+    <div id="f-grid" class="f-grid">
+        <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">Loading farmers...</div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+        <button class="btn btn-view" onclick="changePage(-1)" style="flex:none; padding:8px 16px;">&#8249; Previous</button>
+        <span id="page-indicator" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Page 1</span>
+        <button class="btn btn-view" onclick="changePage(1)" style="flex:none; padding:8px 16px;">Next &#8250;</button>
+    </div>
+</div>
+
+<!-- ===================== PAYMENT MODAL ===================== -->
+<div class="modal-overlay" id="paymentModalOverlay" onclick="closeModal('paymentModalOverlay')">
+    <div class="modal" onclick="event.stopPropagation()" style="width: 850px;">
+        <div class="modal-header" style="background:var(--amber);">
+            <span style="font-weight:800; font-size:18px;">Pending Settlements (70%)</span>
+            <button class="close-btn" onclick="closeModal('paymentModalOverlay')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                Review the crops approved by the Field Officer. The 30% advance has been paid via UPI.
+                Approve below to release the final 70%.
+            </p>
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Crop Details</th>
+                        <th>Total / Advance</th>
+                        <th>Pending (70%)</th>
+                        <th>UTR Reference</th>
+                        <th style="text-align:right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="pending-payments-body">
+                    <tr><td colspan="5" style="text-align:center;">Loading payments...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== DETAIL MODAL ===================== -->
+<div class="modal-overlay" id="detailModalOverlay" onclick="closeModal('detailModalOverlay')">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div style="font-weight:800; font-size:18px;" id="m-title">Farmer Profile</div>
+            <button class="close-btn" onclick="closeModal('detailModalOverlay')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- TABS -->
+            <div class="tabs">
+                <div class="tab-item active" data-tab="tab-profile" onclick="switchTab('tab-profile', this)">Profile</div>
+                <div class="tab-item" data-tab="tab-bank" onclick="switchTab('tab-bank', this)">Bank &amp; KYC</div>
+                <div class="tab-item" data-tab="tab-crops" onclick="switchTab('tab-crops', this)">Crop Listings</div>
+                <div class="tab-item" data-tab="tab-orders" onclick="switchTab('tab-orders', this)">Orders</div>
+            </div>
+
+            <!-- TAB: PROFILE — uses profile-grid, NOT info-grid -->
+            <div id="tab-profile" class="tab-pane active">
+                <div class="profile-grid" id="profile-content"></div>
+            </div>
+
+            <!-- TAB: BANK & KYC — uses profile-grid, NOT info-grid -->
+            <div id="tab-bank" class="tab-pane">
+                <div class="profile-grid" id="bank-content"></div>
+            </div>
+
+            <!-- TAB: CROP LISTINGS — table only, no profile data -->
+            <div id="tab-crops" class="tab-pane">
+                <table class="mini-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Listed On</th>
+                        </tr>
+                    </thead>
+                    <tbody id="crops-body"></tbody>
+                </table>
+            </div>
+
+            <!-- TAB: ORDERS — table only, no profile data -->
+            <div id="tab-orders" class="tab-pane">
+                <table class="mini-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Crop Name</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Order Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== DEACTIVATE MODAL ===================== -->
+<div class="modal-overlay" id="deactModalOverlay" onclick="closeModal('deactModalOverlay')">
+    <div class="modal" style="width: 450px;" onclick="event.stopPropagation()">
+        <div class="modal-header" style="background:var(--red);">
+            <span style="font-weight:800; font-size:16px;">Deactivate Farmer</span>
+            <button class="close-btn" onclick="closeModal('deactModalOverlay')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                Please provide a reason for deactivation. The farmer will receive an email notification.
+            </p>
+            <textarea id="deactReason" class="search-input" rows="3"
+                placeholder="Reason for deactivation..."
+                style="width:100%; resize:none; margin-bottom:16px; padding: 10px 12px;"></textarea>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-view" style="flex:none; padding:8px 16px;" onclick="closeModal('deactModalOverlay')">Cancel</button>
+                <button class="btn btn-deactivate" style="flex:none; padding:8px 16px;" onclick="confirmDeactivate()">Confirm Deactivate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== CONFIRM PAYMENT MODAL ===================== -->
+<div class="modal-overlay" id="confirmPaymentModal" onclick="closeModal('confirmPaymentModal')">
+    <div class="modal" style="width: 400px;" onclick="event.stopPropagation()">
+        <div class="modal-header" style="background:var(--green-main);">
+            <span style="font-weight:800; font-size:16px;">Confirm Payment</span>
+            <button class="close-btn" onclick="closeModal('confirmPaymentModal')">&times;</button>
+        </div>
+        <div class="modal-body" style="text-align:center; padding: 32px 24px;">
+            <div style="width:56px; height:56px; background:var(--green-light); border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 16px;">
+                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="var(--green-main)" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <p style="font-size: 15px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">Release Final 70% Payment?</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 24px;">
+                The UTR will be auto-generated and recorded in the payment ledger.
+            </p>
+            <div style="display:flex; justify-content:center; gap:12px;">
+                <button class="btn btn-view" style="flex:none; padding:8px 24px;" onclick="closeModal('confirmPaymentModal')">Cancel</button>
+                <button class="btn-primary" id="confirmPayBtn" style="padding:8px 24px;" onclick="executePaymentApproval()">Yes, Approve</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="~/js/farmer-management.js"></script>

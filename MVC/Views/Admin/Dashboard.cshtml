@@ -1,0 +1,901 @@
+@{
+    ViewBag.Title = "Admin Dashboard";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+
+@* <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"> *@
+
+<style>
+    :root {
+        --g900: #052e0f;
+        --g800: #0a4a1a;
+        --g700: #166534;
+        --g600: #16a34a;
+        --g500: #22c55e;
+        --g400: #4ade80;
+        --g100: #dcfce7;
+        --g50:  #f0fdf4;
+        --black: #060a07;
+        --ink:  #111714;
+        --white: #ffffff;
+        --zinc: #f4f6f4;
+        --border: rgba(22,163,74,.15);
+        --shadow-sm: 0 2px 8px rgba(6,10,7,.08);
+        --shadow-md: 0 8px 32px rgba(6,10,7,.12);
+        --shadow-lg: 0 24px 64px rgba(6,10,7,.18);
+        --radius: 18px;
+        --mono: 'DM Mono', monospace;
+        --sans: 'Syne', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        background: var(--zinc);
+        font-family: var(--sans);
+        color: var(--ink);
+        min-height: 100vh;
+    }
+
+    /* ─── TOPBAR ─── */
+    .db-topbar {
+        background: var(--black);
+        padding: 0 32px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .db-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--white);
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: -.3px;
+    }
+
+    .db-brand-dot {
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, var(--g500), var(--g700));
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        box-shadow: 0 0 16px rgba(34,197,94,.4);
+    }
+
+    .db-meta {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .db-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: rgba(255,255,255,.55);
+        background: rgba(255,255,255,.05);
+        border: 1px solid rgba(255,255,255,.08);
+        padding: 6px 12px;
+        border-radius: 999px;
+    }
+
+    .db-pulse {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--g400);
+        box-shadow: 0 0 0 0 rgba(74,222,128,.6);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%   { box-shadow: 0 0 0 0   rgba(74,222,128,.6); }
+        70%  { box-shadow: 0 0 0 8px rgba(74,222,128,0);  }
+        100% { box-shadow: 0 0 0 0   rgba(74,222,128,0);  }
+    }
+
+    .db-time {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: rgba(255,255,255,.35);
+    }
+
+    /* ─── LAYOUT ─── */
+    .db-wrap {
+        padding: 28px 32px 48px;
+        max-width: 1600px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* ─── SECTION LABEL ─── */
+    .section-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--g600);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    /* ─── KPI STRIP ─── */
+    .kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+    }
+
+    .kpi-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 22px 24px;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        overflow: hidden;
+        transition: transform .25s ease, box-shadow .25s ease;
+        cursor: default;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .kpi-card::after {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--g500), var(--g700));
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    /* Accent card */
+    .kpi-card.kpi-accent {
+        background: linear-gradient(140deg, var(--g900) 0%, var(--g700) 100%);
+        border-color: transparent;
+    }
+
+    .kpi-card.kpi-accent::after { display: none; }
+    .kpi-card.kpi-accent .kpi-lbl { color: rgba(255,255,255,.55); }
+    .kpi-card.kpi-accent .kpi-val { color: var(--white); }
+    .kpi-card.kpi-accent .kpi-icon { background: rgba(255,255,255,.12); color: var(--g400); }
+
+    .kpi-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+    }
+
+    .kpi-lbl {
+        font-size: 11.5px;
+        font-family: var(--mono);
+        letter-spacing: .5px;
+        color: var(--g700);
+        text-transform: uppercase;
+    }
+
+    .kpi-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--g50);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .kpi-val {
+        font-size: 30px;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -1.5px;
+        line-height: 1;
+    }
+
+    .kpi-sub {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: var(--g600);
+        margin-top: 6px;
+    }
+
+    /* ─── CHART ROW ─── */
+    .chart-row {
+        display: grid;
+        grid-template-columns: 1.55fr 1fr;
+        gap: 20px;
+    }
+
+    .chart-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 24px 24px 16px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .chart-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .chart-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .chart-sub {
+        font-size: 11px;
+        font-family: var(--mono);
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+
+    /* Period Toggle */
+    .period-toggle {
+        background: var(--zinc);
+        padding: 4px;
+        border-radius: 10px;
+        display: flex;
+        gap: 2px;
+        border: 1px solid var(--border);
+    }
+
+    .btn-pd {
+        border: none;
+        background: transparent;
+        padding: 5px 13px;
+        border-radius: 7px;
+        font-size: 11.5px;
+        font-family: var(--mono);
+        color: #6b7280;
+        cursor: pointer;
+        transition: all .2s;
+        font-weight: 500;
+    }
+
+    .btn-pd.active {
+        background: var(--black);
+        color: var(--white);
+        box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+
+    .btn-pd:hover:not(.active) {
+        background: rgba(22,163,74,.08);
+        color: var(--g700);
+    }
+
+    /* ─── BOTTOM GRID ─── */
+    .bottom-row {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 20px;
+    }
+
+    .grid-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .grid-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .grid-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .count-badge {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: #fff;
+        font-size: 11px;
+        font-family: var(--mono);
+        font-weight: 500;
+        padding: 3px 9px;
+        border-radius: 999px;
+        box-shadow: 0 2px 8px rgba(239,68,68,.3);
+    }
+
+    /* ─── KENDO OVERRIDES ─── */
+    .k-grid {
+        border: none !important;
+        border-radius: 12px !important;
+        font-family: var(--sans) !important;
+        font-size: 13px !important;
+        overflow: hidden !important;
+        box-shadow: none !important;
+    }
+
+    .k-grid-header {
+        background: var(--zinc) !important;
+        border-bottom: 1px solid var(--border) !important;
+    }
+
+    .k-grid-header th {
+        font-family: var(--mono) !important;
+        font-size: 10px !important;
+        letter-spacing: 1.2px !important;
+        text-transform: uppercase !important;
+        color: var(--g700) !important;
+        background: transparent !important;
+        border-color: transparent !important;
+        padding: 12px 16px !important;
+        font-weight: 500 !important;
+    }
+
+    .k-grid tbody tr {
+        transition: background .15s !important;
+    }
+
+    .k-grid tbody tr:hover {
+        background: var(--g50) !important;
+    }
+
+    .k-grid tbody td {
+        padding: 13px 16px !important;
+        border-color: rgba(22,163,74,.07) !important;
+        color: var(--ink) !important;
+        vertical-align: middle !important;
+    }
+
+    .k-grid .k-alt {
+        background: rgba(240,253,244,.4) !important;
+    }
+
+    /* Approve button */
+    .btn-approve {
+        background: linear-gradient(135deg, var(--g600), var(--g700));
+        color: #fff;
+        border: none;
+        padding: 5px 13px;
+        border-radius: 7px;
+        font-size: 11.5px;
+        font-family: var(--mono);
+        cursor: pointer;
+        transition: all .2s;
+        box-shadow: 0 2px 8px rgba(22,163,74,.3);
+    }
+
+    .btn-approve:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(22,163,74,.4);
+        background: linear-gradient(135deg, var(--g500), var(--g600));
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @@media (max-width: 1200px) {
+        .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+        .chart-row, .bottom-row { grid-template-columns: 1fr; }
+    }
+
+    @@media (max-width: 768px) {
+        .db-wrap { padding: 16px; gap: 16px; }
+        .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+        .db-topbar { padding: 0 16px; }
+        .db-time { display: none; }
+    }
+
+    /* ─── FADE IN ─── */
+    .kpi-card, .chart-card, .grid-card {
+        animation: fadeUp .4s ease both;
+    }
+
+    .kpi-card:nth-child(1) { animation-delay: .05s; }
+    .kpi-card:nth-child(2) { animation-delay: .10s; }
+    .kpi-card:nth-child(3) { animation-delay: .15s; }
+    .kpi-card:nth-child(4) { animation-delay: .20s; }
+    .kpi-card:nth-child(5) { animation-delay: .25s; }
+
+    @@keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* ─── SKELETON ─── */
+    .skel {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+        border-radius: 6px;
+        height: 30px;
+        width: 60%;
+    }
+
+    @@keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+</style>
+
+
+<!-- TOP BAR -->
+@* <div class="db-topbar">
+    <div class="db-brand">
+        <div class="db-brand-dot">🌿</div>
+        FarmBridge
+    </div>
+    <div class="db-meta">
+        <div class="db-status">
+            <div class="db-pulse" id="pulseDot"></div>
+            <span id="syncStatus">Initializing</span>
+        </div>
+        <div class="db-time" id="lastRefreshTime">--:--:--</div>
+    </div>
+</div> *@
+
+
+<!-- MAIN WRAP -->
+<div class="db-wrap">
+
+    <!-- KPI ROW -->
+    <div>
+        <div class="section-label">Key Metrics</div>
+        <div class="kpi-strip">
+
+            <div class="kpi-card kpi-accent">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Total Revenue</div>
+                    <div class="kpi-icon">💰</div>
+                </div>
+                <div class="kpi-val" id="kpiRevenue">₹0</div>
+                <div class="kpi-sub">Today's earnings</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Farmers</div>
+                    <div class="kpi-icon">🌾</div>
+                </div>
+                <div class="kpi-val" id="kpiFarmers">0</div>
+                <div class="kpi-sub">Registered</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Vendors</div>
+                    <div class="kpi-icon">🏪</div>
+                </div>
+                <div class="kpi-val" id="kpiVendors">0</div>
+                <div class="kpi-sub">Active</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Field Officers</div>
+                    <div class="kpi-icon">👷</div>
+                </div>
+                <div class="kpi-val" id="kpiFOs">0</div>
+                <div class="kpi-sub">On ground</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Today's Orders</div>
+                    <div class="kpi-icon">📦</div>
+                </div>
+                <div class="kpi-val" id="kpiOrders">0</div>
+                <div class="kpi-sub">New today</div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- CHART ROW -->
+    <div>
+        <div class="section-label">Analytics</div>
+        <div class="chart-row">
+
+            <!-- Revenue Chart -->
+            <div class="chart-card">
+                <div class="chart-head">
+                    <div>
+                        <div class="chart-title">Revenue Analytics</div>
+                        <div class="chart-sub">Earnings over time</div>
+                    </div>
+                    <div class="period-toggle" id="revSwitcher">
+                        <button class="btn-pd active" onclick="changeRevPeriod('weekly',this)">Week</button>
+                        <button class="btn-pd" onclick="changeRevPeriod('monthly',this)">Month</button>
+                        <button class="btn-pd" onclick="changeRevPeriod('yearly',this)">Year</button>
+                    </div>
+                </div>
+                <div id="revenueChart"></div>
+            </div>
+
+            <!-- Order Volume Chart -->
+            <div class="chart-card">
+                <div class="chart-head">
+                    <div>
+                        <div class="chart-title">Order Volume</div>
+                        <div class="chart-sub">Units dispatched</div>
+                    </div>
+                    <div class="period-toggle" id="orderSwitcher">
+                        <button class="btn-pd active" onclick="changeOrderPeriod('weekly',this)">Week</button>
+                        <button class="btn-pd" onclick="changeOrderPeriod('monthly',this)">Month</button>
+                        <button class="btn-pd" onclick="changeOrderPeriod('yearly',this)">Year</button>
+                    </div>
+                </div>
+                <div id="orderVolumeChart"></div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- BOTTOM ROW -->
+    <div>
+        <div class="section-label">Live Data</div>
+        <div class="bottom-row">
+
+            <!-- Crop Listings -->
+            <div class="grid-card">
+                <div class="grid-head">
+                    <div class="grid-title">Today's Crop Listings</div>
+                </div>
+                <div id="cropListingsGrid"></div>
+            </div>
+
+            <!-- Pending Approvals -->
+            <div class="grid-card">
+                <div class="grid-head">
+                    <div class="grid-title">Pending Approvals</div>
+                    <span class="count-badge" id="pendingCount">0</span>
+                </div>
+                <div id="pendingGrid"></div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+<script>
+
+    $.ajaxSetup({ cache: false });
+
+    const API_URLS = {
+        kpi:     '/Admin/GetDashboardKpi',
+        revenue: '/Admin/GetRevenueChart',
+        orders:  '/Admin/GetOrderVolumeChart',
+        crops:   '/Admin/GetTodayCropListings',
+        pending: '/Admin/GetPendingApprovals'
+    };
+
+    let dashboardState = {
+        revPeriod:   'weekly',
+        orderPeriod: 'weekly',
+        refreshRate: 10000,
+        revChartInit:   false,
+        orderChartInit: false,
+        cropGridInit:   false,
+        pendGridInit:   false
+    };
+
+    $(window).on("load", startDashboard);
+
+    function startDashboard() {
+        refreshAllData();
+        setInterval(refreshAllData, dashboardState.refreshRate);
+    }
+
+    async function refreshAllData() {
+        const ts = Date.now();
+        try {
+            await Promise.all([
+                loadKPIs(ts),
+                loadRevenueChart(ts),
+                loadOrderChart(ts),
+                loadCropGrid(ts),
+                loadPendingGrid(ts)
+            ]);
+            $("#syncStatus").text("Live");
+            $("#pulseDot").css("background", "var(--g400)");
+        } catch(e) {
+            $("#syncStatus").text("Error");
+            $("#pulseDot").css("background", "#ef4444");
+        }
+        $("#lastRefreshTime").text(new Date().toLocaleTimeString());
+    }
+
+
+    /* ── KPIs ── */
+    function loadKPIs(ts) {
+        return $.getJSON(`${API_URLS.kpi}?_=${ts}`, res => {
+            if (!res.success) return;
+            animateValue("kpiRevenue", "₹ " + Number(res.data.todayRevenue).toLocaleString('en-IN'));
+            animateValue("kpiFarmers", res.data.totalFarmers);
+            animateValue("kpiVendors", res.data.totalVendors);
+            animateValue("kpiFOs",     res.data.activeFOs);
+            animateValue("kpiOrders",  res.data.todayNewOrders);
+        });
+    }
+
+    function animateValue(id, newVal) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.opacity = "0";
+        el.style.transform = "translateY(6px)";
+        setTimeout(() => {
+            el.textContent = newVal;
+            el.style.transition = "opacity .3s, transform .3s";
+            el.style.opacity = "1";
+            el.style.transform = "translateY(0)";
+        }, 120);
+    }
+
+
+    /* ── Revenue Chart ── */
+    function loadRevenueChart(ts) {
+        return $.getJSON(`${API_URLS.revenue}?period=${dashboardState.revPeriod}&_=${ts}`, res => {
+            if (!res.success) return;
+            if (dashboardState.revChartInit) {
+                const chart = $("#revenueChart").data("kendoChart");
+                if (chart) { chart.setDataSource(new kendo.data.DataSource({ data: res.data })); }
+            } else {
+                dashboardState.revChartInit = true;
+                $("#revenueChart").kendoChart({
+                    dataSource: { data: res.data },
+                    series: [{
+                        type: "area",
+                        field: "value",
+                        categoryField: "label",
+                        color: "#16a34a",
+                        opacity: 0.15,
+                        line: { color: "#16a34a", width: 2.5 },
+                        markers: { visible: true, size: 6, background: "#16a34a", border: { color: "#fff", width: 2 } }
+                    }],
+                    categoryAxis: {
+                        labels: { font: "11px 'DM Mono', monospace", color: "#94a3b8" },
+                        majorGridLines: { visible: false },
+                        line: { visible: false }
+                    },
+                    valueAxis: {
+                        labels: { format: "₹{0}", font: "11px 'DM Mono', monospace", color: "#94a3b8" },
+                        majorGridLines: { color: "rgba(22,163,74,.08)", dashType: "dot" },
+                        line: { visible: false }
+                    },
+                    tooltip: {
+                        visible: true,
+                        background: "#060a07",
+                        color: "#ffffff",
+                        font: "12px 'DM Mono', monospace",
+                        template: "₹ #= kendo.toString(value,'n0') #",
+                        border: { width: 0 },
+                        padding: { top: 6, bottom: 6, left: 12, right: 12 }
+                    },
+                    chartArea: { height: 250, background: "transparent" },
+                    plotArea: { margin: { top: 10, bottom: 0, left: 0, right: 0 } },
+                    legend: { visible: false },
+                    transitions: true
+                });
+            }
+        });
+    }
+
+
+    /* ── Order Chart ── */
+    function loadOrderChart(ts) {
+        return $.getJSON(`${API_URLS.orders}?period=${dashboardState.orderPeriod}&_=${ts}`, res => {
+            if (!res.success) return;
+            if (dashboardState.orderChartInit) {
+                const chart = $("#orderVolumeChart").data("kendoChart");
+                if (chart) { chart.setDataSource(new kendo.data.DataSource({ data: res.data })); }
+            } else {
+                dashboardState.orderChartInit = true;
+                $("#orderVolumeChart").kendoChart({
+                    dataSource: { data: res.data },
+                    series: [{
+                        type: "column",
+                        field: "value",
+                        categoryField: "label",
+                        color: "#16a34a",
+                        border: { width: 0, radius: 6 },
+                        gap: 0.6
+                    }],
+                    categoryAxis: {
+                        labels: { font: "11px 'DM Mono', monospace", color: "#94a3b8" },
+                        majorGridLines: { visible: false },
+                        line: { visible: false }
+                    },
+                    valueAxis: {
+                        labels: { font: "11px 'DM Mono', monospace", color: "#94a3b8" },
+                        majorGridLines: { color: "rgba(22,163,74,.08)", dashType: "dot" },
+                        line: { visible: false }
+                    },
+                    tooltip: {
+                        visible: true,
+                        background: "#060a07",
+                        color: "#ffffff",
+                        font: "12px 'DM Mono', monospace",
+                        template: "#= value # orders",
+                        border: { width: 0 },
+                        padding: { top: 6, bottom: 6, left: 12, right: 12 }
+                    },
+                    chartArea: { height: 250, background: "transparent" },
+                    legend: { visible: false },
+                    transitions: true
+                });
+            }
+        });
+    }
+
+
+    /* ── Period Switches ── */
+    function changeRevPeriod(p, btn) {
+        dashboardState.revPeriod = p;
+        dashboardState.revChartInit = false;
+        $("#revSwitcher .btn-pd").removeClass("active");
+        $(btn).addClass("active");
+        $("#revenueChart").empty();
+        loadRevenueChart(Date.now());
+    }
+
+    function changeOrderPeriod(p, btn) {
+        dashboardState.orderPeriod = p;
+        dashboardState.orderChartInit = false;
+        $("#orderSwitcher .btn-pd").removeClass("active");
+        $(btn).addClass("active");
+        $("#orderVolumeChart").empty();
+        loadOrderChart(Date.now());
+    }
+
+
+    /* ── Crop Grid ── */
+    function loadCropGrid(ts) {
+        return $.getJSON(`${API_URLS.crops}?_=${ts}`, res => {
+            if (!res.success && !res.data) return;
+            if (dashboardState.cropGridInit) {
+                const grid = $("#cropListingsGrid").data("kendoGrid");
+                if (grid) { grid.dataSource.data(res.data); return; }
+            }
+            dashboardState.cropGridInit = true;
+            $("#cropListingsGrid").kendoGrid({
+                dataSource: { data: res.data, pageSize: 6 },
+                height: 280,
+                scrollable: true,
+                sortable: true,
+                pageable: { buttonCount: 3, info: false, input: false, previousNext: true },
+                columns: [
+                    { field: "farmerName", title: "Farmer", width: "35%" },
+                    { field: "cropType",   title: "Crop",   width: "35%" },
+                    {
+                        field: "quantity",
+                        title: "Qty",
+                        width: "30%",
+                        template: "<span style='font-family:var(--mono);font-size:12px;background:var(--g50);color:var(--g700);border:1px solid var(--border);padding:2px 8px;border-radius:6px;'>#= quantity #</span>"
+                    }, 
+                    { field: "unit",   title: "Unit",   width: "35%" },
+                ]
+            });
+        });
+    }
+
+
+    /* ── Pending Grid ── */
+    function formatPendingData(raw) {
+        return raw.map(function(r) {
+            var d = r.appliedOn ? new Date(r.appliedOn).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : '---';
+            return { userId: r.userId, fullName: r.fullName, role: r.role, appliedOn: d };
+        });
+    }
+
+  function loadPendingGrid(ts) {
+    return $.getJSON(API_URLS.pending + '?_=' + ts)
+        .done(function (res) {
+
+            if (!res || !res.success || !res.data) return;
+
+            $("#pendingCount").text(res.data.length);
+
+            var gridData = formatPendingData(res.data);
+
+            var grid = $("#pendingGrid").data("kendoGrid");
+
+            // If Grid Already Exists → Just Update Data
+            if (grid) {
+                grid.dataSource.data(gridData);
+                grid.refresh();
+                return;
+            }
+
+            // First Time Grid Initialize
+            $("#pendingGrid").kendoGrid({
+                dataSource: new kendo.data.DataSource({
+                    data: gridData,
+                    pageSize: 6
+                }),
+                height: 280,
+                scrollable: true,
+                sortable: true,
+                pageable: {
+                    buttonCount: 3,
+                    info: false,
+                    input: false,
+                    previousNext: true
+                },
+                columns: [
+                    {
+                        field: "fullName",
+                        title: "User",
+                        width: "32%"
+                    },
+                    {
+    field: "role",
+    title: "Role",
+    width: "22%",
+    template:
+    "<span style='font-family:DM Mono,monospace;font-size:11px;background:\\#fef9c3;color:\\#854d0e;border:1px solid \\#fde68a;padding:2px 8px;border-radius:6px;text-transform:capitalize;'>#= role #</span>"
+},
+                    {
+                        field: "appliedOn",
+                        title: "Applied",
+                        width: "28%"
+                    },
+                    {
+                        title: "",
+                        width: "18%",
+                        template:
+                            "<button class='btn-approve' onclick='approve(#=userId#)'>Approve</button>"
+                    }
+                ]
+            });
+
+        })
+        .fail(function (err) {
+            console.error("Pending Grid Error:", err);
+        });
+}
+    /* ── Approve ── */
+    function approve(id) {
+        if (confirm("Approve this user?")) {
+            $.post('/Admin/ApproveUser', { userId: id }, () => refreshAllData());
+        }
+    }
+
+</script>
+}

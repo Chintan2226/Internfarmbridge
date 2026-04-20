@@ -1,0 +1,680 @@
+:root {
+    --dash-surface: rgba(255, 255, 255, 0.45);
+    --dash-surface-hover: rgba(255, 255, 255, 0.7);
+    --dash-border: rgba(255, 255, 255, 0.6);
+    --dash-text: #0a2108;
+    --dash-text-light: #5a7257;
+    --dash-radius: 24px;
+    --dash-radius-sm: 12px;
+    --dash-shadow: 0 8px 32px rgba(21, 66, 18, 0.05);
+
+    --grad-rev: linear-gradient(135deg, #10b981, #047857);
+    --grad-farm: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    --grad-vend: linear-gradient(135deg, #f59e0b, #b45309);
+    --grad-fo: linear-gradient(135deg, #8b5cf6, #5b21b6);
+    --grad-ord: linear-gradient(135deg, #ec4899, #be185d);
+}
+
+/* Language Switcher UI */
+.fb-lang-switcher {
+    position: relative;
+}
+
+.fb-lang-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    min-width: 140px;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9999;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.fb-lang-dropdown.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.fb-lang-option {
+    background: transparent;
+    border: none;
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.fb-lang-option:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.fb-lang-option.active {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+body {
+    font-family: 'Inter', sans-serif !important;
+}
+
+.db-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding-bottom: 40px;
+    animation: fadeUpIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeUpIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2e7d32;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(46, 125, 50, 0.2) 0%, transparent 100%);
+}
+
+/* KPI CARDS */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.kpi-card {
+    background: var(--dash-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--dash-radius);
+    padding: 24px 20px;
+    box-shadow: var(--dash-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+    border: none;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card:hover {
+    transform: translateY(-6px) scale(1.015);
+    background: var(--dash-surface-hover);
+    box-shadow: 0 20px 40px rgba(21, 66, 18, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 1);
+}
+
+.kpi-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    z-index: 1;
+}
+
+.kpi-lbl {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dash-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.kpi-card:hover .kpi-icon {
+    transform: rotate(8deg) scale(1.08);
+}
+
+.kpi-val {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--dash-text);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    z-index: 1;
+}
+
+.kpi-sub {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1;
+}
+
+.kpi-trend {
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+}
+
+.kpi-trend.up {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.kpi-trend.down {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+.kpi-trend.neutral {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+.kpi-card .watermark {
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    font-size: 110px;
+    opacity: 0.04;
+    z-index: 0;
+    pointer-events: none;
+    transform: rotate(-15deg);
+    transition: all 0.5s ease;
+}
+
+.kpi-card:hover .watermark {
+    transform: rotate(0deg) scale(1.1);
+    opacity: 0.07;
+}
+
+/* CHARTS & GRIDS */
+.chart-grid,
+.data-grid-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: 20px;
+}
+
+.chart-card,
+.grid-card {
+    background: var(--dash-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--dash-radius);
+    padding: 28px;
+    box-shadow: var(--dash-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+    border: none;
+    transition: box-shadow 0.35s;
+}
+
+.chart-card:hover,
+.grid-card:hover {
+    box-shadow: 0 15px 35px rgba(21, 66, 18, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 1);
+}
+
+.chart-head,
+.grid-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.chart-title,
+.grid-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dash-text);
+}
+
+.chart-sub {
+    font-size: 12px;
+    color: var(--dash-text-light);
+    margin-top: 3px;
+}
+
+.period-toggle {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.btn-pd {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    transition: all 0.25s;
+    cursor: pointer;
+}
+
+.btn-pd.active {
+    background: white;
+    color: #1e5c1a;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-approve {
+    background: linear-gradient(135deg, #10b981, #047857);
+    color: white;
+    border: none;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transition: all 0.25s;
+    cursor: pointer;
+}
+
+.btn-approve:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.grid-badge {
+    background: #eaf7e8;
+    color: #1e5c1a;
+    padding: 5px 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.count-badge {
+    background: #dc2626;
+    color: white;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
+}
+
+/* Mobile — tablets & phones */
+@media (max-width: 768px) {
+
+    .chart-grid,
+    .data-grid-row {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .kpi-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+    }
+
+    /* Larger KPI values for easy reading (budget Android screens) */
+    .kpi-val {
+        font-size: 22px;
+    }
+
+    .kpi-lbl {
+        font-size: 12px;
+    }
+
+    .db-wrap {
+        gap: 20px;
+        padding-bottom: 90px;
+        /* clear the bottom nav */
+    }
+
+    .chart-card,
+    .grid-card {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    /* Grid title row */
+    .grid-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    /* Make Kendo grids horizontally scrollable instead of breaking */
+    .k-grid {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Larger cell padding for easier finger tapping */
+    .k-grid .k-grid-content td {
+        padding: 14px 12px !important;
+        font-size: 13px !important;
+        min-width: 100px;
+    }
+
+    .k-grid .k-grid-header th.k-header {
+        padding: 12px 12px !important;
+        font-size: 10px !important;
+        min-width: 100px;
+    }
+
+    /* Bigger pager buttons for thumbs */
+    .k-grid .k-pager-wrap .k-link,
+    .k-grid .k-grid-pager .k-link,
+    .k-grid .k-pager-wrap .k-pager-nav,
+    .k-grid .k-grid-pager .k-pager-nav {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 13px !important;
+    }
+
+    .k-grid .k-grid-pager,
+    .k-grid .k-pager-wrap {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    /* Payment tracker — compact on mobile */
+    .pay-tracker {
+        padding: 0;
+    }
+
+    .tracker-label {
+        font-size: 9px !important;
+    }
+}
+
+/* Small phones (360px–480px — most Indian budget phones) */
+@media (max-width: 480px) {
+
+    .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    /* Single column only if very narrow */
+    @media (max-width: 360px) {
+        .kpi-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .kpi-card {
+        padding: 14px 12px;
+    }
+
+    .kpi-val {
+        font-size: 20px;
+    }
+
+    /* Grid title smaller */
+    .grid-title {
+        font-size: 14px !important;
+    }
+
+    /* Full-width action buttons */
+    .f-action-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .f-action-row button,
+    .f-action-row .k-button {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 12px !important;
+        font-size: 14px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Tracker badge wraps on narrow screens */
+    .tracker-label span {
+        font-size: 8px !important;
+    }
+}
+
+/* Activate Farmer bottom nav on mobile */
+@media (max-width: 768px) {
+
+    body[data-role='Farmer'] .fv-bottom-nav {
+        display: flex !important;
+    }
+
+    body[data-role='Farmer'] .fv-bottom-item {
+        font-size: 10px;
+        gap: 3px;
+        min-height: 60px;
+        /* tall tap target — 60px min for thumb */
+        padding: 8px 4px 10px;
+        color: rgba(255, 255, 255, 0.4);
+        text-decoration: none;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.15s;
+    }
+
+    body[data-role='Farmer'] .fv-bottom-item i {
+        font-size: 22px;
+    }
+
+    body[data-role='Farmer'] .fv-bottom-item.active {
+        color: var(--saffron, #f59e0b);
+    }
+
+    body[data-role='Farmer'] .fv-bottom-item.active i {
+        transform: translateY(-2px);
+    }
+
+    /* Push content above the bottom nav (64px nav height) */
+    body[data-role='Farmer'] .fv-content {
+        padding-bottom: 80px !important;
+    }
+}
+
+
+/* Global Kendo Grid styling — applies to all Farmer/Vendor tabs */
+
+/* ── Header ── */
+.k-grid .k-grid-header th.k-header {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    padding: 14px 14px !important;
+    border-right: 1px solid #f1f5f9 !important;
+}
+
+/* ── Rows ── */
+.k-grid .k-grid-content tr {
+    transition: background 0.15s ease;
+}
+
+.k-grid .k-grid-content tr:hover td {
+    background: #f0fdf4 !important;
+}
+
+.k-grid .k-grid-content tr:nth-child(even) td {
+    background: #fafcff;
+}
+
+.k-grid .k-grid-content tr:nth-child(even):hover td {
+    background: #f0fdf4 !important;
+}
+
+/* ── Cells ── */
+.k-grid .k-grid-content td {
+    padding: 13px 14px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    border-right: 1px solid #f8fafc !important;
+    vertical-align: middle !important;
+    color: #334155;
+    font-size: 13px;
+}
+
+/* ── Toolbar / Search bar ── */
+.k-grid .k-grid-toolbar {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 10px 14px !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.k-grid .k-searchbox {
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #fff !important;
+    font-size: 13px !important;
+}
+
+.k-grid .k-searchbox:focus-within {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* ── Pager container ── */
+.k-grid .k-pager-wrap,
+.k-grid .k-grid-pager {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+    padding: 10px 16px !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    border-radius: 0 0 12px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+/* ── All page buttons (numbers + nav arrows) ── */
+.k-grid .k-pager-wrap .k-link,
+.k-grid .k-grid-pager .k-link,
+.k-grid .k-pager-wrap .k-pager-nav,
+.k-grid .k-grid-pager .k-pager-nav {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #fff !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+}
+
+.k-grid .k-pager-wrap .k-link:hover,
+.k-grid .k-grid-pager .k-link:hover,
+.k-grid .k-pager-wrap .k-pager-nav:hover,
+.k-grid .k-grid-pager .k-pager-nav:hover {
+    background: #f0fdf4 !important;
+    border-color: #10b981 !important;
+    color: #059669 !important;
+}
+
+/* ── Active / selected page ── */
+.k-grid .k-pager-wrap .k-selected,
+.k-grid .k-grid-pager .k-selected,
+.k-grid .k-pager-wrap .k-state-selected,
+.k-grid .k-grid-pager .k-state-selected {
+    background: #10b981 !important;
+    color: #fff !important;
+    border-color: #059669 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* ── Kill the ugly pink/red page input box entirely ── */
+.k-grid .k-pager-input,
+.k-grid .k-pager-wrap .k-textbox,
+.k-grid .k-pager-wrap input[type=text] {
+    display: none !important;
+}
+
+/* ── Pager info text (e.g. "1-10 of 45 items") ── */
+.k-grid .k-pager-info,
+.k-grid .k-pager-sizes {
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    margin-left: auto !important;
+}
+
+/* ── Disable state (first/last arrows when at boundary) ── */
+.k-grid .k-pager-wrap .k-state-disabled,
+.k-grid .k-grid-pager .k-state-disabled,
+.k-grid .k-pager-wrap .k-disabled,
+.k-grid .k-grid-pager .k-disabled {
+    opacity: 0.35 !important;
+    pointer-events: none !important;
+    background: #f1f5f9 !important;
+}
+
+
+/* ── Grid outer shell ── */
+.k-grid {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+    font-family: 'Inter', sans-serif !important;
+}

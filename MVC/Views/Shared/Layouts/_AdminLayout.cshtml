@@ -1,0 +1,160 @@
+@{
+    Layout = null;
+    var title = (ViewData["Title"] ?? "Dashboard").ToString();
+    var role = (ViewData["UserRole"] ?? "Admin").ToString();
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title — FarmBridge Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+    <link rel="stylesheet"
+          href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css" />
+    <link rel="stylesheet"
+          href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://kendo.cdn.telerik.com/2023.1.117/styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="https://kendo.cdn.telerik.com/2023.1.117/styles/kendo.default.min.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/admin_layout.css" asp-append-version="true" />
+
+    @RenderSection("Styles", required: false)
+</head>
+
+<body data-role="@role" data-title="@title">
+
+    <!-- Sidebar -->
+    <nav class="adm-sidebar" id="admSidebar">
+        <div class="adm-sidebar-logo">
+            <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge" />
+            <span class="adm-sidebar-name"><span style="color: #1b5e19;">Farm</span><span
+                style="color: #2b6f87;">Bridge</span></span>
+            </div>
+            <div class="adm-role-badge">Admin</div>
+            <ul class="adm-nav" id="admNav">
+                @{
+                    var path = Context.Request.Path.ToString().ToLower();
+                }
+                <li><a href="/Admin/Dashboard" class="adm-nav-link @(path.Contains("/admin/dashboard") ? "active" : "")">
+                    <i class="fi fi-rr-apps"></i><span>Overview</span>
+                </a></li>
+                <li><a href="/Admin/FarmerManagment"
+                       class="adm-nav-link @(path.Contains("/admin/FarmerManagment") ? "active" : "")">
+                    <i class="fi fi-rr-users"></i><span>Farmers</span>
+                </a></li>
+                <li><a href="/Admin/vendor" class="adm-nav-link @(path.Contains("/admin/vendor") ? "active" : "")">
+                    <i class="fi fi-rr-shop"></i><span>Vendors</span>
+                </a></li>
+                <li><a href="/Admin/fieldofficers"
+                       class="adm-nav-link @(path.Contains("/admin/fieldofficers") ? "active" : "")">
+                    <i class="fi fi-rr-badge-check"></i><span>Field Officers</span>
+                </a></li>
+                <li><a href="/Admin/focreate" class="adm-nav-link @(path.Contains("/admin/focreate") ? "active" : "")">
+                    <i class="fi fi-rr-user-add"></i><span>Create Field Officer</span>
+                </a></li>
+                <li><a href="/Admin/warehouse" class="adm-nav-link @(path.Contains("/admin/warehouse") ? "active" : "")">
+                    <i class="fi fi-rr-warehouse-alt"></i><span>Warehouse</span>
+                </a></li>
+                <li><a href="/Admin/catalog" class="adm-nav-link @(path.Contains("/admin/catalog") ? "active" : "")">
+                    <i class="fi fi-rr-leaf"></i><span>Crop Catalog</span>
+                </a></li>
+            </ul>
+            <div class="adm-sidebar-foot">
+                <a href="javascript:void(0)" onclick="logout()" class="adm-nav-link adm-logout">
+                    <i class="fi fi-rr-exit"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main -->
+        <div class="adm-main" id="admMain">
+
+            <!-- Topbar -->
+            <header class="adm-topbar" id="admTopbar">
+                <div class="adm-topbar-left">
+                    <button class="adm-menu-btn" id="admMenuBtn" onclick="toggleAdmDrawer()" aria-label="Menu">
+                        <i class="fi fi-rr-menu-burger"></i>
+                    </button>
+                    <h1 class="adm-page-title" id="admPageTitle">@title</h1>
+                </div>
+                <div class="adm-topbar-right">
+                    <button class="adm-action-btn" id="admBellBtn" onclick="toggleAdmNotif(event)"
+                            aria-label="Notifications">
+                        <i class="fi fi-rr-bell"></i>
+                        <span class="adm-dot" id="admBellDot" hidden></span>
+                    </button>
+                    <div class="adm-avatar" onclick="location.href='/@role/Profile'" title="Profile">
+                        @role.Substring(0, 1).ToUpper()
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="adm-content">
+                @RenderBody()
+            </main>
+        </div>
+
+        <!-- Notification drawer -->
+        <div class="adm-notif" id="admNotif">
+            <div class="adm-notif-header">
+                <span>Notifications</span>
+                <button onclick="toggleAdmNotif(event)"><i class="fi fi-rr-cross-small"></i></button>
+            </div>
+            <div class="adm-notif-actions">
+                <small><span id="admUnread">0</span> unread</small>
+                <div style="display:flex; gap: 12px; align-items:center;">
+                    <button onclick="admMarkAllRead()">Mark all read</button>
+                    <button onclick="admClearAll()" style="color: #ff6b6b; text-decoration: none;">Clear all</button>
+                </div>
+            </div>
+            <div class="adm-notif-tabs">
+                <button class="active" onclick="admTab('all', this)">All</button>
+                <button onclick="admTab('unread', this)">Unread <span id="admUnreadBadge">0</span></button>
+            </div>
+            <div class="adm-notif-list" id="admNotifList"></div>
+        </div>
+
+        <!-- Toast -->
+        <div class="adm-toasts" id="admToasts"></div>
+
+        <script>
+                function logout() {
+
+                    // Remove JWT cookie
+                    document.cookie =
+                        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+
+                    // Clear storage (optional but recommended)
+                    localStorage.clear();
+                    sessionStorage.clear();
+
+                    // Redirect to login
+                    window.location.href = "/StaffAuth/Login";
+                }
+        </script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://kendo.cdn.telerik.com/2023.1.117/js/kendo.all.min.js"></script>
+
+        <script>
+            window.USER_ROLE = '@role';
+            window.API_BASE = `http://localhost:5020/api/@role`;
+        </script>
+
+        <script src="~/js/admin_layout.js" asp-append-version="true"></script>
+
+        @RenderSection("Scripts", required: false)
+    </body>
+
+</html>

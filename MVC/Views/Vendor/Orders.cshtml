@@ -1,0 +1,693 @@
+@{
+    Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
+    ViewData["Title"] = "My Orders";
+}
+
+<style>
+    /* ========== ORDERS PAGE ENHANCED STYLING ========== */
+    
+    /* Page Header */
+    .orders-page-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-primary, #0a2108);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .orders-page-desc {
+        color: var(--text-secondary, #21351f);
+        font-size: 14px;
+        margin-bottom: 28px;
+    }
+
+    .orders-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Enhanced Order Card */
+    .order-card {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07), 0 1px 4px rgba(21, 66, 18, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .order-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #2d7a27 0%, #52b34a 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .order-card:hover {
+        box-shadow: 0 20px 60px rgba(21, 66, 18, 0.14), 0 10px 30px rgba(21, 66, 18, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .order-card:hover::before {
+        opacity: 1;
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .order-id {
+        font-weight: 700;
+        color: #1b5e19;
+        font-size: 14px;
+        background: var(--green-50, #eaf7e8);
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--green-100, #d4f0d0);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .order-status {
+        padding: 6px 14px;
+        border-radius: 24px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: capitalize;
+        letter-spacing: 0.5px;
+        border: 1px solid;
+    }
+
+    /* Status Colors */
+    .status-placed {
+        background: var(--saffron-light, #FDF0E3);
+        color: #9e4a00;
+        border-color: #f5d5b5;
+    }
+
+    .status-delivered {
+        background: var(--green-50, #eaf7e8);
+        color: #1b5e19;
+        border-color: #d4f0d0;
+    }
+
+    .status-transit {
+        background: var(--blue-50, #e8f5fa);
+        color: #2d6a7a;
+        border-color: #cce8f2;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    .order-info-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+        margin: 16px 0;
+    }
+
+    .order-info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .order-info-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #3f503d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .order-total {
+        font-size: 22px;
+        font-weight: 800;
+        color: #1b5e19;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .order-date {
+        font-size: 14px;
+        color: #5a7257;
+    }
+
+    .order-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .track-btn {
+        border: none;
+        padding: 10px 24px;
+        border-radius: 24px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        font-family: 'Poppins', sans-serif;
+        min-width: 100px;
+        justify-content: center;
+    }
+
+    .btn-track {
+        background: linear-gradient(135deg, #2d7a27 0%, #1b5e19 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(45, 122, 39, 0.2);
+    }
+
+    .btn-track:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(45, 122, 39, 0.3);
+    }
+
+    .btn-cancel {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .btn-cancel:hover {
+        background: #fecaca;
+        color: #7f1d1d;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    }
+
+    .track-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Empty State */
+    .orders-empty {
+        text-align: center;
+        padding: 80px 40px;
+        background: rgba(255, 255, 255, 0.82);
+        border-radius: 20px;
+        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07);
+    }
+
+    .orders-empty i {
+        font-size: 64px;
+        color: var(--green-300, #84d17c);
+        margin-bottom: 20px;
+    }
+
+    .orders-empty h3 {
+        color: #1b5e19;
+        margin-bottom: 10px;
+        font-family: 'Playfair Display', serif;
+        font-size: 24px;
+    }
+
+    .orders-empty p {
+        color: #5a7257;
+        margin-bottom: 24px;
+    }
+
+    /* Loading State */
+    .orders-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+        gap: 16px;
+    }
+
+    .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid rgba(45, 122, 39, 0.1);
+        border-top-color: #2d7a27;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+        color: #5a7257;
+        font-size: 14px;
+    }
+
+    /* Modern Notification Styling */
+    .k-notification-success {
+        background: linear-gradient(135deg, #2d7a27 0%, #1b5e19 100%) !important;
+        color: white !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 8px 24px rgba(45, 122, 39, 0.3) !important;
+        padding: 16px 20px !important;
+        backdrop-filter: blur(10px) !important;
+    }
+
+    .k-notification-error {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+        color: white !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3) !important;
+        padding: 16px 20px !important;
+        backdrop-filter: blur(10px) !important;
+    }
+
+    .k-notification-info {
+        background: linear-gradient(135deg, #2d7a7a 0%, #1a5e5e 100%) !important;
+        color: white !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 8px 24px rgba(45, 122, 122, 0.3) !important;
+        padding: 16px 20px !important;
+        backdrop-filter: blur(10px) !important;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal-overlay.active {
+        display: flex !important;
+    }
+
+    .modal-box {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        width: 420px;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(21, 66, 18, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @@keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-box h4 {
+        color: #1b5e19;
+        margin-bottom: 12px;
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+    }
+
+    .modal-box p {
+        font-size: 14px;
+        color: #5a7257;
+        margin-bottom: 20px;
+    }
+
+    #cancelReason {
+        width: 100%;
+        padding: 12px;
+        border: 1.5px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+        border-radius: 12px;
+        margin-top: 12px;
+        resize: none;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        transition: all 0.3s ease;
+    }
+
+    #cancelReason:focus {
+        outline: none;
+        border-color: #2d7a27;
+        box-shadow: 0 0 0 3px rgba(45, 122, 39, 0.1);
+    }
+
+    .modal-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .modal-btn {
+        padding: 10px 24px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .modal-btn-secondary {
+        background: #f0faf2;
+        color: #1b5e19;
+        border: 1.5px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+    }
+
+    .modal-btn-secondary:hover {
+        background: #e8f5ec;
+        border-color: #2d7a27;
+    }
+
+    .modal-btn-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        color: white;
+    }
+
+    .modal-btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    }
+
+    @@media (max-width: 768px) {
+        .orders-page-title {
+            font-size: 24px;
+        }
+
+        .order-card {
+            padding: 20px;
+        }
+
+        .order-info-row {
+            grid-template-columns: 1fr;
+        }
+
+        .order-footer {
+            flex-direction: column;
+        }
+
+        .track-btn {
+            width: 100%;
+        }
+
+        .modal-box {
+            width: 90%;
+            padding: 24px;
+        }
+    }
+</style>
+
+<span id="popupNotification"></span>
+
+<div class="mb-4">
+    <h1 class="orders-page-title">
+        <i class="fi fi-rr-box-alt"></i>
+        My Orders
+    </h1>
+    <p class="orders-page-desc">Manage and track all your purchases in one place</p>
+</div>
+
+<div id="ordersContainer" class="orders-container">
+    <div class="orders-loading">
+        <div class="loading-spinner"></div>
+        <span class="loading-text">Loading your orders...</span>
+    </div>
+</div>
+
+<div class="modal-overlay" id="cancelModal">
+    <div class="modal-box">
+        <h4>Cancel Order</h4>
+        <p>Please enter a reason for cancellation:</p>
+        <textarea id="cancelReason" rows="3" placeholder="Tell us why you're cancelling this order..."></textarea>
+        <div class="modal-buttons">
+            <button class="modal-btn modal-btn-secondary" onclick="closeCancelModal()">
+                <i class="fi fi-rr-cross"></i> Back
+            </button>
+            <button class="modal-btn modal-btn-danger" onclick="confirmCancel()">
+                <i class="fi fi-rr-check"></i> Confirm Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_URL = 'http://localhost:5020/api/Vendor';
+        let notification;
+        let allOrdersData = []; // Store full data locally to avoid JSON attribute issues
+
+        $(document).ready(function () {
+            notification = $("#popupNotification").kendoNotification({
+                position: { pinned: true, top: 30, right: 30 },
+                autoHideAfter: 3000,
+                stacking: "down",
+                templates: [
+                    { type: "success", template: "<div><i class='fas fa-check-circle me-2'></i> #= message #</div>" },
+                    { type: "error", template: "<div><i class='fas fa-exclamation-circle me-2'></i> #= message #</div>" }
+                ]
+            }).data("kendoNotification");
+
+            loadOrders();
+        });
+
+        async function loadOrders() {
+            const token = getCookie('authToken');
+            try {
+                const res = await fetch(`${API_URL}/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                console.log(result)
+
+                // Store data globally to handle Reorder securely
+                allOrdersData = result.data || [];
+
+                displayOrders(allOrdersData);
+            } catch (err) {
+                $("#ordersContainer").html('<p style="text-align:center;">Failed to load order history.</p>');
+            }
+        }
+
+        function displayOrders(orders) {
+            if (orders.length === 0) {
+                $("#ordersContainer").html(`
+                    <div class="orders-empty">
+                        <i class="fi fi-rr-inbox"></i>
+                        <h3>No Orders Yet</h3>
+                        <p>You haven't placed any orders. Start browsing our catalog!</p>
+                        <a href="/Vendor/Catalog" style="display: inline-block; padding: 10px 24px; border-radius: 24px; background: linear-gradient(135deg, #2d7a27 0%, #1b5e19 100%); color: white; text-decoration: none; font-weight: 700;">
+                            <i class="fi fi-rr-shop"></i> Shop Now
+                        </a>
+                    </div>
+                `);
+                return;
+            }
+
+            let html = '';
+            orders.forEach(order => {
+                const status = (order.status || '').toLowerCase();
+                let statusClass = (status === 'delivered') ? 'status-delivered' :
+                    (status === 'dispatched' || status === 'in_transit') ? 'status-transit' :
+                        (status === 'cancelled') ? 'status-cancelled' : 'status-placed';
+
+                const canCancel = (status === 'placed' || status === 'admin_confirmed');
+                const orderDate = new Date(order.orderDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                html += `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-id"><i class="fi fi-rr-tag"></i> ${order.orderId}</div>
+                            <span class="order-status ${statusClass}">
+                                <i class="fi fi-rr-check-circle"></i> ${order.statusText || order.status}
+                            </span>
+                        </div>
+                        <div class="order-info-row">
+                         
+                            <div class="order-info-item">
+                                <span class="order-info-label">Total Amount</span>
+                                <span class="order-total">₹${order.grandTotal.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="order-info-item">
+                                <span class="order-info-label">Items</span>
+                                <span class="order-date">${order.itemCount || 0} item${order.itemCount !== 1 ? 's' : ''}</span>
+                            </div>
+                        </div>
+                        <div class="order-footer">
+                            ${canCancel ? `<button class="track-btn btn-cancel" onclick="openCancelModal('${order.orderId}')"><i class="fi fi-rr-cross"></i> Cancel Order</button>` : ''}
+                            <button class="track-btn btn-track" onclick="location.href='/Vendor/OrderTracking?id=${order.orderId}'"><i class="fi fi-rr-map-marker-check"></i> Track</button>
+                        </div>
+                    </div>
+                `;
+            });
+            $("#ordersContainer").html(html);
+        }
+
+        // --- SECURE REORDER LOGIC ---
+        // --- DATABASE-SYNCED REORDER LOGIC ---
+        async function processInlineReorder(orderId) {
+            // 1. Find the specific order from our loaded global data
+            const order = allOrdersData.find(o => o.orderId === orderId);
+
+            if (!order) {
+                notification.show({ message: "Order data not found." }, "error");
+                return;
+            }
+
+            // 2. Fetch items if they aren't already loaded in the object
+            // (Common in history lists where items are kept in a separate detail call)
+            let itemsToProcess = order.items;
+
+            if (!itemsToProcess || itemsToProcess.length === 0) {
+                try {
+                    const res = await fetch(`${API_URL}/orders/track/${orderId}`, {
+                        headers: { 'Authorization': `Bearer ${getCookie('authToken')}` }
+                    });
+                    const details = await res.json();
+                    if (details.success && details.data.items) {
+                        itemsToProcess = details.data.items;
+                    } else {
+                        throw new Error("No items found");
+                    }
+                } catch (err) {
+                    notification.show({ message: "Could not retrieve items for reorder." }, "error");
+                    return;
+                }
+            }
+
+            notification.show({ message: "Adding items to your cart..." }, "info");
+
+            let successCount = 0;
+            const token = getCookie('authToken');
+
+            // 3. Loop through items and call the Cart API exactly like the Catalog does
+            for (const item of itemsToProcess) {
+                try {
+                    const response = await fetch(`${API_URL}/cart/add`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            cropId: item.productId,
+                            quantity: item.quantity
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        successCount++;
+                        console.log(`✓ Added ${item.productName} to cart`);
+                    } else {
+                        console.warn(`✗ Failed to add ${item.productName}: ${result.message}`);
+                    }
+                } catch (error) {
+                    console.error(`Network error adding ${item.productName}:`, error);
+                }
+            }
+
+            // 4. Update UI and provide feedback
+            if (successCount > 0) {
+                // Refresh local storage/badge by calling the Cart Summary
+                try {
+                    const cartRes = await fetch(`${API_URL}/cart`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const cartData = await cartRes.json();
+                    if (cartData.success && cartData.data.items) {
+                        // Transform API response to match frontend cart format
+                        const transformedCart = cartData.data.items.map(item => ({
+                            id: item.cropId,
+                            name: item.cropName,
+                            price: item.unitPrice,
+                            quantity: item.quantity,
+                            total: item.totalPrice,
+                            unit: item.unit,
+                            grade: item.grade || ''
+                        }));
+                        localStorage.setItem('vendor_cart', JSON.stringify(transformedCart));
+                    }
+                } catch (e) {
+                    console.error('Error updating cart from API:', e);
+                }
+
+                // Trigger global layout updates (if defined in your _VendorLayout)
+                if (window.updateHeaderCartCount) window.updateHeaderCartCount();
+                if (window.syncGlobalBadges) window.syncGlobalBadges();
+
+                notification.show({
+                    message: `Reordered ${successCount} items successfully!`
+                }, "success");
+            } else {
+                notification.show({ message: "Failed to add items. They may be out of stock." }, "error");
+            }
+        }
+
+        // Cancel Logic
+        let cancelOrderId = null;
+        function openCancelModal(id) { 
+            cancelOrderId = id; 
+            $("#cancelModal").addClass("active");
+        }
+        function closeCancelModal() { 
+            $("#cancelModal").removeClass("active");
+            $("#cancelReason").val('');
+        }
+
+        async function confirmCancel() {
+            const reason = $("#cancelReason").val() || "Cancelled by vendor";
+            const token = getCookie('authToken');
+            try {
+                const res = await fetch(`${API_URL}/orders/cancel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ orderId: cancelOrderId, reason: reason })
+                });
+                const result = await res.json();
+                notification.show({ message: result.message }, result.success ? "success" : "error");
+                closeCancelModal();
+                loadOrders();
+            } catch (e) {
+                notification.show({ message: "System Error" }, "error");
+            }
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+    </script>
+}

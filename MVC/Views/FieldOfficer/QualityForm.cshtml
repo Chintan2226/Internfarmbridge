@@ -1,0 +1,359 @@
+@{
+    Layout = "_FieldOfficerLayout";
+    ViewData["Title"] = "Quality Inspection Form";
+}
+
+<div class="qf-wrapper">
+
+    <!-- Page Header -->
+    <div class="qf-page-header">
+        <div class="qf-page-header-left">
+            <button class="qf-back-btn" onclick="history.back()">
+                <i class="fa fa-arrow-left"></i>
+            </button>
+            <div>
+                <h2 class="qf-page-title">Quality Inspection</h2>
+                <p class="qf-page-sub">Fill the form carefully — this cannot be edited later</p>
+            </div>
+        </div>
+        <div class="qf-request-badge" id="requestBadge">
+            Loading...
+        </div>
+    </div>
+
+    <!-- Farmer Info Card -->
+    <div class="qf-info-card" id="farmerInfoCard">
+        <div class="qf-info-loading">
+            <i class="fa fa-spinner fa-spin"></i> Loading request details...
+        </div>
+    </div>
+
+    <!-- Inspection Form -->
+    <div class="qf-form-card">
+        <div class="qf-form-section-title">
+            <i class="fa fa-flask"></i> Quality Parameters
+        </div>
+
+        <div class="qf-form-grid">
+
+            <!-- Moisture -->
+            <div class="qf-field">
+                <label class="qf-label">Moisture Content <span class="qf-unit">(%)</span></label>
+                <input type="number" id="moisture" class="qf-input"
+                       placeholder="e.g. 12.5" min="0" max="100" step="0.1" />
+                <span class="qf-hint">Acceptable: below 14%</span>
+            </div>
+
+            <!-- Foreign Matter -->
+            <div class="qf-field">
+                <label class="qf-label">Foreign Matter <span class="qf-unit">(%)</span></label>
+                <input type="number" id="foreignMatter" class="qf-input"
+                       placeholder="e.g. 2.0" min="0" max="100" step="0.1" />
+                <span class="qf-hint">Acceptable: below 3%</span>
+            </div>
+
+            <!-- Grade — add D option -->
+            <div class="qf-field">
+                <label class="qf-label">Crop Grade</label>
+                <select id="grade" class="qf-input qf-select">
+                    <option value="">-- Select Grade --</option>
+                    <option value="A">Premium</option>
+                    <option value="B">Grade A — Standard</option>
+                    <option value="C">Grade B — Below Standard</option>
+                    <option value="D">Grade C — Reject Quality</option>
+                </select>
+            </div>
+
+            <!-- Weight Checked — add to form grid -->
+            <div class="qf-field">
+                <label class="qf-label">Weight Checked <span class="qf-unit">(kg)</span></label>
+                <input type="number" id="weightChecked" class="qf-input"
+                    placeholder="e.g. 50" min="0.01" step="0.1" />
+            </div>
+
+            <!-- Pest / Disease -->
+            <div class="qf-field">
+                <label class="qf-label">Pest / Disease <span class="qf-unit">(optional)</span></label>
+                <input type="text" id="pestDisease" class="qf-input"
+                    placeholder="e.g. Aphids, fungal spots" />
+            </div>
+
+            <!-- Variety -->
+            <div class="qf-field">
+                <label class="qf-label">Crop Variety <span class="qf-unit">(optional)</span></label>
+                <input type="text" id="variety" class="qf-input"
+                    placeholder="e.g. HD-2967" />
+            </div>
+
+            <!-- FO Assessed Price -->
+            <div class="qf-field">
+                <label class="qf-label">Your Assessed Price <span class="qf-unit">(₹/kg)</span> <span class="qf-optional">(Optional)</span></label>
+                <input type="number" id="foAssessedPrice" class="qf-input"
+                    placeholder="Leave blank to use farmer's asking price" min="0" step="1" />
+                <span class="qf-hint">If you don't provide a price, farmer's asking price will be used</span>
+            </div>
+
+            <!-- Accepted Quantity -->
+            <div class="qf-field">
+                <label class="qf-label">Accepted Quantity <span class="qf-unit">(kg)</span></label>
+                <input type="number" id="acceptedQty" class="qf-input"
+                       placeholder="e.g. 1800" min="0" step="1" />
+            </div>
+
+            <!-- Rejected Quantity -->
+            <div class="qf-field">
+                <label class="qf-label">Rejected Quantity <span class="qf-unit">(kg)</span></label>
+                <input type="number" id="rejectedQty" class="qf-input"
+                       placeholder="e.g. 200" min="0" step="1" />
+            </div>
+
+            <!-- Inspection Date -->
+            <div class="qf-field">
+                <label class="qf-label">Inspection Date</label>
+                <input type="date" id="inspectionDate" class="qf-input" />
+            </div>
+
+        </div>
+
+        <!-- Notes -->
+        <div class="qf-field qf-field-full">
+            <label class="qf-label">Inspector Notes</label>
+            <textarea id="notes" class="qf-input qf-textarea"
+                      placeholder="Add any observations, quality notes, or special remarks..."></textarea>
+        </div>
+        <div class="qf-field qf-field-full">
+            <label class="qf-label">Defects Noted</label>
+            <textarea id="defectsNoted" class="qf-input qf-textarea"
+                placeholder="Mention defects if any..."></textarea>
+        </div>
+        <!-- Pass / Fail Toggle -->
+        <div class="qf-result-section">
+            <p class="qf-result-label">Inspection Result</p>
+            <div class="qf-result-toggle">
+                <button class="qf-result-btn qf-pass-btn active" id="btnPass" onclick="setResult(true)">
+                    <i class="fa fa-check-circle"></i> Pass
+                </button>
+                <button class="qf-result-btn qf-fail-btn" id="btnFail" onclick="setResult(false)">
+                    <i class="fa fa-times-circle"></i> Fail
+                </button>
+            </div>
+            <input type="hidden" id="isPassed" value="true" />
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="qf-photo-section">
+            <p class="qf-result-label">Inspection Photos</p>
+            <label class="qf-photo-upload-label" for="photoInput">
+                <i class="fa fa-camera"></i>
+                <span>Click to upload photos</span>
+                <small>JPG, PNG up to 5MB each</small>
+            </label>
+            <input type="file" id="photoInput" multiple accept="image/*"
+                   style="display:none;" onchange="previewPhotos(this)" />
+            <div class="qf-photo-preview" id="photoPreview"></div>
+        </div>
+
+        <!-- Submit -->
+        <div class="qf-submit-row">
+            <button class="qf-cancel-btn" onclick="history.back()">Cancel</button>
+            <button class="qf-submit-btn" id="submitBtn" onclick="submitInspection()">
+                <i class="fa fa-paper-plane"></i> Submit Inspection
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function () {
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var requestId = urlParams.get('id');
+
+    // Set today's date
+    $('#inspectionDate').val(new Date().toISOString().split('T')[0]);
+
+    // Load farmer/request details
+    if (requestId) {
+        $.ajax({
+            url: foApiUrl('/qc-request/' + requestId),
+            type: 'GET',
+            success: function (data) {
+                renderFarmerInfo(data);
+                $('#requestBadge').text('Request #' + requestId);
+            },
+            error: function (xhr) {
+                if (handleFoUnauthorized(xhr)) return;
+                $('#farmerInfoCard').html(
+                    '<div class="qf-info-loading">Failed to load request details.</div>'
+                );
+                showFoLoadFailedAlert("request details");
+            }
+        });
+    } else {
+        $('#farmerInfoCard').html(
+            '<div class="qf-info-loading" style="color:#e53935;">No request ID provided.</div>'
+        );
+    }
+
+    function renderFarmerInfo(data) {
+        // Format slot date
+        var slotDate = data.slotDate
+            ? new Date(data.slotDate).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
+            : '-';
+
+        // Format slot time
+        function fmt(t) {
+            if (!t) return '-';
+            var p = t.split(':');
+            var h = parseInt(p[0]), m = p[1];
+            return (h % 12 || 12) + ':' + m + (h >= 12 ? ' PM' : ' AM');
+        }
+        var slotTime = (data.startTime && data.endTime)
+            ? fmt(data.startTime) + ' - ' + fmt(data.endTime)
+            : '-';
+
+        $('#farmerInfoCard').html(`
+            <div class="qf-info-grid">
+                <div class="qf-info-item">
+                    <span class="qf-info-label">Farmer</span>
+                    <span class="qf-info-value">${data.farmerName || '-'}</span>
+                </div>
+                <div class="qf-info-item">
+                    <span class="qf-info-label">Crop</span>
+                    <span class="qf-info-value">${data.cropType || '-'}</span>
+                </div>
+                <div class="qf-info-item">
+                    <span class="qf-info-label">Total Quantity</span>
+                    <span class="qf-info-value">${data.quantity || '-'} ${data.unit || 'kg'}</span>
+                </div>
+                <div class="qf-info-item">
+                    <span class="qf-info-label">Location</span>
+                    <span class="qf-info-value">${data.location || '-'}</span>
+                </div>
+                <div class="qf-info-item">
+                    <span class="qf-info-label">Slot Date</span>
+                    <span class="qf-info-value">${slotDate}</span>
+                </div>
+                <div class="qf-info-item">
+                    <span class="qf-info-label">Slot Time</span>
+                    <span class="qf-info-value">${slotTime}</span>
+                </div>
+                <div class="qf-info-item">
+                    <span class="qf-info-label">Farmer Asking Price</span>
+                    <span class="qf-info-value" style="color:#2e7d32;font-weight:700;">
+                        ₹${data.askingPrice ? Number(data.askingPrice).toLocaleString('en-IN') : '-'}/kg
+                    </span>
+                </div>
+            </div>
+        `);
+    }
+});
+
+// Pass / Fail toggle
+function setResult(passed) {
+    $('#isPassed').val(passed.toString());
+    if (passed) {
+        $('#btnPass').addClass('active');
+        $('#btnFail').removeClass('active');
+    } else {
+        $('#btnFail').addClass('active');
+        $('#btnPass').removeClass('active');
+    }
+}
+
+// Photo preview
+function previewPhotos(input) {
+    var preview = $('#photoPreview');
+    preview.empty();
+    Array.from(input.files).forEach(function (file) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            preview.append(`
+                <div class="qf-photo-thumb">
+                    <img src="${e.target.result}" alt="preview"/>
+                </div>
+            `);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Submit
+function submitInspection() {
+    var urlParams   = new URLSearchParams(window.location.search);
+    var requestId   = urlParams.get('id');
+    var moisture    = $('#moisture').val();
+    var foreign     = $('#foreignMatter').val();
+    var grade       = $('#grade').val();
+    var accepted    = $('#acceptedQty').val();
+    var rejected    = $('#rejectedQty').val();
+    var weightChk   = $('#weightChecked').val();
+    var foPrice     = $('#foAssessedPrice').val();
+
+    // Validation
+    if (!moisture || !foreign || !grade || !accepted || !rejected || !weightChk) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Fields',
+            text: 'Please fill all required fields (Price is optional - will use farmer asking price if not provided).',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#28a745'
+        });
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append("procurementRequestId", parseInt(requestId));
+    formData.append("moisturePct", parseFloat(moisture));
+    formData.append("foreignMatterPct", parseFloat(foreign));
+    formData.append("pestDiseaseObserved", $('#pestDisease').val() || "");
+    formData.append("variety", $('#variety').val() || "");
+    formData.append("grade", grade);
+    formData.append("weightCheckedKg", parseFloat(weightChk));
+    formData.append("acceptedQuantity", parseFloat(accepted));
+    formData.append("rejectedQuantity", parseFloat(rejected));
+    formData.append("defectsNoted", $('#defectsNoted').val() || "");
+    formData.append("remarks", $('#notes').val() || "");
+    formData.append("foAssessedPrice", foPrice ? parseFloat(foPrice) : 0);
+    formData.append("passed", $('#isPassed').val() === 'true');
+
+    var photos = $('#photoInput')[0].files;
+    if (photos && photos.length > 0) {
+        for (var i = 0; i < photos.length; i++) {
+            formData.append("photos", photos[i]);
+        }
+    }
+
+    $('#submitBtn').prop('disabled', true)
+                  .html('<i class="fa fa-spinner fa-spin"></i> Submitting...');
+
+    $.ajax({
+        url         : foApiUrl('/submit-inspection-with-photos'),
+        type        : 'POST',
+        contentType : false,
+        processData : false,
+        data        : formData,
+        success     : function () {
+            $('#submitBtn').html('<i class="fa fa-check"></i> Submitted!')
+                          .css('background', '#388e3c');
+            setTimeout(function () {
+                window.location.href = '/FieldOfficer/Dashboard';
+            }, 1500);
+        },
+        error: function (xhr) {
+            if (handleFoUnauthorized(xhr)) return;
+            console.log("FULL ERROR:", xhr.responseText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Form submission failed. Check console for details.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+        }
+    });
+}
+</script>
+}

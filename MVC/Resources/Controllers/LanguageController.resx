@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="nav_home" xml:space="preserve"><value>Home</value></data>
+  <data name="nav_how" xml:space="preserve"><value>How It Works</value></data>
+  <data name="nav_who" xml:space="preserve"><value>Who It's For</value></data>
+  <data name="nav_ai" xml:space="preserve"><value>AI Features</value></data>
+  <data name="nav_why" xml:space="preserve"><value>Why FarmBridge</value></data>
+  <data name="btn_login" xml:space="preserve"><value>Login</value></data>
+  <data name="btn_contact" xml:space="preserve"><value>Contact Us</value></data>
+  <data name="hero_hindi_tag" xml:space="preserve"><value>सीधा, साफ और सच्चा।</value></data>
+  <data name="hero_badge" xml:space="preserve"><value>India's Trusted Agri B2B</value></data>
+  <data name="hero_title" xml:space="preserve"><value>Centralized Procurement&lt;br/&gt;for a &lt;span&gt;Smarter Bharat&lt;/span&gt;</value></data>
+  <data name="hero_sub" xml:space="preserve"><value>Transforming India's agricultural supply chain with AI-driven procurement. One platform connecting farmers, vendors, and field officers seamlessly.</value></data>
+  <data name="btn_start" xml:space="preserve"><value>Start Now</value></data>
+  <data name="btn_demo" xml:space="preserve"><value>Watch Demo</value></data>
+  <data name="hero_trust" xml:space="preserve"><value>&lt;strong&gt;12,000+&lt;/strong&gt; farmers already onboarded</value></data>
+  <data name="hero_quality" xml:space="preserve"><value>Quality Assured</value></data>
+  <data name="hero_payments" xml:space="preserve"><value>Transparent Payments</value></data>
+  <data name="float_supply" xml:space="preserve"><value>Supply Efficiency</value></data>
+  <data name="float_growth" xml:space="preserve"><value>↑ Growth this season</value></data>
+  <data name="float_order" xml:space="preserve"><value>Order #4821</value></data>
+  <data name="float_transit" xml:space="preserve"><value>In Transit to Delhi</value></data>
+  <data name="float_live" xml:space="preserve"><value>Live tracking active</value></data>
+  <data name="float_price_alert" xml:space="preserve"><value>Tomato · AI Price</value></data>
+  <data name="float_msp" xml:space="preserve"><value>+8% above MSP</value></data>
+  <data name="stat_farmers" xml:space="preserve"><value>Registered Farmers</value></data>
+  <data name="stat_farmers_hi" xml:space="preserve"><value>पंजीकृत किसान</value></data>
+  <data name="stat_delivery" xml:space="preserve"><value>On-time Delivery</value></data>
+  <data name="stat_delivery_hi" xml:space="preserve"><value>समय पर डिलीवरी</value></data>
+  <data name="stat_trans" xml:space="preserve"><value>Transactions Processed</value></data>
+  <data name="stat_trans_hi" xml:space="preserve"><value>प्रोसेस किए गए लेनदेन</value></data>
+  <data name="stat_states" xml:space="preserve"><value>States Connected</value></data>
+  <data name="stat_states_hi" xml:space="preserve"><value>जुड़े हुए राज्य</value></data>
+  <data name="how_badge" xml:space="preserve"><value>Process</value></data>
+  <data name="how_title" xml:space="preserve"><value>Simple, Fast, Transparent&lt;br/&gt;Supply Chain Flow</value></data>
+  <data name="how_sub" xml:space="preserve"><value>From harvest to delivery — every step is tracked, verified, and transparent. Ek hi platform, poora supply chain.</value></data>
+  <data name="step1_title" xml:space="preserve"><value>Farmer Lists Produce</value></data>
+  <data name="step1_desc" xml:space="preserve"><value>Farmers upload crop details, quantities &amp; harvest dates via web dashboard. AI predicts best price.</value></data>
+  <data name="step2_title" xml:space="preserve"><value>Warehouse Verification</value></data>
+  <data name="step2_desc" xml:space="preserve"><value>Farmers deliver produce to the nearest warehouse. Field Officers verify quality and generate digital grading reports on-site.</value></data>
+  <data name="step3_title" xml:space="preserve"><value>Vendor Places Order</value></data>
+  <data name="step3_desc" xml:space="preserve"><value>Vendors browse the live catalog, add to cart, and place bulk purchase orders with transparent pricing.</value></data>
+  <data name="step4_title" xml:space="preserve"><value>Deliver &amp; Pay</value></data>
+  <data name="step4_desc" xml:space="preserve"><value>Logistics picks up, real-time tracking begins. Payment is auto-released to platform upon delivery confirmation.</value></data>
+  <data name="step_n" xml:space="preserve"><value>Step</value></data>
+  <data name="mod_badge" xml:space="preserve"><value>Platform Modules</value></data>
+  <data name="mod_title" xml:space="preserve"><value>Built for Everyone&lt;br/&gt;in the Supply Chain</value></data>
+  <data name="mod_sub" xml:space="preserve"><value>4 dedicated modules — each tailored to the specific needs of every stakeholder in India's agricultural ecosystem.</value></data>
+  <data name="farmer_mod_title" xml:space="preserve"><value>Farmer Module</value></data>
+  <data name="farmer_mod_sub" xml:space="preserve"><value>🌾 किसान — Kisan Portal</value></data>
+  <data name="farmer_mod_desc" xml:space="preserve"><value>Empowers farmers to manage produce, compare market prices using AI, and track orders &amp; payments — all in one simple dashboard designed for ease of use.</value></data>
+  <data name="vendor_mod_title" xml:space="preserve"><value>Vendor Module</value></data>
+  <data name="vendor_mod_sub" xml:space="preserve"><value>🏪 व्यापारी — Vyapari Portal</value></data>
+  <data name="vendor_mod_desc" xml:space="preserve"><value>E-commerce-style experience for vendors to browse quality-assured produce, place bulk orders, repeat past orders, and track every delivery in real time.</value></data>
+  <data name="mod_feat_ai" xml:space="preserve"><value>AI-powered Market Price Comparison</value></data>
+  <data name="mod_feat_listing" xml:space="preserve"><value>Crop Listing &amp; Order History Dashboard</value></data>
+  <data name="mod_feat_payment" xml:space="preserve"><value>Payment Status &amp; Analytics Tracking</value></data>
+  <data name="mod_feat_weather" xml:space="preserve"><value>Weather Forecaster Integration</value></data>
+  <data name="mod_feat_catalog" xml:space="preserve"><value>Browse Catalog with Product Specifications</value></data>
+  <data name="mod_feat_bulk" xml:space="preserve"><value>Bulk Order Cart &amp; Quick Repeat Order</value></data>
+  <data name="mod_feat_tracking" xml:space="preserve"><value>Real-time Delivery Tracking (Live)</value></data>
+  <data name="mod_feat_billing" xml:space="preserve"><value>Integrated Payment Gateway &amp; Billing</value></data>
+  <data name="btn_join_farmer" xml:space="preserve"><value>Join as Farmer</value></data>
+  <data name="btn_join_vendor" xml:space="preserve"><value>Join as Vendor</value></data>
+  <data name="ai_badge" xml:space="preserve"><value>AI Powered</value></data>
+  <data name="ai_title" xml:space="preserve"><value>Smart Intelligence&lt;br/&gt;for Every Decision</value></data>
+  <data name="ai_sub" xml:space="preserve"><value>FarmBridge uses AI to eliminate guesswork — whether it's pricing, demand forecasting, or discount optimization. Data-driven decisions for every farmer and vendor.</value></data>
+  <data name="ai_dash_title" xml:space="preserve"><value>🤖 AI Price Intelligence Dashboard</value></data>
+  <data name="ai_dash_live" xml:space="preserve"><value>Live Data</value></data>
+  <data name="ai_crop_tomato" xml:space="preserve"><value>Tomato</value></data>
+  <data name="ai_crop_onion" xml:space="preserve"><value>Onion</value></data>
+  <data name="ai_crop_potato" xml:space="preserve"><value>Potato</value></data>
+  <data name="ai_crop_maize" xml:space="preserve"><value>Maize</value></data>
+  <data name="ai_feat1_title" xml:space="preserve"><value>AI Market Price Prediction</value></data>
+  <data name="ai_feat1_desc" xml:space="preserve"><value>Real-time market price analysis and future price predictions for 50+ crops — helping farmers list at the best possible price.</value></data>
+  <data name="ai_feat2_title" xml:space="preserve"><value>Smart Discount Engine</value></data>
+  <data name="ai_feat2_desc" xml:space="preserve"><value>Admin-controlled AI that dynamically optimizes platform discounts for vendors based on order patterns, seasonal trends, and inventory surplus.</value></data>
+  <data name="why_badge" xml:space="preserve"><value>Why Choose Us</value></data>
+  <data name="why_title" xml:space="preserve"><value>Why FarmBridge?&lt;br/&gt;Because Farmers Deserve Better</value></data>
+  <data name="why_sub" xml:space="preserve"><value>India's 140 million farming families deserve a platform built for them — transparent, accessible, and fair.</value></data>
+  <data name="why1_title" xml:space="preserve"><value>Centralized Procurement</value></data>
+  <data name="why1_desc" xml:space="preserve"><value>One unified platform for farmers, vendors, and field officers. Streamlined ordering, quality checks, and payments — all managed centrally for maximum efficiency.</value></data>
+  <data name="why1_highlight" xml:space="preserve"><value>1 Platform</value></data>
+  <data name="why2_title" xml:space="preserve"><value>Quality Guaranteed</value></data>
+  <data name="why2_desc" xml:space="preserve"><value>Every batch is physically inspected by a certified Field Officer before payment is released. No compromise on quality.</value></data>
+  <data name="why2_highlight" xml:space="preserve"><value>100% Verified</value></data>
+  <data name="why3_title" xml:space="preserve"><value>Gov. Scheme Discovery</value></data>
+  <data name="why3_desc" xml:space="preserve"><value>Easy discovery and guided application assistance for local government farming subsidies, grants, and financial aid.</value></data>
+  <data name="why3_highlight" xml:space="preserve"><value>Subsidies</value></data>
+  <data name="why4_title" xml:space="preserve"><value>Transparent Payments</value></data>
+  <data name="why4_desc" xml:space="preserve"><value>Automated payment triggers. Farmers get paid directly upon verified delivery. Full payment history visible anytime.</value></data>
+  <data name="why4_highlight" xml:space="preserve"><value>Auto-Payments</value></data>
+  <data name="why5_title" xml:space="preserve"><value>Smart Notifications</value></data>
+  <data name="why5_desc" xml:space="preserve"><value>System-wide alerts for every milestone — order placed, quality approved, shipment picked up, payment released. Stay informed always.</value></data>
+  <data name="why5_highlight" xml:space="preserve"><value>Always Informed</value></data>
+  <data name="why6_title" xml:space="preserve"><value>Mobile-First Access</value></data>
+  <data name="why6_desc" xml:space="preserve"><value>Designed for the field. Farmers and vendors can manage everything from their smartphones — simple, fast, and accessible anywhere.</value></data>
+  <data name="why6_highlight" xml:space="preserve"><value>Simple &amp; Fast</value></data>
+  <data name="tech_title" xml:space="preserve"><value>Enterprise&lt;br/&gt;Grade Stack</value></data>
+  <data name="tech_sub" xml:space="preserve"><value>Built to scale with India's growing digital agriculture ecosystem.</value></data>
+  <data name="tech_pill_mvc" xml:space="preserve"><value>&lt;span class="tech-pill-icon"&gt;&lt;i class="fi fi-rr-terminal" style="font-size:14px;color:var(--blue-400);"&gt;&lt;/i&gt;&lt;/span&gt;.NET Core MVC / Web API</value></data>
+  <data name="tech_pill_postgres" xml:space="preserve"><value>&lt;span class="tech-pill-icon"&gt;&lt;i class="fi fi-rr-database" style="font-size:14px;color:var(--blue-600);"&gt;&lt;/i&gt;&lt;/span&gt;PostgreSQL</value></data>
+  <data name="tech_pill_redis" xml:space="preserve"><value>&lt;span class="tech-pill-icon"&gt;&lt;i class="fi fi-rr-bolt" style="font-size:14px;color:#ef4444;"&gt;&lt;/i&gt;&lt;/span&gt;Redis Cache</value></data>
+  <data name="tech_pill_rabbitmq" xml:space="preserve"><value>&lt;span class="tech-pill-icon"&gt;&lt;i class="fi fi-rr-envelope" style="font-size:14px;color:var(--saffron);"&gt;&lt;/i&gt;&lt;/span&gt;RabbitMQ</value></data>
+  <data name="tech_pill_elasticsearch" xml:space="preserve"><value>&lt;span class="tech-pill-icon"&gt;&lt;i class="fi fi-rr-search" style="font-size:14px;color:#00bfb3;"&gt;&lt;/i&gt;&lt;/span&gt;ElasticSearch</value></data>
+  <data name="tech_pill_kendoui" xml:space="preserve"><value>&lt;span class="tech-pill-icon"&gt;&lt;i class="fi fi-rr-palette" style="font-size:14px;color:var(--green-600);"&gt;&lt;/i&gt;&lt;/span&gt;Kendo UI + jQuery</value></data>
+  <data name="tech_pill_ai" xml:space="preserve"><value>&lt;span class="tech-pill-icon"&gt;&lt;i class="fi fi-rr-microchip" style="font-size:14px;color:var(--green-500);"&gt;&lt;/i&gt;&lt;/span&gt;AI Price Model</value></data>
+  <data name="tech_pill_payment" xml:space="preserve"><value>&lt;span class="tech-pill-icon"&gt;&lt;i class="fi fi-rr-money-bill-wave" style="font-size:14px;color:var(--gold);"&gt;&lt;/i&gt;&lt;/span&gt;Payment Gateway</value></data>
+  <data name="reach_badge" xml:space="preserve"><value>Our Reach</value></data>
+  <data name="reach_title" xml:space="preserve"><value>Across Bharat</value></data>
+  <data name="reach_sub" xml:space="preserve"><value>पूरे भारत में फैला हुआ</value></data>
+  <data name="test_badge" xml:space="preserve"><value>Voices from the Field</value></data>
+  <data name="test_title" xml:space="preserve"><value>What Our&lt;br/&gt;Users Say</value></data>
+  <data name="test1_quote" xml:space="preserve"><value>Pehle tomato ₹10 mein bechta tha, ab FarmBridge pe ₹24 milta hai. AI ka price suggestion bahut kaam aaya mujhe.</value></data>
+  <data name="test1_author" xml:space="preserve"><value>Ramesh Patel</value></data>
+  <data name="test1_role" xml:space="preserve"><value>Vegetable Farmer</value></data>
+  <data name="test2_quote" xml:space="preserve"><value>Bulk orders manage karna bahut easy ho gaya. Real-time tracking se mujhe pata rehta hai kab maal aayega — no more waiting in dark.</value></data>
+  <data name="test2_author" xml:space="preserve"><value>Priya Mehta</value></data>
+  <data name="test2_role" xml:space="preserve"><value>Wholesale Vendor</value></data>
+  <data name="test3_quote" xml:space="preserve"><value>Filling out quality forms and payment auto-triggers for the farmer. No paperwork, no delay. The system is very smooth.</value></data>
+  <data name="test3_author" xml:space="preserve"><value>Ajay Kumar</value></data>
+  <data name="test3_role" xml:space="preserve"><value>Field Officer</value></data>
+  <data name="test3_state" xml:space="preserve"><value>📍 Lucknow, Uttar Pradesh</value></data>
+  <data name="cta_title" xml:space="preserve"><value>Ready to Transform&lt;br/&gt;Indian Agriculture?</value></data>
+  <data name="cta_sub" xml:space="preserve"><value>Join thousands of farmers and vendors already on FarmBridge.&lt;br/&gt;&lt;span&gt;The farmer will get his due — straight, clean and true.&lt;/span&gt;</value></data>
+  <data name="btn_cta_farmer" xml:space="preserve"><value>Join as Farmer</value></data>
+  <data name="btn_cta_vendor" xml:space="preserve"><value>Start as Vendor</value></data>
+  <data name="footer_desc" xml:space="preserve"><value>India's centralized agri-procurement platform connecting farmers, vendors, and field officers in one transparent digital ecosystem.</value></data>
+  <data name="footer_tagline" xml:space="preserve"><value>From Farmer to Vendor — Straight, Clean, True.</value></data>
+  <data name="footer_col_platform" xml:space="preserve"><value>Platform</value></data>
+  <data name="footer_col_features" xml:space="preserve"><value>Features</value></data>
+  <data name="footer_col_support" xml:space="preserve"><value>Support</value></data>
+  <data name="footer_helpline" xml:space="preserve"><value>📞 Kisan Helpline</value></data>
+  <data name="footer_tollfree" xml:space="preserve"><value>Toll Free · 9AM–6PM</value></data>
+  <data name="footer_copy" xml:space="preserve"><value>© 2026 &lt;strong&gt;FarmBridge&lt;/strong&gt; — Empowering India's Kisan 🌾 | Made with ❤️ for Bharat</value></data>
+  <data name="footer_field_officer" xml:space="preserve"><value>Field Officer</value></data>
+  <data name="footer_admin_panel" xml:space="preserve"><value>Admin Panel</value></data>
+  <data name="footer_help_center" xml:space="preserve"><value>Help Center</value></data>
+  <data name="footer_contact_us" xml:space="preserve"><value>Contact Us</value></data>
+  <data name="footer_privacy_policy" xml:space="preserve"><value>Privacy Policy</value></data>
+  <data name="footer_terms_of_service" xml:space="preserve"><value>Terms of Service</value></data>
+  <data name="footer_demand_forecasting" xml:space="preserve"><value>Demand Forecasting</value></data>
+  <data name="footer_farmer_portal" xml:space="preserve"><value>Farmer Portal</value></data>
+  <data name="footer_vendor_portal" xml:space="preserve"><value>Vendor Portal</value></data>
+  <data name="footer_made_in_india" xml:space="preserve"><value>🇮🇳 Made in India</value></data>
+  <data name="footer_secure_platform" xml:space="preserve"><value>🔒 Secure Platform</value></data>
+  <data name="footer_dpiit_recognized" xml:space="preserve"><value>✅ DPIIT Recognized</value></data>
+  <data name="reach_farmer_hub" xml:space="preserve"><value>Farmer Hub</value></data>
+  <data name="reach_vendor_hub" xml:space="preserve"><value>Vendor Hub</value></data>
+  <data name="reach_main_office" xml:space="preserve"><value>Main Office (Surat)</value></data>
+    <data name="fp_brand_title" xml:space="preserve"><value>Reset Your Password</value></data>
+  <data name="fp_brand_sub" xml:space="preserve"><value>Quick, Secure &amp; Easy</value></data>
+  <data name="fp_feat_otp" xml:space="preserve"><value>Secure OTP Verification</value></data>
+  <data name="fp_feat_validity" xml:space="preserve"><value>10-Minute OTP Validity</value></data>
+  <data name="fp_feat_encrypted" xml:space="preserve"><value>Encrypted Password Storage</value></data>
+  <data name="fp_back_login" xml:space="preserve"><value>Back to Login</value></data>
+  <data name="fp_title_email" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="fp_sub_email" xml:space="preserve"><value>Enter your registered email. We'll send a 6-digit code.</value></data>
+  <data name="fp_label_email" xml:space="preserve"><value>Email Address</value></data>
+  <data name="fp_hint_email" xml:space="preserve"><value>We'll send a verification code to this email</value></data>
+  <data name="fp_btn_send_otp" xml:space="preserve"><value>Send OTP</value></data>
+  <data name="fp_title_otp" xml:space="preserve"><value>Verify OTP</value></data>
+  <data name="fp_sub_otp" xml:space="preserve"><value>Enter the 6-digit code sent to</value></data>
+  <data name="fp_label_otp" xml:space="preserve"><value>Verification Code</value></data>
+  <data name="fp_otp_expires" xml:space="preserve"><value>Code expires in</value></data>
+  <data name="fp_btn_resend" xml:space="preserve"><value>Resend Code</value></data>
+  <data name="fp_btn_back" xml:space="preserve"><value>Back</value></data>
+  <data name="fp_btn_verify" xml:space="preserve"><value>Verify Code</value></data>
+  <data name="fp_title_password" xml:space="preserve"><value>Set New Password</value></data>
+  <data name="fp_sub_password" xml:space="preserve"><value>Create a strong password for your account.</value></data>
+  <data name="fp_label_new_pw" xml:space="preserve"><value>New Password</value></data>
+  <data name="fp_label_confirm_pw" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="fp_rule_length" xml:space="preserve"><value>Min 8 chars</value></data>
+  <data name="fp_rule_letter" xml:space="preserve"><value>Letters (a-z)</value></data>
+  <data name="fp_rule_number" xml:space="preserve"><value>Number (0-9)</value></data>
+  <data name="fp_rule_special" xml:space="preserve"><value>Special (!@#$)</value></data>
+  <data name="fp_btn_reset" xml:space="preserve"><value>Reset Password</value></data>
+  <data name="fp_please_wait" xml:space="preserve"><value>Please wait...</value></data>
+  <data name="fp_success_title" xml:space="preserve"><value>Password Reset Successful!</value></data>
+  <data name="fp_success_msg" xml:space="preserve"><value>Your password has been updated. You will be redirected to login.</value></data>
+
+  <data name="fp_ph_email" xml:space="preserve"><value>e.g. farmer@example.com</value></data>
+  <data name="fp_ph_new_pw" xml:space="preserve"><value>Enter new password</value></data>
+  <data name="fp_ph_confirm_pw" xml:space="preserve"><value>Re-enter password</value></data>
+  <data name="video_badge" xml:space="preserve"><value>&lt;i class="fi fi-rr-play-alt"&gt;&lt;/i&gt; Our Vision</value></data>
+  <data name="video_title" xml:space="preserve"><value>Transforming&lt;br /&gt;Indian Agriculture</value></data>
+  <data name="video_sub" xml:space="preserve"><value>At FarmBridge, we believe that every farmer deserves transparent pricing and direct market access. Our platform combines innovative technology with sustainable practices to create a supply chain that empowers and endures.</value></data>
+  <data name="footer_fo_portal" xml:space="preserve"><value>FO Portal</value></data>
+  <data name="footer_admin_portal" xml:space="preserve"><value>Admin Portal</value></data>
+</root>

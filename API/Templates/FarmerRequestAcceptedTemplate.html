@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>QC Request Accepted – FarmBridge</title></head>
+<body style="margin:0;padding:0;background:#EAF5EC;font-family:Poppins,Segoe UI,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr><td align="center" style="padding:32px 16px">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1.5px solid #B9F5C8">
+      <tr><td style="background:#34C759;height:5px"></td></tr>
+      <tr>
+        <td align="center" style="background:#ffffff;padding:30px 32px">
+          <img src="https://res.cloudinary.com/dkcxw0pcz/image/upload/q_auto/f_auto/v1775734592/Logo_Without_Bg_is5p9a.png"
+               alt="FarmBridge"
+               style="height:100px;width:auto;display:block;margin:0 auto 12px auto;object-fit:contain" />
+          <p style="margin:0;font-size:12px;color:#5DB87A;letter-spacing:1.5px;text-transform:uppercase;font-weight:600">
+            Connecting Farmers &amp; Markets
+          </p>
+        </td>
+      </tr>
+      <tr><td style="background:#BBF7D0;height:1.5px"></td></tr>
+      <tr>
+        <td align="center" style="padding:28px 32px 20px;background:#ffffff">
+          <div style="font-size:48px;line-height:1;margin:0 auto 16px;text-align:center">🔬</div>
+          <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a1a1a">QC Request Accepted!</h1>
+          <p style="margin:0;font-size:14px;color:#555">Hello <strong>{{FARMER_NAME}}</strong>, your quality check request has been accepted and is being processed.</p>
+        </td>
+      </tr>
+      <tr><td style="padding:0 32px 24px">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#F6FFF8;border-radius:12px;border:1px solid #C8F5D5">
+          <tr><td style="padding:20px">
+            <p style="margin:0 0 10px;font-size:13px;color:#777;text-transform:uppercase;letter-spacing:.5px">QC Request Details</p>
+            <table width="100%" cellpadding="4" cellspacing="0">
+              <tr><td style="font-size:14px;color:#555;width:48%">QC Request ID</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">#{{QC_REQUEST_ID}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Crop / Lot</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">{{CROP_NAME}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Warehouse</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">{{WAREHOUSE_NAME}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Quantity</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">{{QUANTITY}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Scheduled slot</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">{{SLOT_DATE}} · {{TIME_RANGE}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Accepted On</td><td style="font-size:14px;color:#34C759;font-weight:700">{{ACCEPTED_AT}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Status</td><td><span style="background:#e6f9ee;color:#28a745;border-radius:20px;padding:2px 12px;font-size:13px;font-weight:600">Accepted</span></td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:0 32px 8px">
+        <div style="background:#F6FFF8;border-radius:12px;border:1px solid #C8F5D5;padding:16px 20px">
+          <p style="margin:0 0 6px;font-size:13px;color:#34C759;font-weight:600">📋 What Happens Next?</p>
+          <p style="margin:0 0 4px;font-size:13px;color:#555">1. A field officer will conduct the quality inspection.</p>
+          <p style="margin:0 0 4px;font-size:13px;color:#555">2. You will receive the QC report once the inspection is complete.</p>
+          <p style="margin:0;font-size:13px;color:#555">3. Payment will be triggered upon QC approval.</p>
+        </div>
+      </td></tr>
+      <tr><td style="padding:16px 32px 28px;text-align:center">
+        <a href="{{PORTAL_URL}}/farmer/qc/{{QC_REQUEST_ID}}" style="background:#34C759;color:#fff;text-decoration:none;padding:12px 28px;border-radius:24px;font-size:14px;font-weight:600;display:inline-block">Track QC Status</a>
+      </td></tr>
+      <tr><td style="background:#F6FFF8;padding:16px 32px;text-align:center;border-top:1px solid #e8f5eb">
+        <p style="margin:0;font-size:12px;color:#aaa">© 2026 FarmBridge · <a href="#" style="color:#34C759;text-decoration:none">Unsubscribe</a></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,949 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FarmBridge | Kisan se Vendor tak — Seedha, Saaf, Sacha</title>
+
+    <!-- Meta Tags -->
+    <meta name="description" content="Centralized procurement platform connecting farmers and vendors in India." />
+    <meta name="keywords" content="Agriculture, India, Farmers, Vendors, Supply Chain, AI, Procurement" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Baloo+2:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
+
+    <!-- Icons -->
+    <link rel='stylesheet'
+          href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css' />
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-brands/css/uicons-brands.css' />
+
+    <!-- Animation -->
+    <script type="module" src="https://unpkg.com/@@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="~/css/layouts/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/home/landing.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/home/intro.css" asp-append-version="true" />
+</head>
+
+<body class="bg-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+    <!-- Intro Animation Overlay -->
+    <div id="intro-overlay"></div>
+    <dotlottie-wc id="intro-logo" src="https://lottie.host/8d264ca0-2216-4373-8c7d-bf2a7f686a0e/iwSvPfj0NA.lottie"
+                  autoplay></dotlottie-wc>
+
+    <!-- Animated background -->
+    <div class="page-bg" aria-hidden="true">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="bg-orb bg-orb-4"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                <img id="nav-logo-target" src="/Logo/Logo_Without_Bg.png" alt="FarmBridge"
+                     onerror="this.style.display='none'" />
+                <span class="nav-logo-text">Farm<span>Bridge</span></span>
+            </a>
+
+            <div class="nav-links">
+                <div class="nav-indicator"></div>
+                <a href="#" class="nav-link active">
+                    <i class="fi fi-rr-home"></i>
+                    <span data-i18n="nav_home">Home</span>
+                </a>
+                <a href="#how-it-works" class="nav-link">
+                    <i class="fi fi-rr-settings"></i>
+                    <span data-i18n="nav_how">How It Works</span>
+                </a>
+                <a href="#modules" class="nav-link">
+                    <i class="fi fi-rr-users"></i>
+                    <span data-i18n="nav_who">Who It's For</span>
+                </a>
+                <a href="#ai-features" class="nav-link">
+                    <i class="fi fi-rr-microchip"></i>
+                    <span data-i18n="nav_ai">AI Features</span>
+                </a>
+                <a href="#why" class="nav-link">
+                    <i class="fi fi-rr-star"></i>
+                    <span data-i18n="nav_why">Why FarmBridge</span>
+                </a>
+            </div>
+
+            <div class="nav-actions">
+                <div class="lang-selector">
+                    <button class="btn-lang" onclick="toggleLangMenu(event)" id="langBtn" title="Change Language">
+                        <i class="fi fi-rr-globe"></i>
+                    </button>
+                    <div class="lang-dropdown" id="langMenu">
+                        <button onclick="changeLanguage('en')">English</button>
+                        <button onclick="changeLanguage('hi')">हिन्दी (Hindi)</button>
+                        <button onclick="changeLanguage('gu')">ગુજરાતી (Gujarati)</button>
+                    </div>
+                </div>
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <span
+                        style="font-family: var(--font-display); font-weight:600; color:var(--text-primary); white-space:nowrap;">Dashboard
+                        (@Context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)</span>
+                        <a href="/Account/Logout" class="btn-ghost" data-i18n="logout">Logout</a>
+                    }
+                else
+                    {
+                        <a href="#cta" class="btn-ghost" data-i18n="btn_login">Login</a>
+                        <a href="#footer" class="btn-primary" data-i18n="btn_contact">Contact Us</a>
+                    }
+                </div>
+
+                <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+                    <i class="fi fi-rr-menu-burger" style="color:var(--text-secondary);font-size:24px;"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="#" class="mobile-nav-link active" onclick="toggleMenu()">
+                <i class="fi fi-rr-home"></i>
+                <span data-i18n="nav_home">Home</span>
+            </a>
+            <a href="#how-it-works" class="mobile-nav-link" onclick="toggleMenu()">
+                <i class="fi fi-rr-settings"></i>
+                <span data-i18n="nav_how">How It Works</span>
+            </a>
+            <a href="#modules" class="mobile-nav-link" onclick="toggleMenu()">
+                <i class="fi fi-rr-users"></i>
+                <span data-i18n="nav_who">Who It's For</span>
+            </a>
+            <a href="#ai-features" class="mobile-nav-link" onclick="toggleMenu()">
+                <i class="fi fi-rr-microchip"></i>
+                <span data-i18n="nav_ai">AI Features</span>
+            </a>
+            <a href="#why" class="mobile-nav-link" onclick="toggleMenu()">
+                <i class="fi fi-rr-star"></i>
+                <span data-i18n="nav_why">Why FarmBridge</span>
+            </a>
+            <div class="mobile-lang-row">
+                <i class="fi fi-rr-globe"></i>
+                <select onchange="changeLanguage(this.value); toggleMenu()" id="mobileLangSelect">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                    <option value="gu">ગુજરાતી (Gujarati)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Hero -->
+        <section id="hero">
+            <div class="hero-slider-bg">
+                <div class="hero-slider">
+                    <img class="active" src="~/images/sliders/hero_1.png" alt="Indian farmers working in lush green fields"
+                         loading="eager" style="object-position: center 30%;" />
+                    <img src="https://images.unsplash.com/photo-1499529112087-3cb3b73cec95?w=1920&q=80&fm=jpg"
+                         alt="Golden wheat field at sunset" loading="lazy" />
+                    <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1920&q=80&fm=jpg"
+                         alt="Lush green terraced farmland" loading="lazy" />
+                    <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1920&q=80&fm=jpg"
+                         alt="Rice paddy field at golden hour" loading="lazy" />
+                    <img src="~/images/sliders/hero_5.png" alt="Indian rural agriculture and farmer landscape"
+                         loading="lazy" style="object-position: center;" />
+
+                </div>
+                <div class="hero-image-overlay"></div>
+            </div>
+
+            <div class="container hero-content-container">
+                <div class="hero-content-inner">
+                    <div class="hero-eyebrow">
+                        <span class="hero-hindi-tag" data-i18n="hero_hindi_tag"><i class="fi fi-rr-leaf"></i> किसान से वेंडर
+                            तक — सीधा</span>
+                            <div class="dot"></div>
+                            <span class="section-badge badge-green">
+                                <i class="fi fi-rr-badge-check hero-icon-small"></i>
+                                <span data-i18n="hero_badge">India's Trusted Agri B2B</span>
+                            </span>
+                        </div>
+
+                        <h1 class="hero-h1" id="hero-title">
+                            <span id="typewriter-line1" class="typewriter-line"></span><br /><span id="typewriter-line2"
+                                                                                                   class="typewriter-line accent-green"></span><span class="typewriter-cursor">|</span>
+                        </h1>
+
+                        <p class="hero-sub" data-i18n="hero_sub">
+                            Transforming India's agricultural supply chain with AI-driven procurement.<br />
+                            One platform connecting farmers, vendors, and field officers seamlessly.
+                        </p>
+
+                        <div class="hero-ctas">
+                            <a href="#cta" class="btn-hero-primary">
+                                <i class="fi fi-rr-rocket"></i>
+                                <span data-i18n="btn_start">अभी शुरू करें</span>
+                            </a>
+
+                        </div>
+
+                        <div class="hero-trust">
+                            <div class="trust-avatars">
+                                <div class="trust-avatar">R</div>
+                                <div class="trust-avatar trust-avatar-green">M</div>
+                                <div class="trust-avatar trust-avatar-blue">P</div>
+                                <div class="trust-avatar trust-avatar-saffron">A</div>
+                            </div>
+                            <div class="trust-text" data-i18n="hero_trust"><strong>12,000+</strong> farmers already onboarded
+                            </div>
+                            <div class="trust-divider"></div>
+                            <div class="trust-item">
+                                <i class="fi fi-rr-shield-check"></i>
+                                <span data-i18n="hero_quality">Quality Assured</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scroll Indicator like the reference image -->
+                <div class="scroll-indicator">
+                    <div class="mouse">
+                        <div class="wheel"></div>
+                    </div>
+                    <span class="scroll-text">SCROLL TO EXPLORE</span>
+                </div>
+            </section>
+
+            <!-- Stats -->
+            <section id="stats">
+                <div class="container">
+                    <div class="stats-band reveal">
+                        <div class="stat-item">
+                            <div class="stat-num">12<span class="stat-unit">k+</span></div>
+                            <div class="stat-label" data-i18n="stat_farmers">Registered Farmers</div>
+                            <div class="stat-sublabel" data-i18n="stat_farmers_hi">पंजीकृत किसान</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-num">98<span class="stat-unit">%</span></div>
+                            <div class="stat-label" data-i18n="stat_delivery">On-time Delivery</div>
+                            <div class="stat-sublabel" data-i18n="stat_delivery_hi">समय पर डिलीवरी</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-num">₹4<span class="stat-unit">Cr+</span></div>
+                            <div class="stat-label" data-i18n="stat_trans">Transactions Processed</div>
+                            <div class="stat-sublabel" data-i18n="stat_trans_hi">प्रोसेस किए गए लेनदेन</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-num">18<span class="stat-unit">+</span></div>
+                            <div class="stat-label" data-i18n="stat_states">States Connected</div>
+                            <div class="stat-sublabel" data-i18n="stat_states_hi">जुड़े हुए राज्य</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How It Works -->
+            <section id="how-it-works">
+                <div class="container">
+                    <div class="section-header reveal">
+                        <span class="section-badge badge-green" data-i18n="how_badge">Process</span>
+                        <h2 class="section-title" data-i18n="how_title">Simple, Fast, Transparent<br />Supply Chain Flow</h2>
+                        <p class="section-sub" data-i18n="how_sub">From harvest to delivery — every step is tracked, verified,
+                            and
+                            transparent. Ek hi platform, poora supply chain.</p>
+                        </div>
+
+                        <div style="position:relative;">
+                            <div class="how-connector"></div>
+                            <div class="how-grid">
+                                <div class="how-step reveal" style="transition-delay:0.1s">
+                                    <div class="how-step-num">
+                                        <i class="fi fi-rr-leaf how-step-icon"></i>
+                                    </div>
+                                    <div class="how-step-title" data-i18n="step1_title">Farmer Lists Produce</div>
+                                    <div class="how-step-desc" data-i18n="step1_desc">Farmers upload crop details, quantities &
+                                        harvest dates
+                                        via web dashboard. AI predicts best price.</div>
+                                        <span class="how-step-badge"><span data-i18n="step_n">Step</span> 1</span>
+                                    </div>
+                                    <div class="how-step reveal" style="transition-delay:0.3s">
+                                        <div class="how-step-num">
+                                            <i class="fi fi-rr-list-check how-step-icon"></i>
+                                        </div>
+                                        <div class="how-step-title" data-i18n="step2_title">Warehouse Verification</div>
+                                        <div class="how-step-desc" data-i18n="step2_desc">Farmers deliver produce to the nearest warehouse. Field Officers verify quality and generate digital grading reports on-site.</div>
+                                            <span class="how-step-badge"><span data-i18n="step_n">Step</span> 2</span>
+                                        </div>
+                                        <div class="how-step reveal" style="transition-delay:0.2s">
+                                            <div class="how-step-num">
+                                                <i class="fi fi-rr-shopping-cart how-step-icon"></i>
+                                            </div>
+                                            <div class="how-step-title" data-i18n="step3_title">Vendor Places Order</div>
+                                            <div class="how-step-desc" data-i18n="step3_desc">Vendors browse the live catalog, add to cart,
+                                                and place
+                                                bulk purchase orders with transparent pricing.</div>
+                                                <span class="how-step-badge"><span data-i18n="step_n">Step</span> 3</span>
+                                            </div>
+                                            <div class="how-step reveal" style="transition-delay:0.4s">
+                                                <div class="how-step-num">
+                                                    <i class="fi fi-rr-truck-side how-step-icon"></i>
+                                                </div>
+                                                <div class="how-step-title" data-i18n="step4_title">Deliver & Pay</div>
+                                                <div class="how-step-desc" data-i18n="step4_desc">Logistics picks up, real-time tracking begins.
+                                                    Payment is
+                                                    auto-released to platform upon delivery confirmation.</div>
+                                                    <span class="how-step-badge"><span data-i18n="step_n">Step</span> 4</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Modules -->
+                                <section id="modules">
+                                    <div class="container">
+                                        <div class="section-header reveal">
+                                            <span class="section-badge badge-saffron" data-i18n="mod_badge">Platform Modules</span>
+                                            <h2 class="section-title" data-i18n="mod_title">Built for Everyone<br />in the Supply Chain</h2>
+                                            <p class="section-sub" data-i18n="mod_sub">4 dedicated modules — each tailored to the specific needs of
+                                                every
+                                                stakeholder in India's agricultural ecosystem.</p>
+                                            </div>
+
+                                            <div class="modules-grid">
+                                                <!-- Farmer -->
+                                                <div class="module-card farmer reveal">
+                                                    <div class="module-icon-wrap">
+                                                        <i class="fi fi-rr-tractor" style="font-size: 32px;"></i>
+                                                    </div>
+                                                    <div class="module-title" data-i18n="farmer_mod_title">Farmer Module</div>
+                                                    <div class="module-subtitle" data-i18n="farmer_mod_sub"><i class="fi fi-rr-leaf"></i> किसान — Kisan
+                                                        Portal</div>
+                                                        <p class="module-desc" data-i18n="farmer_mod_desc">Empowers farmers to manage produce, compare
+                                                            market prices
+                                                            using AI, and track orders & payments — all in one simple dashboard designed for ease of use.
+                                                        </p>
+                                                        <div class="module-features">
+                                                            <div class="feature-item">
+                                                                <div class="feature-dot"><i class="fi fi-rr-check"></i></div><span
+                                                                data-i18n="mod_feat_ai">AI-powered Market Price Comparison</span>
+                                                            </div>
+                                                            <div class="feature-item">
+                                                                <div class="feature-dot"><i class="fi fi-rr-check"></i></div><span
+                                                                data-i18n="mod_feat_listing">Crop Listing & Order History Dashboard</span>
+                                                            </div>
+                                                            <div class="feature-item">
+                                                                <div class="feature-dot"><i class="fi fi-rr-check"></i></div><span
+                                                                data-i18n="mod_feat_payment">Payment Status & Analytics Tracking</span>
+                                                            </div>
+                                                            <div class="feature-item">
+                                                                <div class="feature-dot"><i class="fi fi-rr-check"></i></div><span
+                                                                data-i18n="mod_feat_weather">Weather Forecaster Integration</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Vendor -->
+                                                    <div class="module-card vendor reveal" style="transition-delay:0.1s">
+                                                        <div class="module-icon-wrap">
+                                                            <i class="fi fi-rr-shop" style="font-size: 32px;"></i>
+                                                        </div>
+                                                        <div class="module-title" data-i18n="vendor_mod_title">Vendor Module</div>
+                                                        <div class="module-subtitle" data-i18n="vendor_mod_sub"><i class="fi fi-rr-shop"></i> व्यापारी —
+                                                            Vyapari Portal</div>
+                                                            <p class="module-desc" data-i18n="vendor_mod_desc">E-commerce-style experience for vendors to browse
+                                                                quality-assured produce, place bulk orders, repeat past orders, and track every delivery in real
+                                                                time.</p>
+                                                                <div class="module-features">
+                                                                    <div class="feature-item">
+                                                                        <div class="feature-dot"><i class="fi fi-rr-check"></i></div><span
+                                                                        data-i18n="mod_feat_catalog">Browse Catalog with Product Specifications</span>
+                                                                    </div>
+                                                                    <div class="feature-item">
+                                                                        <div class="feature-dot"><i class="fi fi-rr-check"></i></div><span
+                                                                        data-i18n="mod_feat_bulk">Bulk Order Cart & Quick Repeat Order</span>
+                                                                    </div>
+                                                                    <div class="feature-item">
+                                                                        <div class="feature-dot"><i class="fi fi-rr-check"></i></div><span
+                                                                        data-i18n="mod_feat_tracking">Real-time Delivery Tracking (Live)</span>
+                                                                    </div>
+                                                                    <div class="feature-item">
+                                                                        <div class="feature-dot"><i class="fi fi-rr-check"></i></div><span
+                                                                        data-i18n="mod_feat_billing">Integrated Payment Gateway & Billing</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                                <!-- AI Features -->
+                                                <section id="ai-features">
+                                                    <div class="container">
+                                                        <div class="ai-grid">
+                                                            <!-- Visual Mock Dashboard -->
+                                                            <div class="ai-visual reveal-left">
+                                                                <div class="ai-dashboard-mock">
+                                                                    <div class="ai-dash-header">
+                                                                        <div class="ai-dash-title" data-i18n="ai_dash_title"><i class="fi fi-rr-bot"></i> AI Price
+                                                                            Intelligence Dashboard</div>
+                                                                            <div class="ai-dash-live">
+                                                                                <div class="status-dot"></div>
+                                                                                <span data-i18n="ai_dash_live">Live Data</span>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <!-- Sparkline Chart -->
+                                                                        <div class="ai-chart-area">
+                                                                            <svg class="chart-svg" viewBox="0 0 400 130" preserveAspectRatio="none">
+                                                                                <defs>
+                                                                                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                                                                        <stop offset="0%" stop-color="#3b9434" stop-opacity="0.3" />
+                                                                                        <stop offset="100%" stop-color="#3b9434" stop-opacity="0" />
+                                                                                    </linearGradient>
+                                                                                </defs>
+                                                                                <path
+                                                                                d="M0,100 C30,90 60,70 100,60 C130,52 160,80 200,55 C240,30 270,20 310,35 C340,46 370,30 400,20"
+                                                                                fill="none" stroke="#3b9434" stroke-width="2.5" stroke-linecap="round" />
+                                                                                <path
+                                                                                d="M0,100 C30,90 60,70 100,60 C130,52 160,80 200,55 C240,30 270,20 310,35 C340,46 370,30 400,20 L400,130 L0,130 Z"
+                                                                                fill="url(#chartGrad)" />
+                                                                                <!-- Dots -->
+                                                                                <circle cx="200" cy="55" r="5" fill="#3b9434" stroke="white" stroke-width="2" />
+                                                                                <circle cx="310" cy="35" r="5" fill="#3b9434" stroke="white" stroke-width="2" />
+                                                                                <circle cx="400" cy="20" r="5" fill="#52b34a" stroke="white" stroke-width="2" />
+                                                                            </svg>
+                                                                        </div>
+
+                                                                        <!-- Crop Prices -->
+                                                                        <div class="ai-crop-list">
+                                                                            <div class="crop-row">
+                                                                                <span class="crop-emoji">🍅</span>
+                                                                                <span class="crop-name"><span data-i18n="ai_crop_tomato">Tomato</span> — <span
+                                                                                    style="font-family:var(--font-hindi);font-weight:400;">टमाटर</span></span>
+                                                                                    <span class="crop-trend up"><i class="fi fi-rr-stats"></i>+8.2%</span>
+                                                                                    <span class="crop-price">₹24/kg</span>
+                                                                                </div>
+                                                                                <div class="crop-row">
+                                                                                    <span class="crop-emoji">🧅</span>
+                                                                                    <span class="crop-name"><span data-i18n="ai_crop_onion">Onion</span> — <span
+                                                                                        style="font-family:var(--font-hindi);font-weight:400;">प्याज</span></span>
+                                                                                        <span class="crop-trend down"><i class="fi fi-rr-arrow-trend-down"></i>-2.1%</span>
+                                                                                        <span class="crop-price">₹18/kg</span>
+                                                                                    </div>
+                                                                                    <div class="crop-row">
+                                                                                        <span class="crop-emoji">🥔</span>
+                                                                                        <span class="crop-name"><span data-i18n="ai_crop_potato">Potato</span> — <span
+                                                                                            style="font-family:var(--font-hindi);font-weight:400;">आलू</span></span>
+                                                                                            <span class="crop-trend up"><i class="fi fi-rr-stats"></i>+3.5%</span>
+                                                                                            <span class="crop-price">₹12/kg</span>
+                                                                                        </div>
+                                                                                        <div class="crop-row">
+                                                                                            <span class="crop-emoji">🌽</span>
+                                                                                            <span class="crop-name"><span data-i18n="ai_crop_maize">Maize</span> — <span
+                                                                                                style="font-family:var(--font-hindi);font-weight:400;">मक्का</span></span>
+                                                                                                <span class="crop-trend up"><i class="fi fi-rr-stats"></i>+5.7%</span>
+                                                                                                <span class="crop-price">₹21/kg</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <!-- Content -->
+                                                                                <div class="ai-content reveal-right">
+                                                                                    <span class="section-badge badge-blue" data-i18n="ai_badge">AI Powered</span>
+                                                                                    <h2 class="section-title" style="text-align:left;margin:12px 0 14px;" data-i18n="ai_title">Smart
+                                                                                        Intelligence<br />for Every Decision</h2>
+                                                                                        <p class="section-sub" style="text-align:left;max-width:100%;" data-i18n="ai_sub">FarmBridge uses AI
+                                                                                            to
+                                                                                            eliminate guesswork — whether it's pricing, demand forecasting, or discount optimization.
+                                                                                            Data-driven
+                                                                                            decisions for every farmer and vendor.</p>
+
+                                                                                            <div class="ai-features-list">
+                                                                                                <div class="ai-feat-item">
+                                                                                                    <div class="ai-feat-icon green">
+                                                                                                        <i class="fi fi-rr-chart-pie-alt"></i>
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                        <div class="ai-feat-title" data-i18n="ai_feat1_title">AI Market Price Prediction</div>
+                                                                                                        <div class="ai-feat-desc" data-i18n="ai_feat1_desc">Real-time market price analysis and
+                                                                                                            future price
+                                                                                                            predictions for 50+ crops — helping farmers list at the best possible price.</div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div class="ai-feat-item">
+                                                                                                        <div class="ai-feat-icon saffron">
+                                                                                                            <i class="fi fi-rr-label"></i>
+                                                                                                        </div>
+                                                                                                        <div>
+                                                                                                            <div class="ai-feat-title" data-i18n="ai_feat2_title">Smart Discount Engine</div>
+                                                                                                            <div class="ai-feat-desc" data-i18n="ai_feat2_desc">Admin-controlled AI that dynamically
+                                                                                                                optimizes
+                                                                                                                platform discounts for vendors based on order patterns, seasonal trends, and
+                                                                                                                inventory surplus.</div>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </section>
+
+                                                                                    <!-- Why FarmBridge -->
+                                                                                    <section id="why">
+                                                                                        <div class="container">
+                                                                                            <div class="section-header reveal">
+                                                                                                <span class="section-badge badge-gold" data-i18n="why_badge">Why Choose Us</span>
+                                                                                                <h2 class="section-title" data-i18n="why_title">FarmBridge क्यों?<br />Because Farmers Deserve Better
+                                                                                                </h2>
+                                                                                                <p class="section-sub" data-i18n="why_sub">India's 140 million farming families deserve a platform built
+                                                                                                    for
+                                                                                                    them — transparent, accessible, and fair.</p>
+                                                                                                </div>
+
+                                                                                                <div class="why-grid">
+                                                                                                    <div class="why-card reveal" style="transition-delay:0.05s">
+                                                                                                        <div class="why-icon-wrap green">
+                                                                                                            <i class="fi fi-rr-layers"></i>
+                                                                                                        </div>
+                                                                                                        <div class="why-title" data-i18n="why1_title">Centralized Procurement</div>
+                                                                                                        <div class="why-desc" data-i18n="why1_desc">One unified platform for farmers, vendors, and field
+                                                                                                            officers. Streamlined ordering, quality checks, and payments — all managed centrally for maximum
+                                                                                                            efficiency.</div>
+                                                                                                            <div class="why-highlight" data-i18n="why1_highlight">1 Platform</div>
+                                                                                                        </div>
+                                                                                                        <div class="why-card reveal" style="transition-delay:0.1s">
+                                                                                                            <div class="why-icon-wrap saffron">
+                                                                                                                <i class="fi fi-rr-shield-check"></i>
+                                                                                                            </div>
+                                                                                                            <div class="why-title" data-i18n="why2_title">Quality Guaranteed</div>
+                                                                                                            <div class="why-desc" data-i18n="why2_desc">Every batch is physically inspected by a certified Field
+                                                                                                                Officer
+                                                                                                                before payment is released. No compromise on quality.</div>
+                                                                                                                <div class="why-highlight" data-i18n="why2_highlight">100% Verified</div>
+                                                                                                            </div>
+                                                                                                            <div class="why-card reveal" style="transition-delay:0.15s">
+                                                                                                                <div class="why-icon-wrap blue">
+                                                                                                                    <i class="fi fi-rr-bank"></i>
+                                                                                                                </div>
+                                                                                                                <div class="why-title" data-i18n="why3_title">Gov. Scheme Discovery</div>
+                                                                                                                <div class="why-desc" data-i18n="why3_desc">Easy discovery and guided application assistance for
+                                                                                                                    local government farming subsidies, grants, and financial aid.</div>
+                                                                                                                    <div class="why-highlight" data-i18n="why3_highlight">Subsidies</div>
+                                                                                                                </div>
+                                                                                                                <div class="why-card reveal" style="transition-delay:0.2s">
+                                                                                                                    <div class="why-icon-wrap gold">
+                                                                                                                        <i class="fi fi-rr-money-bill-wave"></i>
+                                                                                                                    </div>
+                                                                                                                    <div class="why-title" data-i18n="why4_title">Transparent Payments</div>
+                                                                                                                    <div class="why-desc" data-i18n="why4_desc">Automated payment triggers. Farmers get paid directly
+                                                                                                                        upon
+                                                                                                                        verified delivery. Full payment history visible anytime.</div>
+                                                                                                                        <div class="why-highlight" data-i18n="why4_highlight">Auto-Payments</div>
+                                                                                                                    </div>
+                                                                                                                    <div class="why-card reveal" style="transition-delay:0.25s">
+                                                                                                                        <div class="why-icon-wrap earth">
+                                                                                                                            <i class="fi fi-rr-bell"></i>
+                                                                                                                        </div>
+                                                                                                                        <div class="why-title" data-i18n="why5_title">Smart Notifications</div>
+                                                                                                                        <div class="why-desc" data-i18n="why5_desc">System-wide alerts for every milestone — order placed,
+                                                                                                                            quality
+                                                                                                                            approved, shipment picked up, payment released. Stay informed always.</div>
+                                                                                                                            <div class="why-highlight" data-i18n="why5_highlight">Always Informed</div>
+                                                                                                                        </div>
+                                                                                                                        <div class="why-card reveal" style="transition-delay:0.3s">
+                                                                                                                            <div class="why-icon-wrap teal">
+                                                                                                                                <i class="fi fi-rr-smartphone"></i>
+                                                                                                                            </div>
+                                                                                                                            <div class="why-title" data-i18n="why6_title">Mobile-First Access</div>
+                                                                                                                            <div class="why-desc" data-i18n="why6_desc">Designed for the field. Farmers and vendors can manage
+                                                                                                                                everything from their smartphones — simple, fast, and accessible anywhere.</div>
+                                                                                                                                <div class="why-highlight" data-i18n="why6_highlight">Simple & Fast</div>
+                                                                                                                            </div>
+                                                                                                                        </div>
+                                                                                                                    </div>
+                                                                                                                </section>
+
+                                                                                                                <!-- Tech Stack -->
+                                                                                                                <section id="tech" style="padding: 60px 0;">
+                                                                                                                    <div class="container">
+                                                                                                                        <div class="tech-band reveal">
+                                                                                                                            <div>
+                                                                                                                                <div class="tech-intro-title">Enterprise<br />Grade Stack</div>
+                                                                                                                                <div class="tech-intro-sub">Built to scale with India's growing digital agriculture
+                                                                                                                                    ecosystem.</div>
+                                                                                                                                </div>
+                                                                                                                                <div class="tech-stack-grid">
+                                                                                                                                    <div class="tech-pill"><span class="tech-pill-icon"><i class="fi fi-rr-terminal"
+                                                                                                                                                                                               style="font-size:14px;color:var(--blue-400);"></i></span>.NET Core MVC / Web API</div>
+                                                                                                                                        <div class="tech-pill"><span class="tech-pill-icon"><i class="fi fi-rr-database"
+                                                                                                                                                                                                   style="font-size:14px;color:var(--blue-600);"></i></span>PostgreSQL</div>
+                                                                                                                                            <div class="tech-pill"><span class="tech-pill-icon"><i class="fi fi-rr-bolt"
+                                                                                                                                                                                                       style="font-size:14px;color:#ef4444;"></i></span>Redis Cache
+                                                                                                                                            </div>
+                                                                                                                                            <div class="tech-pill"><span class="tech-pill-icon"><i class="fi fi-rr-envelope"
+                                                                                                                                                                                                       style="font-size:14px;color:var(--saffron);"></i></span>RabbitMQ
+                                                                                                                                            </div>
+                                                                                                                                            <div class="tech-pill"><span class="tech-pill-icon"><i class="fi fi-rr-search"
+                                                                                                                                                                                                       style="font-size:14px;color:#00bfb3;"></i></span>ElasticSearch
+                                                                                                                                            </div>
+                                                                                                                                            <div class="tech-pill"><span class="tech-pill-icon"><i class="fi fi-rr-palette"
+                                                                                                                                                                                                       style="font-size:14px;color:var(--green-600);"></i></span>Kendo UI + jQuery</div>
+                                                                                                                                                <div class="tech-pill"><span class="tech-pill-icon"><i class="fi fi-rr-microchip"
+                                                                                                                                                                                                           style="font-size:14px;color:var(--green-500);"></i></span>AI Price Model</div>
+                                                                                                                                                    <div class="tech-pill"><span class="tech-pill-icon"><i class="fi fi-rr-money-bill-wave"
+                                                                                                                                                                                                               style="font-size:14px;color:var(--gold);"></i></span>Payment
+                                                                                                                                                        Gateway</div>
+                                                                                                                                                    </div>
+                                                                                                                                                </div>
+                                                                                                                                            </div>
+                                                                                                                                        </section>
+
+                                                                                                                                        <!-- Reach -->
+                                                                                                                                        <section id="reach">
+                                                                                                                                            <div class="container">
+                                                                                                                                                <div class="reach-grid">
+                                                                                                                                                    <!-- India Visual -->
+                                                                                                                                                    <div class="reach-visual reveal-left">
+                                                                                                                                                        <div class="reach-header">
+                                                                                                                                                            <span class="section-badge badge-green" data-i18n="reach_badge"><i class="fi fi-rr-map"></i> Our
+                                                                                                                                                                Reach</span>
+                                                                                                                                                                <div class="reach-title" data-i18n="reach_title">Across Bharat</div>
+                                                                                                                                                                <div class="reach-subtitle" data-i18n="reach_sub">पूરે ભારત માં ફેલાયેલું</div>
+                                                                                                                                                            </div>
+                                                                                                                                                            <!-- Proper India Map -->
+                                                                                                                                                            <div class="reach-map-container">
+                                                                                                                                                                <img src="/images/india.svg" alt="India Map" class="reach-map-img" />
+
+                                                                                                                                                                <!-- Activity Overlay (Logical Reach: 3:2 Farmer to Vendor ratio + Surat Main Office) -->
+                                                                                                                                                                <div class="reach-overlay">
+                                                                                                                                                                    <!-- NORTH: Punjab (Farmer Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:20%; left:28%;">
+                                                                                                                                                                        <div class="map-dot farmer"></div>
+                                                                                                                                                                        <div class="map-pulse farmer"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- NORTH: UP (Farmer Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:35%; left:45%;">
+                                                                                                                                                                        <div class="map-dot farmer"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- NORTH: Delhi/NCR (Vendor Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:28%; left:35%;">
+                                                                                                                                                                        <div class="map-dot vendor"></div>
+                                                                                                                                                                        <div class="map-pulse vendor"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- WEST: Surat, Gujarat (Main Office) -->
+                                                                                                                                                                    <div class="map-point main-office" style="top:52%; left:18%;">
+                                                                                                                                                                        <div class="map-dot main">
+                                                                                                                                                                            <i class="fi fi-rr-star" style="font-size: 10px; color: white;"></i>
+                                                                                                                                                                        </div>
+                                                                                                                                                                        <div class="map-pulse main"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- WEST: Mumbai/Maharashtra (Vendor Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:62%; left:22%;">
+                                                                                                                                                                        <div class="map-dot vendor"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- CENTRAL: MP (Farmer Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:50%; left:40%;">
+                                                                                                                                                                        <div class="map-dot farmer"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- SOUTH: Karnataka (Farmer Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:78%; left:32%;">
+                                                                                                                                                                        <div class="map-dot farmer"></div>
+                                                                                                                                                                        <div class="map-pulse farmer"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- SOUTH: AP (Vendor Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:72%; left:45%;">
+                                                                                                                                                                        <div class="map-dot vendor"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- EAST: West Bengal (Farmer Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:50%; left:75%;">
+                                                                                                                                                                        <div class="map-dot farmer"></div>
+                                                                                                                                                                        <div class="map-pulse farmer"></div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <!-- EAST: Bihar (Farmer Hub) -->
+                                                                                                                                                                    <div class="map-point" style="top:42%; left:62%;">
+                                                                                                                                                                        <div class="map-dot farmer"></div>
+                                                                                                                                                                    </div>
+                                                                                                                                                                </div>
+                                                                                                                                                            </div>
+
+                                                                                                                                                            <div class="reach-legend">
+                                                                                                                                                                <div class="legend-item">
+                                                                                                                                                                    <div class="legend-dot farmer"></div>
+                                                                                                                                                                    <span data-i18n="reach_farmer_hub">Farmer Hub</span>
+                                                                                                                                                                </div>
+                                                                                                                                                                <div class="legend-item">
+                                                                                                                                                                    <div class="legend-dot vendor"></div>
+                                                                                                                                                                    <span data-i18n="reach_vendor_hub">Vendor Hub</span>
+                                                                                                                                                                </div>
+                                                                                                                                                                <div class="legend-item">
+                                                                                                                                                                    <div class="legend-dot main">
+                                                                                                                                                                        <i class="fi fi-rr-star" style="font-size: 8px; color: white;"></i>
+                                                                                                                                                                    </div>
+                                                                                                                                                                    <span data-i18n="reach_main_office">Main Office (Surat)</span>
+                                                                                                                                                                </div>
+                                                                                                                                                            </div>
+                                                                                                                                                        </div>
+
+                                                                                                                                                        <!-- Testimonials -->
+                                                                                                                                                        <div class="reveal-right">
+                                                                                                                                                            <span class="section-badge badge-green" data-i18n="test_badge">Voices from the Field</span>
+                                                                                                                                                            <h2 class="section-title" style="text-align:left;margin:12px 0 28px;font-size:clamp(24px,3vw,36px);"
+                                                                                                                                                                data-i18n="test_title">What Our<br />Users Say</h2>
+
+                                                                                                                                                            <div class="testimonial-stack">
+                                                                                                                                                                <div class="testimonial-card">
+                                                                                                                                                                    <div class="testimonial-quote" data-i18n="test1_quote">Pehle tomato ₹10 mein bechta tha, ab
+                                                                                                                                                                        FarmBridge pe
+                                                                                                                                                                        ₹24 milta hai. AI ka price suggestion bahut kaam aaya mujhe.</div>
+                                                                                                                                                                        <div class="testimonial-author">
+                                                                                                                                                                            <div class="author-avatar"
+                                                                                                                                                                                 style="background:linear-gradient(135deg,var(--green-600),var(--green-400));">R
+                                                                                                                                                                            </div>
+                                                                                                                                                                            <div>
+                                                                                                                                                                                <div class="author-name" data-i18n="test1_author">Ramesh Patel</div>
+                                                                                                                                                                                <div class="author-role" data-i18n="test1_role">Vegetable Farmer</div>
+                                                                                                                                                                                <div class="author-state">📍 Nashik, Maharashtra</div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <div class="testimonial-card">
+                                                                                                                                                                        <div class="testimonial-quote" data-i18n="test2_quote">Bulk orders manage karna bahut easy
+                                                                                                                                                                            ho gaya.
+                                                                                                                                                                            Real-time tracking se mujhe pata rehta hai kab maal aayega — no more waiting in dark.
+                                                                                                                                                                        </div>
+                                                                                                                                                                        <div class="testimonial-author">
+                                                                                                                                                                            <div class="author-avatar"
+                                                                                                                                                                                 style="background:linear-gradient(135deg,var(--blue-600),var(--blue-400));">P
+                                                                                                                                                                            </div>
+                                                                                                                                                                            <div>
+                                                                                                                                                                                <div class="author-name" data-i18n="test2_author">Priya Mehta</div>
+                                                                                                                                                                                <div class="author-role" data-i18n="test2_role">Wholesale Vendor</div>
+                                                                                                                                                                                <div class="author-state">📍 Azadpur Mandi, Delhi</div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                    </div>
+
+                                                                                                                                                                    <div class="testimonial-card">
+                                                                                                                                                                        <div class="testimonial-quote" data-i18n="test3_quote">Quality form bharno aur payment
+                                                                                                                                                                            auto-trigger ho jata hai farmer ko. Koi
+                                                                                                                                                                            paperwork nahi, koi delay nahi. System bahut smooth hai.</div>
+                                                                                                                                                                            <div class="testimonial-author">
+                                                                                                                                                                                <div class="author-avatar"
+                                                                                                                                                                                     style="background:linear-gradient(135deg,var(--saffron),#f5a623);">A</div>
+                                                                                                                                                                                <div>
+                                                                                                                                                                                    <div class="author-name" data-i18n="test3_author">Ajay Kumar</div>
+                                                                                                                                                                                    <div class="author-role" data-i18n="test3_role">Field Officer</div>
+                                                                                                                                                                                    <div class="author-state" data-i18n="test3_state">📍 Lucknow, Uttar Pradesh</div>
+                                                                                                                                                                                </div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                    </div>
+                                                                                                                                                                </div>
+                                                                                                                                                            </div>
+                                                                                                                                                        </div>
+                                                                                                                                                    </section>
+
+                                                                                                                                                    <!-- Video Showcase -->
+                                                                                                                                                    <section id="videos">
+                                                                                                                                                        <div class="video-section-inner">
+                                                                                                                                                            <div class="video-text-side reveal-left">
+                                                                                                                                                                <span class="section-badge badge-saffron" data-i18n="video_badge"><i class="fi fi-rr-play-alt"></i> Our
+                                                                                                                                                                    Vision</span>
+                                                                                                                                                                    <h2 class="video-heading" data-i18n="video_title">Transforming<br />Indian Agriculture</h2>
+                                                                                                                                                                    <div class="video-divider"></div>
+                                                                                                                                                                    <p class="video-description" data-i18n="video_sub">At FarmBridge, we believe that every farmer deserves
+                                                                                                                                                                        transparent pricing and direct market access. Our platform combines innovative technology with
+                                                                                                                                                                        sustainable practices to create a supply chain that empowers and endures.</p>
+                                                                                                                                                                    </div>
+                                                                                                                                                                    <div class="video-visual-side reveal-right">
+                                                                                                                                                                        <div class="video-frame">
+                                                                                                                                                                            <video id="showcase-video" muted loop playsinline preload="metadata">
+                                                                                                                                                                                <source src="~/videos/Farm of the Future_ Transforming Indian Agriculture with AI.mp4"
+                                                                                                                                                                                        type="video/mp4" />
+                                                                                                                                                                            </video>
+                                                                                                                                                                        </div>
+                                                                                                                                                                    </div>
+                                                                                                                                                                </div>
+                                                                                                                                                            </section>
+
+                                                                                                                                                            <!-- CTA -->
+                                                                                                                                                            <section id="cta">
+                                                                                                                                                                <div class="container">
+                                                                                                                                                                    <div class="cta-box reveal"
+                                                                                                                                                                         style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('@(ViewBag.CtaBgImageUrl ?? "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=2560&q=100&auto=format")');">
+                                                                                                                                                                        <div class="cta-box-decor-1"></div>
+                                                                                                                                                                        <div class="cta-box-decor-2"></div>
+
+                                                                                                                                                                        <div class="cta-content-wrapper">
+                                                                                                                                                                            <div class="cta-text-side">
+                                                                                                                                                                                <div class="cta-flag">
+                                                                                                                                                                                    <div class="cta-flag-stripe" style="background:#FF9933;"></div>
+                                                                                                                                                                                    <div class="cta-flag-stripe" style="background:white;"></div>
+                                                                                                                                                                                    <div class="cta-flag-stripe" style="background:#138808;"></div>
+                                                                                                                                                                                </div>
+                                                                                                                                                                                <h2 class="cta-title" data-i18n="cta_title">Ready to Transform<br />Indian Agriculture?</h2>
+                                                                                                                                                                                <p class="cta-sub" data-i18n="cta_sub">
+                                                                                                                                                                                    Join thousands of farmers and vendors already on FarmBridge.<br />
+                                                                                                                                                                                    <span class="hindi">किसान को उसका हक मिलेगा — सीधा, साफ और सच्चा।</span>
+                                                                                                                                                                                </p>
+                                                                                                                                                                                <div class="cta-buttons">
+                                                                                                                                                                                    <a href="/Farmer/Register" class="btn-cta-white">
+                                                                                                                                                                                        <i class="fi fi-rr-tractor"></i>
+                                                                                                                                                                                        <span data-i18n="btn_cta_farmer">Join as Farmer</span>
+                                                                                                                                                                                    </a>
+                                                                                                                                                                                    <a href="/Vendor/Register?role=Vendor" class="btn-cta-outline">
+                                                                                                                                                                                        <i class="fi fi-rr-shop"></i>
+                                                                                                                                                                                        <span data-i18n="btn_cta_vendor">Start as Vendor</span>
+                                                                                                                                                                                    </a>
+                                                                                                                                                                                </div>
+                                                                                                                                                                                <p style="margin-top:1rem;font-size:0.85rem;opacity:0.8;">
+                                                                                                                                                                                    Already have an account?
+                                                                                                                                                                                    <a href="/Farmer/Login" style="color:#fff;font-weight:700;text-decoration:underline;" data-i18n="btn_login">Login as Farmer</a>
+                                                                                                                                                                                </p>
+                                                                                                                                                                            </div>
+
+                                                                                                                                                                            <!-- CTA Visual Side -->
+                                                                                                                                                                            <div class="cta-visual-side reveal-right">
+                                                                                                                                                                                <img src="@(ViewBag.CtaImageUrl ?? "https://images.unsplash.com/photo-1592982537447-6f2bac4e5659?q=100&w=2560&auto=format")"
+                                                                                                                                                                                     alt="Indian Agriculture" class="cta-image-accent" />
+
+                                                                                                                                                                                <!-- Floating Badges on top of image -->
+                                                                                                                                                                                <div style="position:absolute; top:-20px; right:-10px; background:var(--saffron); color:white; padding:8px 16px; border-radius:var(--radius-md); font-weight:800; font-size:12px; box-shadow:0 10px 20px rgba(0,0,0,0.2); transform:rotate(5deg); z-index:3;"
+                                                                                                                                                                                     data-i18n="ai_badge">
+                                                                                                                                                                                    AI Pricing
+                                                                                                                                                                                </div>
+                                                                                                                                                                                <div
+                                                                                                                                                                                    style="position:absolute; bottom:20px; left:-20px; background:white; color:var(--green-800); padding:8px 16px; border-radius:var(--radius-md); font-weight:800; font-size:12px; box-shadow:0 10px 20px rgba(0,0,0,0.2); transform:rotate(-5deg); z-index:3;">
+                                                                                                                                                                                    Verified Quality
+                                                                                                                                                                                </div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                    </div>
+                                                                                                                                                                </div>
+                                                                                                                                                            </section>
+
+                                                                                                                                                            <!-- Footer -->
+                                                                                                                                                            <footer id="footer">
+                                                                                                                                                                <div class="container">
+                                                                                                                                                                    <div class="footer-grid">
+                                                                                                                                                                        <!-- Brand -->
+                                                                                                                                                                        <div>
+                                                                                                                                                                            <div class="footer-brand-name">
+                                                                                                                                                                                <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge" onerror="this.style.display='none'" />
+                                                                                                                                                                                <div class="name">Farm<span>Bridge</span></div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                            <p class="footer-desc" data-i18n="footer_desc">India's centralized agri-procurement platform
+                                                                                                                                                                                connecting
+                                                                                                                                                                                farmers, vendors, and field officers in one transparent digital ecosystem.</p>
+                                                                                                                                                                                <p class="footer-tagline" data-i18n="footer_tagline">किसान से वेंडर तक — सीधा, साफ, सच्चा।</p>
+                                                                                                                                                                            </div>
+
+                                                                                                                                                                            <!-- Platform -->
+                                                                                                                                                                            <div>
+                                                                                                                                                                                <div class="footer-col-title" data-i18n="footer_col_platform">Platform</div>
+                                                                                                                                                                                <div class="footer-links">
+                                                                                                                                                                                    <a href="#modules" class="footer-link"><i class="fi fi-rr-tractor"></i><span
+                                                                                                                                                                                        data-i18n="footer_farmer_portal">Farmer Portal</span></a>
+                                                                                                                                                                                        <a href="#modules" class="footer-link"><i class="fi fi-rr-shop"></i><span
+                                                                                                                                                                                            data-i18n="footer_vendor_portal">Vendor Portal</span></a>
+                                                                                                                                                                                            <a href="/StaffAuth/Login" class="footer-link"><i class="fi fi-rr-user-md"></i><span
+                                                                                                                                                                                                data-i18n="footer_fo_portal">FO Portal</span></a>
+                                                                                                                                                                                                <a href="/StaffAuth/Login" class="footer-link"><i class="fi fi-rr-settings"></i><span
+                                                                                                                                                                                                    data-i18n="footer_admin_portal">Admin Portal</span></a>
+                                                                                                                                                                                                </div>
+                                                                                                                                                                                            </div>
+
+                                                                                                                                                                                            <!-- Features -->
+                                                                                                                                                                                            <div>
+                                                                                                                                                                                                <div class="footer-col-title" data-i18n="footer_col_features">Features</div>
+                                                                                                                                                                                                <div class="footer-links">
+                                                                                                                                                                                                    <a href="#ai-features" class="footer-link" data-i18n="ai_feat1_title">AI Price Prediction</a>
+                                                                                                                                                                                                    <a href="#how-it-works" class="footer-link" data-i18n="step2_title">Quality Inspection</a>
+                                                                                                                                                                                                    <a href="#how-it-works" class="footer-link" data-i18n="why3_title">Gov. Scheme Discovery</a>
+                                                                                                                                                                                                    <a href="#why" class="footer-link" data-i18n="why4_title">Payment Gateway</a>
+                                                                                                                                                                                                    <a href="#ai-features" class="footer-link" data-i18n="footer_demand_forecasting">Demand
+                                                                                                                                                                                                        Forecasting</a>
+                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                </div>
+
+                                                                                                                                                                                                <!-- Connect With Us -->
+                                                                                                                                                                                                <div>
+                                                                                                                                                                                                    <div class="footer-col-title" data-i18n="footer_col_connect">Connect With Us</div>
+                                                                                                                                                                                                    <div class="footer-links">
+                                                                                                                                                                                                        <a href="tel:+911800XXXXXX" class="footer-link">
+                                                                                                                                                                                                            <i class="fi fi-rr-phone-call"></i>
+                                                                                                                                                                                                            <span>+91 1800-XXX-XXXX</span>
+                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                        <a href="mailto:farmbridge13@gmail.com" class="footer-link">
+                                                                                                                                                                                                            <i class="fi fi-rr-envelope"></i>
+                                                                                                                                                                                                            <span>farmbridge13@gmail.com</span>
+                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                    <div class="footer-social" style="margin-top: 20px;">
+                                                                                                                                                                                                        <a class="social-btn" href="#" aria-label="Twitter">
+                                                                                                                                                                                                            <i class="fi fi-brands-twitter-alt"></i>
+                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                        <a class="social-btn" href="#" aria-label="LinkedIn">
+                                                                                                                                                                                                            <i class="fi fi-brands-linkedin"></i>
+                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                        <a class="social-btn" href="#" aria-label="WhatsApp">
+                                                                                                                                                                                                            <i class="fi fi-brands-whatsapp"></i>
+                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                        <a class="social-btn" href="#" aria-label="YouTube">
+                                                                                                                                                                                                            <i class="fi fi-brands-youtube"></i>
+                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                </div>
+                                                                                                                                                                                            </div>
+
+                                                                                                                                                                                            <div class="footer-bottom">
+                                                                                                                                                                                                <div class="footer-copy" data-i18n="footer_copy">
+                                                                                                                                                                                                    © 2026 <strong>FarmBridge</strong> — Empowering India's Kisan | Made with <i class="fi fi-rr-heart"
+                                                                                                                                                                                                                                                                                 style="font-size:16px;vertical-align:middle;color:#ef4444;"></i> for Bharat
+                                                                                                                                                                                                </div>
+                                                                                                                                                                                                <div class="footer-badges">
+                                                                                                                                                                                                    <span class="footer-badge" data-i18n="footer_made_in_india"><i class="fi fi-rr-badge-check"
+                                                                                                                                                                                                                                                                       style="font-size:14px;vertical-align:middle;margin-right:2px;color:var(--saffron);"></i>
+                                                                                                                                                                                                        Made
+                                                                                                                                                                                                        in India</span>
+                                                                                                                                                                                                        <span class="footer-badge" data-i18n="footer_secure_platform"><i class="fi fi-rr-shield-check"
+                                                                                                                                                                                                                                                                             style="font-size:14px;vertical-align:middle;margin-right:2px;color:var(--blue-600);"></i>
+                                                                                                                                                                                                            Secure Platform</span>
+                                                                                                                                                                                                            <span class="footer-badge" data-i18n="footer_dpiit_recognized"><i class="fi fi-rr-shield-check"
+                                                                                                                                                                                                                                                                                  style="font-size:14px;vertical-align:middle;margin-right:2px;color:var(--green-600);"></i>
+                                                                                                                                                                                                                DPIIT Recognized</span>
+                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                </footer>
+
+                                                                                                                                                                                                <!--  SCRIPTS  -->
+                                                                                                                                                                                                <script src="~/lib/jquery/dist/jquery.min.js"></script>
+                                                                                                                                                                                                <script src="~/js/layouts/site.js" asp-append-version="true"></script>
+                                                                                                                                                                                                <script src="~/js/pages/home/landing.js" asp-append-version="true"></script>
+                                                                                                                                                                                                <script src="~/js/pages/home/intro.js" asp-append-version="true"></script>
+                                                                                                                                                                                                <script src="~/js/pages/home/videoShowcase.js" asp-append-version="true"></script>
+                                                                                                                                                                                            </body>
+
+                                                                                                                                                                                        </html>
+
+

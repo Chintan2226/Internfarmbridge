@@ -1,0 +1,297 @@
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "~/Views/Shared/_FieldOfficerLayout.cshtml";
+}
+
+<div id="toast"></div>
+
+<div class="profile-page">
+    <div class="k-card">
+
+        <div class="profile-header">
+            <h3>Field Officer Profile</h3>
+        </div>
+
+        <div class="k-card-body">
+            <div class="row">
+
+                <!-- LEFT -->
+                <div class="col-md-4 text-center">
+
+                    <!-- ✅ LABEL TRICK (NO JS CLICK NEEDED) -->
+                    <label for="profileUpload" class="profile-image-wrapper">
+
+                        <img id="profileImg"
+                             src="/images/default.png"
+                             class="profile-img" />
+
+                        <div class="upload-overlay">
+                            <span>Change Photo</span>
+                        </div>
+
+                        <input id="profileUpload"
+                               type="file"
+                               accept="image/*"
+                               style="display:none;" />
+
+                    </label>
+
+                    <h4 id="fullName" style="margin-top:15px;font-weight:600;"></h4>
+
+                    <p class="text-muted">Field Officer</p>
+
+                    <p class="text-muted">
+                        Member since <span id="memberSince">-</span>
+                    </p>
+
+                </div>
+
+                <!-- RIGHT -->
+                <div class="col-md-8">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>First Name</label>
+                            <input id="firstName" class="form-control" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label>Last Name</label>
+                            <input id="lastName" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input id="email" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Phone</label>
+                        <input id="phone" class="form-control" placeholder="Enter phone number" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Region</label>
+                        <input id="region" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Warehouse</label>
+                        <input id="warehouse" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Address</label>
+                        <textarea id="warehouseAddress" class="form-control" readonly></textarea>
+                    </div>
+
+                    <div class="profile-action-row">
+                        <button class="btn btn-success profile-action-btn profile-update-btn" onclick="updateProfile()">Update Profile</button>
+                        <button class="btn btn-success profile-action-btn profile-password-btn" onclick="openPasswordPopup()">Change Password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="changePasswordWindow" style="display:none;">
+    <div class="p-3">
+
+        <div class="mb-3">
+            <label>Email</label>
+            <input id="cpEmail" class="form-control" readonly />
+        </div>
+
+        <div class="mb-3">
+            <label>New Password</label>
+            <input id="cpPassword" type="password" class="form-control" />
+        </div>
+
+        <button class="btn btn-success profile-action-btn profile-update-btn" onclick="changePassword()">
+            Update Password
+        </button>
+
+    </div>
+</div>
+@section Scripts {
+<script>
+    let FO_ID = 0;
+    let toast;
+
+    $(document).ready(function () {
+
+        loadProfile();
+
+        // ❌ REMOVE ALL CLICK HANDLERS (NO LOOP ANYMORE)
+
+        // ✅ IMAGE CHANGE
+        $("#profileUpload").change(function () {
+
+            let file = this.files[0];
+            if (!file) return;
+
+            // preview
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                $("#profileImg").attr("src", e.target.result);
+            };
+            reader.readAsDataURL(file);
+
+            // upload
+            let formData = new FormData();
+            formData.append("image", file);
+
+            $.ajax({
+                url: foApiUrl("/upload-image"),
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+
+                success: function (res) {
+                    $("#profileImg").attr(
+                        "src",
+                        res.imageUrl + "?t=" + new Date().getTime()
+                    );
+                    showToast("Image updated", "success");
+                },
+
+                error: function (xhr) {
+                    if (handleFoUnauthorized(xhr)) return;
+                    showToast("Upload failed", "error");
+                }
+            });
+
+        });
+
+    });
+
+    function showToast(msg, type) {
+        const iconMap = {
+            'success': 'success',
+            'error': 'error',
+            'warning': 'warning',
+            'info': 'info'
+        };
+        
+        Swal.fire({
+            icon: iconMap[type] || 'info',
+            title: type.charAt(0).toUpperCase() + type.slice(1),
+            text: msg,
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            position: 'top-end',
+            toast: true
+        });
+    }
+    let passwordWindow;
+
+    function openPasswordPopup() {
+
+        $("#cpEmail").val($("#email").val());
+
+        if (!passwordWindow) {
+            passwordWindow = $("#changePasswordWindow").kendoWindow({
+                width: "350px",
+                title: "Change Password",
+                modal: true,
+                visible: false
+            }).data("kendoWindow");
+        }
+
+        passwordWindow.center().open();
+    }
+
+    function changePassword() {
+
+        let formData = new FormData();
+        formData.append("email", $("#cpEmail").val());
+        formData.append("newPassword", $("#cpPassword").val());
+
+        $.ajax({
+            url: foApiUrl("/change-password"),
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (res) {
+                showToast(res.message, "success");
+                $("#cpPassword").val("");
+                passwordWindow.close();
+            },
+
+            error: function (err) {
+                if (handleFoUnauthorized(err)) return;
+                showToast(err.responseJSON?.message || "Failed", "error");
+            }
+        });
+    }
+    function loadProfile() {
+        $.get(foApiUrl("/profile/me"), function (response) {
+            // Log the response to your browser console (F12) to see exact casing
+            
+            if (response.success && response.data) {
+                let p = response.data;
+
+                // Use logical OR (||) to handle both camelCase and PascalCase
+                FO_ID = p.id || p.Id || 0;
+                $("#firstName").val(p.firstName || p.FirstName);
+                $("#lastName").val(p.lastName || p.LastName);
+                $("#email").val(p.email || p.Email);
+                $("#phone").val(p.phone || p.Phone);
+                $("#region").val(p.assignedRegion || p.AssignedRegion);
+                $("#warehouse").val(p.warehouseName || p.WarehouseName);
+                $("#warehouseAddress").val(p.warehouseAddress || p.WarehouseAddress);
+                
+                let fname = p.firstName || p.FirstName || "";
+                let lname = p.lastName || p.LastName || "";
+                $("#fullName").text(fname + " " + lname);
+
+                let imgUrl = p.profileImageUrl || p.ProfileImageUrl;
+                if (imgUrl) {
+                    $("#profileImg").attr("src", imgUrl + "?t=" + new Date().getTime());
+                }
+
+                let date = p.createdAt || p.CreatedAt;
+                if (date) {
+                    $("#memberSince").text(new Date(date).toLocaleDateString());
+                }
+            }
+        }).fail(function (err) {
+            if (handleFoUnauthorized(err)) return;
+            console.error("Load failed:", err);
+            showToast("Failed to load profile data", "error");
+            showFoLoadFailedAlert("profile data");
+        });
+    }
+    function updateProfile() {
+
+        let model = {
+            id: FO_ID,
+            firstName: $("#firstName").val().trim(),
+            lastName: $("#lastName").val().trim(),
+            phone: $("#phone").val().trim()
+        };
+
+        $.ajax({
+            url: foApiUrl("/update-profile"),
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(model),
+
+            success: function () {
+                showToast("Profile updated successfully", "success");
+                loadProfile();
+            },
+
+            error: function (err) {
+                if (handleFoUnauthorized(err)) return;
+                showToast(err.responseJSON?.message || "Update failed", "error");
+            }
+        });
+    }
+</script>
+}

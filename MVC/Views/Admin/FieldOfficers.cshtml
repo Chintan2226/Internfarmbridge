@@ -1,0 +1,968 @@
+@{
+    ViewData["Title"] = "Field Officer Management";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --green-dark:   #14532D;
+        --green-main:   #1B7A3E;
+        --green-mid:    #34C759;
+        --green-light:  #EAF5EC;
+        --green-border: #BBF7D0;
+        --amber:        #D97706;
+        --amber-bg:     #FFF7ED;
+        --amber-border: #FDE68A;
+        --red:          #991B1B;
+        --red-bg:       #FEF2F2;
+        --red-border:   #FECACA;
+        --blue:         #1E40AF;
+        --blue-bg:      #EFF6FF;
+        --blue-border:  #BFDBFE;
+        --text-primary: #111827;
+        --text-muted:   #6B7280;
+        --text-light:   #9CA3AF;
+        --bg-page:      #F3F4F6;
+        --bg-white:     #ffffff;
+        --border:       #E5E7EB;
+        --radius-sm:    8px;
+        --radius-md:    12px;
+        --radius-lg:    16px;
+        --shadow-sm:    0 1px 3px rgba(0,0,0,0.06);
+        --shadow-md:    0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    /* ─── PAGE ─── */
+    .fo-page { padding: 28px 32px; min-height: 100%; }
+    .page-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .page-label { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--green-main); margin-bottom: 4px; }
+    .page-title { font-size: 26px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--text-muted); }
+    .page-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* ─── API STATUS BANNER ─── */
+    .api-banner { display: none; padding: 10px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 13px; font-weight: 500; align-items: center; gap: 10px; }
+    .api-banner.error   { display: flex; background: var(--red-bg);    border: 1px solid var(--red-border);    color: var(--red); }
+    .api-banner.success { display: flex; background: var(--green-light); border: 1px solid var(--green-border); color: var(--green-dark); }
+    .api-banner.loading { display: flex; background: var(--blue-bg);   border: 1px solid var(--blue-border);   color: var(--blue); }
+
+    /* ─── BUTTONS ─── */
+    .fo-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+    .fo-btn-outline    { background: var(--bg-white); border: 1px solid var(--border); color: var(--text-primary); }
+    .fo-btn-outline:hover { border-color: var(--green-main); color: var(--green-main); }
+    .fo-btn-primary    { background: var(--green-main); color: #fff; }
+    .fo-btn-primary:hover { background: var(--green-dark); }
+    .fo-btn-sm         { padding: 5px 12px; font-size: 12px; }
+    .fo-btn-activate   { background: var(--green-main); color: #fff; border: none; }
+    .fo-btn-activate:hover { background: var(--green-dark); }
+    .fo-btn-deactivate { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+    .fo-btn-deactivate:hover { background: #fee2e2; }
+    .fo-btn-view       { background: var(--bg-white); color: var(--text-primary); border: 1px solid var(--border); }
+    .fo-btn-view:hover { border-color: var(--green-main); color: var(--green-main); }
+
+    /* ─── STATS ─── */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; position: relative; overflow: hidden; box-shadow: var(--shadow-sm); }
+    .stat-strip { position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+    .stat-icon-wrap { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 18px; }
+    .stat-label { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-value { font-size: 28px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .stat-note       { font-size: 12px; font-weight: 500; }
+    .stat-note.green { color: var(--green-main); }
+    .stat-note.amber { color: var(--amber); }
+    .stat-note.blue  { color: var(--blue); }
+
+    /* ─── VIEW TOGGLE ─── */
+    .view-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+    .view-btn { padding: 7px 12px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: var(--bg-white); color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+    .view-btn:first-child { border-right: 1px solid var(--border); }
+    .view-btn.active { background: var(--green-main); color: #fff; }
+
+    /* ─── TOOLBAR ─── */
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text-light); pointer-events: none; }
+    .search-input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; background: var(--bg-white); color: var(--text-primary); outline: none; }
+    .search-input:focus { border-color: var(--green-main); box-shadow: 0 0 0 3px rgba(27,122,62,0.1); }
+    .filter-select { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; background: var(--bg-white); color: var(--text-primary); outline: none; cursor: pointer; }
+    .result-count { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+
+    /* ─── CARD GRID ─── */
+    .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .fo-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .2s; }
+    .fo-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .fo-card-header { background: var(--green-light); padding: 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--green-border); position: relative; }
+    .fo-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--green-main); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+    .fo-card-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .fo-card-id { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .fo-card-status { position: absolute; top: 14px; right: 14px; }
+    .fo-card-body { padding: 16px; }
+    .fo-info-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+    .fo-info-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--bg-page); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .fo-info-icon svg { width: 13px; height: 13px; color: var(--green-main); }
+    .fo-info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); margin-bottom: 1px; }
+    .fo-info-val { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .fo-card-divider { height: 1px; background: var(--border); margin: 12px 0; }
+    .fo-stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fo-mini-stat { background: var(--bg-page); border-radius: 6px; padding: 8px 10px; text-align: center; }
+    .fo-mini-stat-val { font-size: 18px; font-weight: 800; color: var(--green-main); }
+    .fo-mini-stat-label { font-size: 10px; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
+    .fo-card-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+    .fo-card-footer .fo-btn { flex: 1; justify-content: center; }
+
+    /* ─── TABLE ─── */
+    .table-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .table-head-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .table-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .table-badge { background: var(--green-light); color: var(--green-main); font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 20px; margin-left: 8px; }
+    .fo-table { width: 100%; border-collapse: collapse; }
+    .fo-table thead th { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--text-muted); padding: 11px 20px; background: #FAFAFA; border-bottom: 1px solid var(--border); text-align: left; }
+    .fo-table tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    .fo-table tbody tr:last-child { border-bottom: none; }
+    .fo-table tbody tr:hover { background: #FAFFFE; }
+    .fo-table td { padding: 13px 20px; font-size: 13px; color: var(--text-primary); vertical-align: middle; }
+    .fo-cell { display: flex; align-items: center; gap: 10px; }
+    .avatar-sm { width: 34px; height: 34px; border-radius: 50%; background: var(--green-light); color: var(--green-main); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .fo-name { font-weight: 600; }
+    .fo-code { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .actions-cell { display: flex; gap: 6px; }
+
+    /* ─── STATUS PILLS ─── */
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .pill-active   { background: var(--green-light); color: var(--green-main); }
+    .pill-active .pill-dot   { background: var(--green-mid); }
+    .pill-inactive { background: var(--red-bg); color: var(--red); }
+    .pill-inactive .pill-dot { background: #EF4444; }
+
+    /* ─── PAGINATION ─── */
+    .fo-pagination { display: flex; align-items: center; gap: 6px; padding: 14px 20px; border-top: 1px solid var(--border); }
+    .pg-btn { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-white); font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); }
+    .pg-btn:hover:not(:disabled) { border-color: var(--green-main); color: var(--green-main); }
+    .pg-btn.active { background: var(--green-main); color: #fff; border-color: var(--green-main); font-weight: 700; }
+    .pg-btn:disabled { opacity: .4; cursor: default; }
+    .pg-select { padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; }
+    .pg-label { font-size: 12px; color: var(--text-muted); }
+    .pg-total { margin-left: auto; font-size: 12px; color: var(--text-muted); }
+
+    /* ─── MODAL ─── */
+    .fo-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+    .fo-modal-overlay.open { display: flex; }
+    .fo-modal { background: var(--bg-white); border-radius: var(--radius-lg); width: 720px; max-width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-md); }
+    .fo-modal-header { background: var(--green-main); padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .fo-modal-title { color: #fff; font-size: 15px; font-weight: 700; }
+    .fo-modal-close { width: 28px; height: 28px; border: none; background: rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+    .fo-modal-close:hover { background: rgba(255,255,255,0.25); }
+    .fo-modal-body { padding: 22px; overflow-y: auto; flex: 1; }
+
+    /* ─── PROFILE HERO ─── */
+    .profile-hero { background: var(--green-light); border: 1px solid var(--green-border); border-radius: var(--radius-md); padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .profile-hero-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--green-main); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; font-weight: 700; flex-shrink: 0; }
+    .profile-hero-name { font-size: 19px; font-weight: 800; color: var(--text-primary); }
+    .profile-hero-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .profile-hero-status { margin-top: 6px; }
+    .profile-hero-actions { margin-left: auto; display: flex; flex-direction: column; gap: 8px; }
+
+    /* ─── INFO CARDS ─── */
+    .info-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+    .info-card { background: #F9FAFB; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
+    .info-card-full { grid-column: 1 / -1; }
+    .info-card-icon-label { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .info-card-icon { width: 22px; height: 22px; border-radius: 5px; background: var(--green-light); display: flex; align-items: center; justify-content: center; }
+    .info-card-icon svg { width: 11px; height: 11px; color: var(--green-main); }
+    .info-card-label { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--text-muted); }
+    .info-card-val { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
+    /* ─── PERF CARDS ─── */
+    .perf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .perf-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+    .perf-val { font-size: 24px; font-weight: 800; color: var(--green-main); }
+    .perf-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+
+    /* ─── TABS ─── */
+    .fo-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+    .fo-tab-item { padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+    .fo-tab-item:hover { color: var(--text-primary); }
+    .fo-tab-item.active { color: var(--green-main); border-bottom-color: var(--green-main); }
+    .tab-badge { background: var(--green-light); color: var(--green-main); font-size: 10px; padding: 1px 6px; border-radius: 20px; }
+
+    /* ─── MINI TABLE ─── */
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .mini-table th { background: #F9FAFB; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+    .mini-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .mini-table tr:last-child td { border-bottom: none; }
+    .grade-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: 11px; font-weight: 800; }
+    .grade-A { background: var(--green-light); color: var(--green-main); }
+    .grade-B { background: var(--blue-bg); color: var(--blue); }
+    .grade-C { background: var(--amber-bg); color: var(--amber); }
+    .grade-D { background: var(--red-bg); color: var(--red); }
+
+    /* ─── INFO NOTE ─── */
+    .info-note { background: var(--green-light); border: 1px solid var(--green-border); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--green-dark); margin-top: 14px; display: flex; align-items: center; gap: 8px; }
+    .info-note svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+
+    /* ─── TOAST ─── */
+    .fo-toast { position: fixed; bottom: 24px; right: 24px; background: var(--green-dark); color: #fff; padding: 12px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; z-index: 99999; transform: translateY(80px); opacity: 0; transition: all .3s; pointer-events: none; }
+    .fo-toast.show { transform: translateY(0); opacity: 1; }
+    .fo-toast.error { background: #991B1B; }
+
+    /* ─── RESPONSIVE ─── */
+    @@media (max-width: 1100px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @@media (max-width: 700px)  { .cards-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, 1fr); } .fo-page { padding: 16px; } }
+</style>
+
+<!-- ═══════════════════════════════ PAGE BODY ═══════════════════════════════ -->
+<div class="fo-page">
+
+    <div class="page-top">
+        <div>
+            <div class="page-label">User Management</div>
+            <div class="page-title">Field Officer Management</div>
+            <div class="page-sub">Assign, monitor, and manage field officers across warehouses and regions</div>
+        </div>
+        <div class="page-actions">
+            <button class="fo-btn fo-btn-outline" onclick="foLoadAuditLog()">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Audit Log
+            </button>
+            <button class="fo-btn fo-btn-primary" onclick="foExportCSV()">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export CSV
+            </button>
+        </div>
+    </div>
+
+    <!-- API Status Banner -->
+    <div class="api-banner" id="fo-api-banner">
+        <span id="fo-api-banner-msg"></span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--green-main)"></div>
+            <div class="stat-icon-wrap" style="background:var(--green-light)">👷</div>
+            <div class="stat-label">Total Field Officers</div>
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-note green" id="stat-total-note">Loading...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--green-main)"></div>
+            <div class="stat-icon-wrap" style="background:var(--green-light)">✅</div>
+            <div class="stat-label">Active Officers</div>
+            <div class="stat-value" id="stat-active">—</div>
+            <div class="stat-note green" id="stat-active-note">Loading...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:#3B82F6"></div>
+            <div class="stat-icon-wrap" style="background:var(--blue-bg)">🏭</div>
+            <div class="stat-label">Warehouses Covered</div>
+            <div class="stat-value" id="stat-warehouses">—</div>
+            <div class="stat-note blue" id="stat-warehouse-note">Loading...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--amber)"></div>
+            <div class="stat-icon-wrap" style="background:var(--amber-bg)">🔍</div>
+            <div class="stat-label">Inspections Done</div>
+            <div class="stat-value" id="stat-inspections">—</div>
+            <div class="stat-note amber">This month</div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+            <input type="text" id="fo-search" class="search-input" placeholder="Search by name, region, or warehouse..." oninput="foFilterData()" />
+        </div>
+        <select id="fo-status-filter" class="filter-select" onchange="foFilterData()">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+        <select id="fo-region-filter" class="filter-select" onchange="foFilterData()">
+            <option value="">All Regions</option>
+        </select>
+        <button class="fo-btn fo-btn-outline fo-btn-sm" onclick="foClearFilters()">Clear</button>
+        <span class="result-count" id="fo-result-count">Showing 0 officers</span>
+        <div class="view-toggle">
+            <button class="view-btn active" id="btn-card-view" onclick="foSetView('card')">
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                Cards
+            </button>
+            <button class="view-btn" id="btn-table-view" onclick="foSetView('table')">
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M10 4v16M6 4h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+                Table
+            </button>
+        </div>
+    </div>
+
+    <!-- Card View -->
+    <div id="fo-card-view">
+        <div class="cards-grid" id="fo-cards-container">
+            <div class="empty-state" style="grid-column:1/-1">Loading field officers...</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
+            <div class="fo-pagination" style="border:none;padding:0">
+                <button class="pg-btn" id="c-pg-first" onclick="foGoPage(1)" disabled>&#171;</button>
+                <button class="pg-btn" id="c-pg-prev"  onclick="foGoPage(currentFoPage-1)" disabled>&#8249;</button>
+                <span id="c-pg-nums"></span>
+                <button class="pg-btn" id="c-pg-next"  onclick="foGoPage(currentFoPage+1)" disabled>&#8250;</button>
+                <button class="pg-btn" id="c-pg-last"  onclick="foGoPage(totalFoPages)" disabled>&#187;</button>
+            </div>
+            <span class="pg-total" id="c-pg-total"></span>
+        </div>
+    </div>
+
+    <!-- Table View -->
+    <div id="fo-table-view" style="display:none">
+        <div class="table-card">
+            <div class="table-head-row">
+                <div>
+                    <span class="table-title">Field Officer Directory</span>
+                    <span class="table-badge" id="t-badge">0 officers</span>
+                </div>
+                <span style="font-size:12px;color:var(--text-light)">25 records / page</span>
+            </div>
+            <table class="fo-table">
+                <thead>
+                    <tr>
+                        <th>Officer</th><th>Phone</th><th>Assigned Region</th>
+                        <th>Warehouse</th><th>Inspections</th><th>Joined</th>
+                        <th>Status</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="fo-tbody">
+                    <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-light)">Loading...</td></tr>
+                </tbody>
+            </table>
+            <div class="fo-pagination">
+                <button class="pg-btn" id="t-pg-first" onclick="foGoPage(1)" disabled>&#171;</button>
+                <button class="pg-btn" id="t-pg-prev"  onclick="foGoPage(currentFoPage-1)" disabled>&#8249;</button>
+                <span id="t-pg-nums"></span>
+                <button class="pg-btn" id="t-pg-next"  onclick="foGoPage(currentFoPage+1)" disabled>&#8250;</button>
+                <button class="pg-btn" id="t-pg-last"  onclick="foGoPage(totalFoPages)" disabled>&#187;</button>
+                <select class="pg-select" onchange="foChangePageSize(this.value)">
+                    <option value="25">25</option><option value="50">50</option>
+                </select>
+                <span class="pg-label">items per page</span>
+                <span class="pg-total" id="t-pg-total"></span>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /fo-page -->
+
+
+<!-- ═══════════════════════════════ MODAL ═══════════════════════════════ -->
+<div class="fo-modal-overlay" id="fo-modal-overlay" onclick="foCloseModalOnOverlay(event)">
+    <div class="fo-modal" onclick="event.stopPropagation()">
+        <div class="fo-modal-header">
+            <span class="fo-modal-title" id="fo-modal-title">Field Officer Profile</span>
+            <button class="fo-modal-close" onclick="foCloseModal()">&#215;</button>
+        </div>
+        <div class="fo-modal-body">
+
+            <div class="profile-hero">
+                <div class="profile-hero-avatar" id="m-avatar">FO</div>
+                <div style="flex:1;min-width:0">
+                    <div class="profile-hero-name" id="m-name">—</div>
+                    <div class="profile-hero-meta" id="m-meta">—</div>
+                    <div class="profile-hero-status" id="m-status-badge"></div>
+                </div>
+                <div class="profile-hero-actions">
+                    <button class="fo-btn fo-btn-sm fo-btn-activate"   onclick="foChangeStatus(true)">✓ Activate</button>
+                    <button class="fo-btn fo-btn-sm fo-btn-deactivate" onclick="foChangeStatus(false)">⊘ Deactivate</button>
+                </div>
+            </div>
+
+            <div class="perf-grid">
+                <div class="perf-card"><div class="perf-val" id="m-perf-inspections">—</div><div class="perf-label">Total Inspections</div></div>
+                <div class="perf-card"><div class="perf-val" id="m-perf-passed">—</div><div class="perf-label">Passed</div></div>
+                <div class="perf-card"><div class="perf-val" id="m-perf-lots">—</div><div class="perf-label">Lots Managed</div></div>
+            </div>
+
+            <div class="fo-tabs">
+                <div class="fo-tab-item active" onclick="foSwitchTab(this,'tab-profile')">
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Profile
+                </div>
+                <div class="fo-tab-item" onclick="foSwitchTab(this,'tab-inspections')">
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Inspections <span class="tab-badge" id="tab-insp-count">0</span>
+                </div>
+                <div class="fo-tab-item" onclick="foSwitchTab(this,'tab-slots')">
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Warehouse Slots <span class="tab-badge" id="tab-slots-count">0</span>
+                </div>
+            </div>
+
+            <div id="tab-profile">
+                <div class="info-cards-grid">
+                    <div class="info-card">
+                        <div class="info-card-icon-label"><div class="info-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div><div class="info-card-label">Full Name</div></div>
+                        <div class="info-card-val" id="m-fullname">—</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon-label"><div class="info-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></div><div class="info-card-label">Phone</div></div>
+                        <div class="info-card-val" id="m-phone">—</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon-label"><div class="info-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg></div><div class="info-card-label">Email</div></div>
+                        <div class="info-card-val" id="m-email">—</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon-label"><div class="info-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div><div class="info-card-label">Assigned Region</div></div>
+                        <div class="info-card-val" id="m-region">—</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon-label"><div class="info-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div><div class="info-card-label">Warehouse</div></div>
+                        <div class="info-card-val" id="m-warehouse">—</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon-label"><div class="info-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div><div class="info-card-label">Joined</div></div>
+                        <div class="info-card-val" id="m-joined">—</div>
+                    </div>
+                    <div class="info-card info-card-full">
+                        <div class="info-card-icon-label"><div class="info-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="info-card-label">Account Status</div></div>
+                        <div class="info-card-val" id="m-acc-status">—</div>
+                    </div>
+                </div>
+                <div class="info-note">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Status changes are logged with Admin ID:1 in <strong style="margin-left:3px">t_notifications</strong>.
+                </div>
+            </div>
+
+            <div id="tab-inspections" style="display:none">
+                <div id="inspections-content"><div class="empty-state">Loading inspections...</div></div>
+            </div>
+            <div id="tab-slots" style="display:none">
+                <div id="slots-content"><div class="empty-state">Loading warehouse slots...</div></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="fo-toast" id="fo-toast"></div>
+
+
+@section Scripts {
+<script>
+(function () {
+    'use strict';
+
+    /* ── CONFIG ── */
+    var API_BASE = 'http://localhost:5020/api/Admin';
+
+    /* ── Token helper ── */
+    function getToken() {
+        var keys = ['authToken', 'token', 'jwt', 'accessToken'];
+        try { for (var k of keys) { var v = localStorage.getItem(k);   if (v) return v; } } catch(e){}
+        try { for (var k of keys) { var v = sessionStorage.getItem(k); if (v) return v; } } catch(e){}
+        return '';
+    }
+    function buildHeaders() {
+        var h = { 'Content-Type': 'application/json' };
+        var t = getToken();
+        if (t) h['Authorization'] = 'Bearer ' + t;
+        return h;
+    }
+
+    /* ── State ── */
+    var allOfficers      = [];
+    var filteredOfficers = [];
+    var currentFoPage    = 1;
+    var foPageSize       = 9;
+    var totalFoPages     = 1;
+    var currentFoView    = 'card';
+    var currentFoId      = null;
+
+    window.currentFoPage = currentFoPage;
+    window.totalFoPages  = totalFoPages;
+
+    /* ═══════ INIT ═══════ */
+    document.addEventListener('DOMContentLoaded', function () { loadOfficers(); });
+
+    async function loadOfficers() {
+        setBanner('loading', '&#8987; Connecting to API...');
+        try {
+            var controller = new AbortController();
+            var tid = setTimeout(function () { controller.abort(); }, 10000);
+
+            // ── GET /api/Admin/GetFieldOfficers ──
+            var res = await fetch(API_BASE + '/field-officers', {
+                method: 'GET',
+                headers: buildHeaders(),
+                signal: controller.signal
+            });
+            clearTimeout(tid);
+
+            if (res.status === 401) {
+                setBanner('error', '&#128274; 401 Unauthorized — your session may have expired.');
+                allOfficers = [];
+            } else if (res.status === 403) {
+                setBanner('error', '&#9940; 403 Forbidden — admin access required.');
+                allOfficers = [];
+            } else if (!res.ok) {
+                var text = await res.text();
+                setBanner('error', '&#10060; HTTP ' + res.status + (text ? ': ' + text.substring(0, 120) : ''));
+                allOfficers = [];
+            } else {
+                var json = await res.json();
+                // Endpoint returns { success, data: [] }
+                allOfficers = json.data || json.items || (Array.isArray(json) ? json : []);
+                // Normalise field casing — API returns PascalCase from C# serialiser
+                allOfficers = allOfficers.map(normaliseOfficer);
+                hideBanner();
+                foShowToast('&#10003; Loaded ' + allOfficers.length + ' field officers');
+            }
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                setBanner('error', '&#9201; Request timed out — is the backend running?');
+            } else {
+                setBanner('error', '&#128279; Cannot connect to API — ' + err.message);
+            }
+            console.error('[FO] loadOfficers:', err);
+            allOfficers = [];
+        }
+
+        filteredOfficers = allOfficers.slice();
+        foPopulateRegionFilter();
+        foUpdateStats();
+        foRender();
+    }
+
+    // ── Normalise PascalCase → camelCase so the rest of the code is uniform ──
+    function normaliseOfficer(o) {
+        return {
+            id:              o.id              ?? o.Id,
+            foCode:          o.foCode          ?? o.FoCode          ?? ('FO-' + (o.id ?? o.Id)),
+            fullName:        o.fullName        ?? o.FullName        ?? '',
+            email:           o.email           ?? o.Email           ?? '',
+            phone:           o.phone           ?? o.Phone           ?? '',
+            assignedRegion:  o.assignedRegion  ?? o.AssignedRegion  ?? '',
+            warehouseName:   o.warehouseName   ?? o.WarehouseName   ?? '',
+            warehouseId:     o.warehouseId     ?? o.WarehouseId,
+            inspectionCount: o.inspectionCount ?? o.InspectionCount ?? o.totalInspections ?? o.TotalInspections ?? 0,
+            passedCount:     o.passedCount     ?? o.PassedCount     ?? 0,
+            lotsManaged:     o.lotsManaged     ?? o.LotsManaged     ?? 0,
+            isActive:        o.isActive        ?? o.IsActive        ?? false,
+            createdAt:       o.createdAt       ?? o.CreatedAt       ?? null
+        };
+    }
+
+    /* ═══════ BANNER ═══════ */
+    function setBanner(type, msg) {
+        var b = document.getElementById('fo-api-banner');
+        b.className = 'api-banner ' + type;
+        document.getElementById('fo-api-banner-msg').innerHTML = msg;
+    }
+    function hideBanner() { document.getElementById('fo-api-banner').className = 'api-banner'; }
+
+    /* ═══════ STATS ═══════ */
+    function foUpdateStats() {
+        var total       = allOfficers.length;
+        var active      = allOfficers.filter(function (o) { return o.isActive; }).length;
+        var warehouses  = new Set(allOfficers.map(function (o) { return o.warehouseId; }).filter(Boolean)).size;
+        var inspections = allOfficers.reduce(function (s, o) { return s + (o.inspectionCount || 0); }, 0);
+
+        document.getElementById('stat-total').textContent        = total;
+        document.getElementById('stat-active').textContent       = active;
+        document.getElementById('stat-warehouses').textContent   = warehouses;
+        document.getElementById('stat-inspections').textContent  = inspections;
+        document.getElementById('stat-total-note').textContent   = total + ' registered';
+        document.getElementById('stat-active-note').textContent  = total > 0 ? Math.round((active / total) * 100) + '% active rate' : '—';
+        document.getElementById('stat-warehouse-note').textContent = 'Across ' + warehouses + ' locations';
+    }
+
+    /* ═══════ FILTERS ═══════ */
+    function foPopulateRegionFilter() {
+        var regions = [...new Set(allOfficers.map(function (o) { return o.assignedRegion; }).filter(Boolean))].sort();
+        var sel = document.getElementById('fo-region-filter');
+        sel.innerHTML = '<option value="">All Regions</option>';
+        regions.forEach(function (r) { var op = document.createElement('option'); op.value = r; op.textContent = r; sel.appendChild(op); });
+    }
+
+    window.foFilterData = function () {
+        var q      = document.getElementById('fo-search').value.toLowerCase();
+        var status = document.getElementById('fo-status-filter').value;
+        var region = document.getElementById('fo-region-filter').value;
+        filteredOfficers = allOfficers.filter(function (o) {
+            var mq = !q || (o.fullName + o.assignedRegion + o.warehouseName).toLowerCase().includes(q);
+            var ms = !status || (status === 'active' ? o.isActive : !o.isActive);
+            var mr = !region || o.assignedRegion === region;
+            return mq && ms && mr;
+        });
+        currentFoPage = 1;
+        foRender();
+    };
+
+    window.foClearFilters = function () {
+        document.getElementById('fo-search').value = '';
+        document.getElementById('fo-status-filter').value = '';
+        document.getElementById('fo-region-filter').value = '';
+        filteredOfficers = allOfficers.slice();
+        currentFoPage = 1;
+        foRender();
+    };
+
+    /* ═══════ VIEW ═══════ */
+    window.foSetView = function (v) {
+        currentFoView = v;
+        foPageSize = v === 'card' ? 9 : 25;
+        currentFoPage = 1;
+        document.getElementById('fo-card-view').style.display  = v === 'card'  ? 'block' : 'none';
+        document.getElementById('fo-table-view').style.display = v === 'table' ? 'block' : 'none';
+        document.getElementById('btn-card-view').className  = 'view-btn' + (v === 'card'  ? ' active' : '');
+        document.getElementById('btn-table-view').className = 'view-btn' + (v === 'table' ? ' active' : '');
+        foRender();
+    };
+
+    /* ═══════ RENDER ═══════ */
+    function foRender() {
+        totalFoPages = Math.max(1, Math.ceil(filteredOfficers.length / foPageSize));
+        window.totalFoPages  = totalFoPages;
+        window.currentFoPage = currentFoPage;
+
+        var start = (currentFoPage - 1) * foPageSize;
+        var slice = filteredOfficers.slice(start, start + foPageSize);
+
+        document.getElementById('fo-result-count').textContent = 'Showing ' + filteredOfficers.length + ' of ' + allOfficers.length + ' officers';
+
+        if (currentFoView === 'card') foRenderCards(slice);
+        else foRenderTable(slice);
+        foRenderPagination(start);
+    }
+
+    function foRenderCards(slice) {
+        var c = document.getElementById('fo-cards-container');
+        if (!slice.length) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No field officers found</div>'; return; }
+        c.innerHTML = slice.map(function (o) {
+            var passRate = o.inspectionCount > 0 ? Math.round((o.passedCount / o.inspectionCount) * 100) : 0;
+            return '<div class="fo-card">' +
+                '<div class="fo-card-header">' +
+                    '<div class="fo-avatar">' + foGetInitials(o.fullName) + '</div>' +
+                    '<div style="min-width:0"><div class="fo-card-name">' + foEsc(o.fullName) + '</div><div class="fo-card-id">#' + foEsc(o.foCode) + '</div></div>' +
+                    '<div class="fo-card-status">' + foGetPill(o.isActive) + '</div>' +
+                '</div>' +
+                '<div class="fo-card-body">' +
+                    '<div class="fo-info-row"><div class="fo-info-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></div><div><div class="fo-info-label">Phone</div><div class="fo-info-val">' + foEsc(o.phone || '—') + '</div></div></div>' +
+                    '<div class="fo-info-row"><div class="fo-info-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div><div><div class="fo-info-label">Assigned Region</div><div class="fo-info-val">' + foEsc(o.assignedRegion || '—') + '</div></div></div>' +
+                    '<div class="fo-info-row"><div class="fo-info-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div><div><div class="fo-info-label">Warehouse</div><div class="fo-info-val">' + foEsc(o.warehouseName || '—') + '</div></div></div>' +
+                '</div>' +
+                '<div class="fo-card-footer">' +
+                    '<button class="fo-btn fo-btn-sm fo-btn-view" onclick="foOpenModal(' + o.id + ')">View Details</button>' +
+                    (o.isActive
+                        ? '<button class="fo-btn fo-btn-sm fo-btn-deactivate" onclick="foQuickStatus(' + o.id + ',false)">Deactivate</button>'
+                        : '<button class="fo-btn fo-btn-sm fo-btn-activate" onclick="foQuickStatus(' + o.id + ',true)">Activate</button>') +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    function foRenderTable(slice) {
+        var tbody = document.getElementById('fo-tbody');
+        document.getElementById('t-badge').textContent = filteredOfficers.length + ' officers';
+        if (!slice.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-light)">No field officers found</td></tr>'; return; }
+        tbody.innerHTML = slice.map(function (o) {
+            return '<tr>' +
+                '<td><div class="fo-cell"><div class="avatar-sm">' + foGetInitials(o.fullName) + '</div><div><div class="fo-name">' + foEsc(o.fullName) + '</div><div class="fo-code">#' + foEsc(o.foCode) + '</div></div></div></td>' +
+                '<td>' + foEsc(o.phone || '—') + '</td>' +
+                '<td>' + foEsc(o.assignedRegion || '—') + '</td>' +
+                '<td>' + foEsc(o.warehouseName || '—') + '</td>' +
+                '<td>' + foFormatDate(o.createdAt) + '</td>' +
+                '<td>' + foGetPill(o.isActive) + '</td>' +
+                '<td><div class="actions-cell">' +
+                    '<button class="fo-btn fo-btn-sm fo-btn-view" onclick="foOpenModal(' + o.id + ')">View</button>' +
+                    (o.isActive
+                        ? '<button class="fo-btn fo-btn-sm fo-btn-deactivate" onclick="foQuickStatus(' + o.id + ',false)">Deactivate</button>'
+                        : '<button class="fo-btn fo-btn-sm fo-btn-activate" onclick="foQuickStatus(' + o.id + ',true)">Activate</button>') +
+                '</div></td>' +
+            '</tr>';
+        }).join('');
+    }
+
+    function foRenderPagination(start) {
+        var p = currentFoView === 'card' ? 'c' : 't';
+        var numsEl  = document.getElementById(p + '-pg-nums');
+        var totalEl = document.getElementById(p + '-pg-total');
+        var html = '';
+        var maxP = Math.min(totalFoPages, 5);
+        for (var i = 1; i <= maxP; i++) html += '<button class="pg-btn' + (i === currentFoPage ? ' active' : '') + '" onclick="foGoPage(' + i + ')">' + i + '</button>';
+        if (numsEl) numsEl.innerHTML = html;
+        if (totalEl) totalEl.textContent = filteredOfficers.length > 0
+            ? 'Showing ' + (start + 1) + '–' + Math.min(start + foPageSize, filteredOfficers.length) + ' of ' + filteredOfficers.length
+            : '';
+        ['first', 'prev', 'next', 'last'].forEach(function (t) {
+            var el = document.getElementById(p + '-pg-' + t);
+            if (el) el.disabled = (t === 'first' || t === 'prev') ? currentFoPage === 1 : currentFoPage === totalFoPages;
+        });
+    }
+
+    window.foGoPage = function (pg) { if (pg < 1 || pg > totalFoPages) return; currentFoPage = pg; window.currentFoPage = pg; foRender(); };
+    window.foChangePageSize = function (v) { foPageSize = parseInt(v); currentFoPage = 1; foRender(); };
+
+    /* ═══════ MODAL — open ═══════ */
+    window.foOpenModal = function (id) {
+        currentFoId = id;
+        var o = allOfficers.find(function (x) { return x.id === id; });
+        if (!o) return;
+
+        document.getElementById('fo-modal-title').textContent     = 'Field Officer — ' + o.fullName;
+        document.getElementById('m-avatar').textContent           = foGetInitials(o.fullName);
+        document.getElementById('m-name').textContent             = o.fullName || '—';
+        document.getElementById('m-meta').textContent             = '#' + o.foCode + ' · Joined ' + foFormatDate(o.createdAt);
+        document.getElementById('m-status-badge').innerHTML       = foGetPill(o.isActive);
+        document.getElementById('m-fullname').textContent         = o.fullName || '—';
+        document.getElementById('m-phone').textContent            = o.phone || '—';
+        document.getElementById('m-email').textContent            = o.email || '—';
+        document.getElementById('m-region').textContent           = o.assignedRegion || '—';
+        document.getElementById('m-warehouse').textContent        = o.warehouseName || '—';
+        document.getElementById('m-joined').textContent           = foFormatDate(o.createdAt);
+        document.getElementById('m-acc-status').textContent       = o.isActive ? 'Active' : 'Inactive';
+
+        // ── Perf numbers come from the list data by default;
+        //    they get refreshed after FoDetail loads below ──
+        document.getElementById('m-perf-inspections').textContent = o.inspectionCount || 0;
+        document.getElementById('m-perf-passed').textContent      = o.passedCount     || 0;
+        document.getElementById('m-perf-lots').textContent        = o.lotsManaged     || 0;
+
+        foSwitchTabByName('tab-profile');
+        document.getElementById('fo-modal-overlay').classList.add('open');
+
+        // Fire all three API calls in parallel
+        foLoadDetail(id);
+        foLoadInspections(id);
+        foLoadSlots(id);
+    };
+
+    /* ── GET /api/Admin/FoDetail/{foId}
+          { success, data: { id, foCode, fullName, email, phone, assignedRegion,
+                             warehouseName, warehouseId, isActive, createdAt,
+                             totalInspections, passedInspections, lotsManaged } }
+    ── */
+    async function foLoadDetail(id) {
+        try {
+            var res  = await fetch(API_BASE + '/FoDetail/' + id, { headers: buildHeaders() });
+            if (!res.ok) return;                         // silently skip; list data already shown
+            var json = await res.json();
+            if (!json.success || !json.data) return;
+            var d = json.data;
+
+            // Refresh perf numbers with authoritative server values
+            document.getElementById('m-perf-inspections').textContent = d.totalInspections  ?? 0;
+            document.getElementById('m-perf-passed').textContent      = d.passedInspections ?? 0;
+            document.getElementById('m-perf-lots').textContent        = d.lotsManaged       ?? 0;
+        } catch (e) {
+            console.warn('[FO] foLoadDetail:', e);
+        }
+    }
+
+    /* ── GET /api/Admin/FoInspections/{foId}
+          { success, total, passed, failed, data: [ FoInspectionRow ] }
+          FoInspectionRow fields: inspectionId, procurementRequestId, farmerName, farmerPhone,
+            cropName, cropCategory, variety, grade, moisturePct, foreignMatterPct,
+            weightCheckedKg, acceptedQuantity, rejectedQuantity, pestDiseaseObserved,
+            defectsNoted, remarks, passed, procurementStatus, submittedAt, photos[]
+    ── */
+    async function foLoadInspections(id) {
+        var el = document.getElementById('inspections-content');
+        el.innerHTML = '<div class="empty-state">Loading inspections...</div>';
+        try {
+            var res = await fetch(API_BASE + '/FoInspections/' + id, { headers: buildHeaders() });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var json = await res.json();
+
+            // Update tab badge with server total
+            document.getElementById('tab-insp-count').textContent = json.total || 0;
+
+            var rows = json.data || [];
+            if (!rows.length) {
+                el.innerHTML = '<div class="empty-state">No inspections recorded</div>';
+                return;
+            }
+
+            el.innerHTML =
+                '<table class="mini-table">' +
+                '<thead><tr>' +
+                  '<th>Insp. ID</th><th>Crop</th><th>Farmer</th>' +
+                  '<th>Grade</th><th>Weight (kg)</th><th>Accepted</th>' +
+                  '<th>Passed</th><th>Submitted</th>' +
+                '</tr></thead><tbody>' +
+                rows.map(function (d) {
+                    var gradeKey = (d.grade || '').toUpperCase().charAt(0) || 'A';
+                    return '<tr>' +
+                        '<td>#' + (d.inspectionId || d.InspectionId) + '</td>' +
+                        '<td>' + foEsc(d.cropName || d.CropName || '—') +
+                            (d.variety || d.Variety ? ' <small style="color:var(--text-muted)">(' + foEsc(d.variety || d.Variety) + ')</small>' : '') +
+                        '</td>' +
+                        '<td>' + foEsc(d.farmerName || d.FarmerName || '—') + '</td>' +
+                        '<td><span class="grade-badge grade-' + gradeKey + '">' + foEsc(d.grade || d.Grade || '—') + '</span></td>' +
+                        '<td>' + (d.weightCheckedKg ?? d.WeightCheckedKg ?? '—') + '</td>' +
+                        '<td>' + (d.acceptedQuantity ?? d.AcceptedQuantity ?? '—') + ' kg</td>' +
+                        '<td>' + ((d.passed ?? d.Passed)
+                            ? '<span class="status-pill pill-active"><span class="pill-dot"></span>Yes</span>'
+                            : '<span class="status-pill pill-inactive"><span class="pill-dot"></span>No</span>') +
+                        '</td>' +
+                        '<td>' + foFormatDate(d.submittedAt || d.SubmittedAt) + '</td>' +
+                    '</tr>';
+                }).join('') +
+                '</tbody></table>';
+        } catch (e) {
+            el.innerHTML = '<div class="empty-state">Could not load inspections.<br><small>' + foEsc(e.message) + '</small></div>';
+            console.warn('[FO] foLoadInspections:', e);
+        }
+    }
+
+    /* ── GET /api/Admin/FoWarehouseSlots/{foId}
+          { success, total, arrived, noShow, data: [ FoWarehouseSlotRow ] }
+          FoWarehouseSlotRow fields: slotId, farmerName, farmerPhone, cropName,
+            warehouseName, slotDate, slotTimeStart, slotTimeEnd, checkInStatus,
+            bookingStatus, bookedAt, arrivedAt, notes,
+            lotId?, lotGrade?, quantityAccepted?, lotStatus?
+    ── */
+    async function foLoadSlots(id) {
+        var el = document.getElementById('slots-content');
+        el.innerHTML = '<div class="empty-state">Loading warehouse slots...</div>';
+        try {
+            var res = await fetch(API_BASE + '/FoWarehouseSlots/' + id, { headers: buildHeaders() });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var json = await res.json();
+
+            // Update tab badge with server total
+            document.getElementById('tab-slots-count').textContent = json.total || 0;
+
+            var rows = json.data || [];
+            if (!rows.length) {
+                el.innerHTML = '<div class="empty-state">No warehouse slots found</div>';
+                return;
+            }
+
+            el.innerHTML =
+                '<table class="mini-table">' +
+                '<thead><tr>' +
+                  '<th>Farmer</th><th>Crop</th><th>Slot Date</th>' +
+                  '<th>Time</th><th>Warehouse</th>' +
+                  '<th>Booking</th><th>Check-In</th><th>Lot</th>' +
+                '</tr></thead><tbody>' +
+                rows.map(function (s) {
+                    var lotCell = (s.lotId || s.LotId)
+                        ? '<span class="status-pill pill-active" style="font-size:10px">' +
+                              'Grade ' + foEsc(s.lotGrade || s.LotGrade || '—') +
+                              ' · ' + (s.quantityAccepted ?? s.QuantityAccepted ?? 0) + ' kg' +
+                          '</span>'
+                        : '<span style="color:var(--text-light);font-size:12px">—</span>';
+
+                    return '<tr>' +
+                        '<td>' + foEsc(s.farmerName || s.FarmerName || '—') + '</td>' +
+                        '<td>' + foEsc(s.cropName   || s.CropName   || '—') + '</td>' +
+                        '<td>' + foFormatDate(s.slotDate   || s.SlotDate)   + '</td>' +
+                        '<td style="white-space:nowrap">' +
+                            foEsc((s.slotTimeStart || s.SlotTimeStart || '—') + ' – ' + (s.slotTimeEnd || s.SlotTimeEnd || '—')) +
+                        '</td>' +
+                        '<td>' + foEsc(s.warehouseName || s.WarehouseName || '—') + '</td>' +
+                        '<td>' + foEsc(s.bookingStatus || s.BookingStatus || '—') + '</td>' +
+                        '<td>' + foEsc((s.checkInStatus || s.CheckInStatus || '—').replace(/_/g,' ')) + '</td>' +
+                        '<td>' + lotCell + '</td>' +
+                    '</tr>';
+                }).join('') +
+                '</tbody></table>';
+        } catch (e) {
+            el.innerHTML = '<div class="empty-state">Could not load warehouse slots.<br><small>' + foEsc(e.message) + '</small></div>';
+            console.warn('[FO] foLoadSlots:', e);
+        }
+    }
+
+    /* ═══════ MODAL — close / tabs ═══════ */
+    window.foCloseModal = function () { document.getElementById('fo-modal-overlay').classList.remove('open'); currentFoId = null; };
+    window.foCloseModalOnOverlay = function (e) { if (e.target === document.getElementById('fo-modal-overlay')) foCloseModal(); };
+
+    window.foSwitchTab = function (el, id) {
+        document.querySelectorAll('.fo-tab-item').forEach(function (t) { t.classList.remove('active'); });
+        el.classList.add('active');
+        foSwitchTabByName(id);
+    };
+    function foSwitchTabByName(id) {
+        ['tab-profile', 'tab-inspections', 'tab-slots'].forEach(function (t) {
+            document.getElementById(t).style.display = t === id ? 'block' : 'none';
+        });
+    }
+
+    /* ═══════ STATUS TOGGLE ═══════ */
+    window.foChangeStatus = async function (active) { if (!currentFoId) return; await foQuickStatus(currentFoId, active); foCloseModal(); };
+
+    window.foQuickStatus = async function (id, active) {
+        try {
+            // ✅ MATCH THE BULLETPROOF C# BACKEND METHOD
+            // Route: PATCH /api/Admin/{id}/update-status
+            // Body expected by FoStatusPatchRequest: { isActive: true/false }
+            var res = await fetch(API_BASE + '/' + id + '/update-status', {
+                method: 'PATCH',
+                headers: buildHeaders(),
+                body: JSON.stringify({ isActive: active })
+            });
+            
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            
+            // Update local cache to reflect the UI change
+            var o = allOfficers.find(function (x) { return x.id === id; });
+            if (o) o.isActive = active;
+            filteredOfficers = filteredOfficers.map(function (x) { return x.id === id ? Object.assign({}, x, { isActive: active }) : x; });
+            
+            foUpdateStats();
+            foRender();
+            foShowToast('Officer ' + (active ? 'activated' : 'deactivated') + ' successfully');
+        } catch (e) {
+            foShowToast('Failed to update status: ' + e.message, true);
+        }
+    };
+
+    /* ═══════ EXPORT / AUDIT ═══════ */
+    window.foExportCSV = function () {
+        var headers = ['Code', 'Full Name', 'Phone', 'Email', 'Region', 'Warehouse', 'Status', 'Joined'];
+        var rows = filteredOfficers.map(function (o) {
+            var rate = o.inspectionCount > 0 ? Math.round((o.passedCount / o.inspectionCount) * 100) + '%' : '0%';
+            return [o.foCode, o.fullName, o.phone, o.email, o.assignedRegion, o.warehouseName,
+                    o.inspectionCount, rate, o.isActive ? 'Active' : 'Inactive', foFormatDate(o.createdAt)]
+                .map(function (c) { return '"' + String(c || '').replace(/"/g, '""') + '"'; }).join(',');
+        });
+        var csv = [headers.join(',')].concat(rows).join('\n');
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        a.download = 'field_officers_' + new Date().toISOString().slice(0, 10) + '.csv';
+        a.click();
+        foShowToast('CSV exported successfully');
+    };
+
+    window.foLoadAuditLog = function () { foShowToast('Audit log module triggered'); };
+
+    /* ═══════ HELPERS ═══════ */
+    function foGetInitials(name) { return (name || 'FO').split(' ').map(function (w) { return w[0]; }).join('').substring(0, 2).toUpperCase(); }
+    function foGetPill(active) {
+        return active
+            ? '<span class="status-pill pill-active"><span class="pill-dot"></span>Active</span>'
+            : '<span class="status-pill pill-inactive"><span class="pill-dot"></span>Inactive</span>';
+    }
+    function foFormatDate(d) {
+        if (!d) return '—';
+        var dt = new Date(d);
+        return isNaN(dt) ? String(d) : dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    function foEsc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function foShowToast(msg, err) {
+        var el = document.getElementById('fo-toast');
+        el.innerHTML = msg;
+        el.className = 'fo-toast' + (err ? ' error' : '') + ' show';
+        setTimeout(function () { el.classList.remove('show'); }, 3500);
+    }
+
+})();
+</script>
+}

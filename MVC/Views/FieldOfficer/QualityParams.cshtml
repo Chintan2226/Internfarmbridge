@@ -1,0 +1,259 @@
+@{
+    ViewBag.Title = "Quality Params";
+    Layout = "~/Views/Shared/_FieldOfficerLayout.cshtml";
+}
+
+<style>
+    .qp-wrapper {
+        padding: clamp(10px, 2vw, 24px);
+        width: 100%;
+    }
+
+    .qp-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: clamp(12px, 2vw, 24px);
+        box-shadow: 0 4px 24px rgba(59,130,246,0.12);
+    }
+
+    .qp-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .qp-card-header h3 {
+        font-size: clamp(18px, 4vw, 22px);
+        font-weight: 600;
+        color: #1b5e20;
+        font-family: 'Playfair Display', serif;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+    }
+
+    .qp-search-wrap {
+        margin-bottom: 20px;
+    }
+
+    .qp-search-wrap input[type="text"] {
+        width: 100%;
+        border: 1px solid var(--green-pale);
+        border-radius: 10px;
+        background: var(--green-mist);
+        color: var(--green-dark);
+        font-size: 14px;
+        padding: 9px 14px;
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+
+    .qp-search-wrap input[type="text"]:focus {
+        border-color: var(--green-mid);
+    }
+
+    .qp-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    @@media (max-width: 768px) {
+        .qp-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .qp-commodity-card {
+        border: 1px solid var(--gray-mid);
+        border-radius: 12px;
+        padding: 16px 18px;
+        background: #fff;
+        transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        cursor: default;
+    }
+
+    .qp-commodity-card:hover {
+        border-color: var(--green-light);
+        background: var(--green-mist);
+        box-shadow: 0 4px 16px rgba(59,130,246,0.12);
+    }
+
+    .qp-commodity-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .qp-emoji { font-size: 20px; line-height: 1; }
+
+    .qp-name {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 16px;
+        color: #1b5e20;
+    }
+
+    .qp-params {
+        border-top: 1px solid var(--gray-mid);
+        padding-top: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .qp-param-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 0;
+        border-bottom: 1px solid #f0f4f1;
+        font-size: 13.5px;
+        color: var(--gray-text);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .qp-param-row:last-child { border-bottom: none; }
+
+    .qp-check {
+        color: var(--green-mid);
+        font-size: 13px;
+        flex-shrink: 0;
+        font-weight: 600;
+    }
+
+    .qp-no-results {
+        color: var(--green-mid);
+        font-size: 14px;
+        grid-column: 1 / -1;
+        padding: 8px 0;
+        font-family: 'DM Sans', sans-serif;
+    }
+</style>
+
+<!-- AppBar -->
+<div id="appbar"></div>
+
+<!-- Drawer + Content -->
+<div id="drawer">
+    <div id="main-content">
+
+        <!-- Notification Panel -->
+        @* <div id="notifDrawer" class="notif-drawer">
+            <h6 style="font-weight:700;color:#1b5e20;margin-bottom:16px;">Notifications</h6>
+            <div class="notif-item">
+                <div class="notif-dot"></div>
+                <div>
+                    <div class="notif-text">New QC request submitted by Ramesh Patel</div>
+                    <div class="notif-time">10 minutes ago</div>
+                </div>
+            </div>
+            <div class="notif-item">
+                <div class="notif-dot"></div>
+                <div>
+                    <div class="notif-text">Cotton quality form approved</div>
+                    <div class="notif-time">1 hour ago</div>
+                </div>
+            </div>
+            <div class="notif-item">
+                <div class="notif-dot"></div>
+                <div>
+                    <div class="notif-text">Wheat batch parameters updated</div>
+                    <div class="notif-time">3 hours ago</div>
+                </div>
+            </div>
+        </div> *@
+
+        <!-- Page Content -->
+        <div class="qp-wrapper">
+            <div class="qp-card">
+
+                <div class="qp-card-header">
+                    <h3>
+                        <i class="fa fa-microscope" style="color:var(--green-mid);font-size:20px;"></i>
+                        Quality Parameters Guide
+                    </h3>
+                </div>
+
+                <div class="qp-search-wrap">
+                    <input type="text" id="qpSearch" placeholder="Search commodity..." />
+                </div>
+
+                <div class="qp-grid" id="qpGrid">
+                    <!-- rendered by JS -->
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var commodities = [
+        {
+            emoji: '🌾', name: 'Wheat',
+            params: ['Moisture: 8–12%', 'Protein: 11–14%', 'Gluten: Min 24%', 'Foreign Matter: Max 0.5%']
+        },
+        {
+            emoji: '🌿', name: 'Cotton',
+            params: ['Fiber Length: 28–35mm', 'Strength: 26–32 g/tex', 'Micronaire: 3.5–5.0', 'Trash: Max 2%']
+        },
+        {
+            emoji: '🍅', name: 'Tomato',
+            params: ['Brix: 4.5–5.5°', 'Firmness: 6–8 N', 'Color: Red/Pink', 'No visible defects']
+        },
+        {
+            emoji: '🧅', name: 'Onion',
+            params: ['Moisture: Max 15%', 'Single bulb: 45mm+', 'Dry outer skin', 'No rot/sprouting']
+        },
+        {
+            emoji: '🌽', name: 'Maize',
+            params: ['Moisture: Max 14%', 'Broken Kernels: Max 3%', 'Aflatoxin: Max 10 ppb', 'Foreign Matter: Max 1%']
+        },
+        {
+            emoji: '🫘', name: 'Soybean',
+            params: ['Moisture: Max 13%', 'Protein: Min 36%', 'Oil Content: Min 18%', 'Damaged Beans: Max 2%']
+        }
+    ];
+
+    function buildCard(c) {
+        var rows = c.params.map(function (p) {
+            return '<div class="qp-param-row"><span class="qp-check">&#x2713;</span><span>' + p + '</span></div>';
+        }).join('');
+
+        return '<div class="qp-commodity-card">'
+             + '<div class="qp-commodity-header">'
+             + '<span class="qp-emoji">' + c.emoji + '</span>'
+             + '<span class="qp-name">' + c.name + '</span>'
+             + '</div>'
+             + '<div class="qp-params">' + rows + '</div>'
+             + '</div>';
+    }
+
+    function renderCards(filter) {
+        var $grid = $('#qpGrid');
+        $grid.empty();
+        var list = commodities.filter(function (c) {
+            return !filter || c.name.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
+        });
+        if (list.length === 0) {
+            $grid.append('<p class="qp-no-results">No commodities match your search.</p>');
+            return;
+        }
+        $.each(list, function (i, c) { $grid.append(buildCard(c)); });
+    }
+
+    $(document).ready(function () {
+        renderCards('');
+        $('#qpSearch').on('input', function () { renderCards($(this).val().trim()); });
+    });
+</script>
+}
