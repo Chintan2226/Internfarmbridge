@@ -39,18 +39,9 @@
             }
         }
     </script>
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .glass-panel {
-            background: rgba(250, 249, 245, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    </style>
+    
+<link rel="stylesheet" href="~/css/pages/farmer/login.css" asp-append-version="true" />
+
 </head>
 <body class="bg-[#121411] font-body text-on-background min-h-screen flex items-center justify-center m-0 p-0 overflow-hidden">
 
@@ -60,6 +51,18 @@
         <span class="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
         <span class="text-sm font-bold tracking-wide">Home</span>
     </a>
+
+    <div class="fixed top-4 sm:top-6 right-4 sm:right-6 z-[100]">
+        <button onclick="document.getElementById('langMenu').classList.toggle('hidden')" class="flex items-center gap-2 text-primary hover:text-white bg-white/70 hover:bg-primary/90 px-4 py-2 sm:py-2.5 rounded-full backdrop-blur-md border border-primary/20 shadow-lg transition-all duration-300 hover:scale-105">
+            <span class="material-symbols-outlined text-[18px]">language</span>
+            <span class="text-sm font-bold tracking-wide">Language</span>
+        </button>
+        <div id="langMenu" class="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-black/5 flex flex-col hidden overflow-hidden transition-all duration-300">
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('en')">🇺🇸 English</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('hi')">🇮🇳 हिन्दी</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('gu')">🇮🇳 ગુજરાતી</button>
+        </div>
+    </div>
 
     <div class="relative w-full h-screen flex items-center justify-center">
         
@@ -175,7 +178,7 @@
     </div>
 
     <script>
-        // ── Notifications ──
+        // ── Notifications â”€â”€
         window.showToast = function(title, message, isError = false) {
             const container = document.getElementById('notificationArea');
             if (!container) return;
@@ -204,7 +207,7 @@
             }, 3500);
         };
 
-        // ── Password toggle ──
+        // ── Password toggle â”€â”€
         window.togglePassword = function() {
             const input = document.getElementById('password');
             const icon  = document.getElementById('eyeIcon');
@@ -217,7 +220,7 @@
             }
         };
 
-        // ── Login ──
+        // ── Login â”€â”€
         window.handleLogin = function(e) {
             if (e) e.preventDefault();
             
@@ -262,12 +265,12 @@
             return false;
         };
 
-        // ── Google Login Placeholder ──
+        // ── Google Login Placeholder â”€â”€
         window.handleGoogleLogin = function() {
             window.showToast('Coming Soon', 'Google Login is currently being configured.', false);
         };
 
-        // ── Forgot password ──
+        // ── Forgot password â”€â”€
         window.handleForgot = function(e) {
             if (e) e.preventDefault();
             
@@ -309,7 +312,7 @@
             return false;
         };
 
-        // ── Section toggle ──
+        // ── Section toggle â”€â”€
         document.addEventListener('DOMContentLoaded', function() {
             const forgotLink = document.getElementById('forgotPasswordLink');
             const backLink = document.getElementById('backToLoginLink');
@@ -331,5 +334,8 @@
             }
         });
     </script>
+    <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/site.js" asp-append-version="true"></script>
 </body>
 </html>
+

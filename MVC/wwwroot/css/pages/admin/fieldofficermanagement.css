@@ -1,0 +1,82 @@
+﻿/* Modern Dashboard Styles */
+.tracking-tight {
+    letter-spacing: -0.5px;
+}
+
+.x-small {
+    font-size: 11px;
+}
+
+.font-md {
+    font-size: 12px;
+}
+
+/* Soft UI Badges */
+.bg-soft-success {
+    background-color: #e8f5e9 !important;
+    color: #2e7d32 !important;
+}
+
+.badge.bg-success-vivid {
+    background-color: #2e7d32;
+    color: white;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+.badge.bg-danger-vivid {
+    background-color: #d32f2f;
+    color: white;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+/* Avatar Component */
+.avatar-circle {
+    width: 38px;
+    height: 38px;
+    background: #1a5c2a;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Kendo Grid Modern Overrides */
+.k-grid {
+    border: none !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.k-grid-header {
+    background: #f8faf9 !important;
+    border-bottom: 1px solid #edf2ef !important;
+}
+
+.k-grid-header th {
+    padding: 16px !important;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+}
+
+.k-grid td {
+    padding: 16px !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+    vertical-align: middle !important;
+}
+
+.k-grid-header .k-header>.k-link {
+    color: #6b7280 !important;
+}
+
+.k-pager-wrap {
+    background: white !important;
+    padding: 12px !important;
+    border-top: 1px solid #f3f4f6 !important;
+}

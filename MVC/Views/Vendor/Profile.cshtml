@@ -3,461 +3,9 @@
     ViewData["Title"] = "Profile";
 }
 
-<style>
-    .profile-container {
-        display: grid;
-        grid-template-columns: 320px 1fr;
-        gap: 24px;
-    }
 
-    .profile-card {
-        background: white;
-        border-radius: 20px;
-        padding: 24px;
-        box-shadow: 0 2px 12px rgba(26, 92, 42, 0.08);
-        text-align: center;
-    }
+<link rel="stylesheet" href="~/css/pages/vendor/profile.css" asp-append-version="true" />
 
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        background: linear-gradient(135deg, #2d8a45, #1a5c2a);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 42px;
-        font-weight: 700;
-        margin: 0 auto 16px;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .profile-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .profile-avatar .upload-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        font-size: 10px;
-        padding: 4px;
-        text-align: center;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .profile-avatar:hover .upload-overlay {
-        opacity: 1;
-    }
-
-    .profile-name {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a5c2a;
-    }
-
-    .profile-role {
-        font-size: 12px;
-        color: #64748b;
-        margin-bottom: 12px;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 50px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-
-    .status-active {
-        background: #e8f5ec;
-        color: #1a5c2a;
-    }
-
-    .status-pending {
-        background: #fff8e1;
-        color: #e65100;
-    }
-
-    .status-suspended {
-        background: #ffebee;
-        color: #c62828;
-    }
-
-    .profile-stats {
-        margin-top: 20px;
-        text-align: left;
-        border-top: 1px solid #e2e8f0;
-        padding-top: 16px;
-    }
-
-    .profile-stat {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 0;
-        font-size: 13px;
-    }
-
-    .profile-stat-label {
-        color: #64748b;
-    }
-
-    .profile-stat-value {
-        font-weight: 600;
-        color: #1a5c2a;
-    }
-
-    .form-card {
-        background: white;
-        border-radius: 20px;
-        padding: 24px;
-        box-shadow: 0 2px 12px rgba(26, 92, 42, 0.08);
-    }
-
-    .form-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a5c2a;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 16px;
-    }
-
-    .form-group {
-        margin-bottom: 16px;
-    }
-
-    .form-label {
-        display: block;
-        font-size: 12px;
-        font-weight: 600;
-        color: #334155;
-        margin-bottom: 6px;
-    }
-
-    .form-label .required {
-        color: #e53e3e;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 10px 14px;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 10px;
-        font-size: 13px;
-        transition: all 0.3s;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #2d8a45;
-    }
-
-    .form-control.readonly {
-        background: #f5f5f5;
-        cursor: not-allowed;
-    }
-
-    .warning-text {
-        font-size: 11px;
-        color: #ed8936;
-        margin-top: 4px;
-    }
-
-    .password-strength {
-        margin-top: 6px;
-        font-size: 11px;
-    }
-
-    .strength-weak {
-        color: #e53e3e;
-    }
-
-    .strength-fair {
-        color: #ed8936;
-    }
-
-    .strength-good {
-        color: #38a169;
-    }
-
-    .strength-strong {
-        color: #2d8a45;
-    }
-
-    .btn-save {
-        background: linear-gradient(135deg, #2d8a45, #1a5c2a);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-
-    .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(45, 138, 69, 0.3);
-    }
-
-    .btn-outline {
-        background: transparent;
-        color: #2d8a45;
-        border: 1.5px solid #2d8a45;
-    }
-
-    .btn-outline:hover {
-        background: #2d8a45;
-        color: white;
-    }
-
-    .password-section {
-        margin-top: 24px;
-        padding-top: 20px;
-        border-top: 1px solid #e2e8f0;
-    }
-
-    .delivery-locations {
-        margin-top: 24px;
-        padding-top: 20px;
-        border-top: 1px solid #e2e8f0;
-    }
-
-    .location-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px;
-        background: #f7faf8;
-        border-radius: 10px;
-        margin-bottom: 8px;
-    }
-
-    .location-address {
-        font-size: 13px;
-        color: #334155;
-        flex: 1;
-    }
-
-    .location-default {
-        font-size: 10px;
-        background: #2d8a45;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 20px;
-        margin-left: 8px;
-        display: inline-block;
-    }
-
-    .location-actions button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        margin-left: 8px;
-        font-size: 16px;
-        padding: 4px 8px;
-    }
-
-    .btn-add-location {
-        width: 100%;
-        margin-top: 12px;
-        background: transparent;
-        border: 1.5px dashed #2d8a45;
-        color: #2d8a45;
-        padding: 10px;
-        border-radius: 10px;
-        cursor: pointer;
-    }
-
-    .btn-add-location:hover {
-        background: #e8f5ec;
-    }
-
-    /* Modal Styles */
-    .location-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .location-modal-content {
-        background: white;
-        border-radius: 20px;
-        padding: 24px;
-        width: 90%;
-        max-width: 500px;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-
-    .location-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .location-modal-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a5c2a;
-    }
-
-    .location-modal-close {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: #999;
-    }
-
-    .location-modal-footer {
-        display: flex;
-        gap: 12px;
-        margin-top: 20px;
-        justify-content: flex-end;
-    }
-
-    .btn-modal-cancel {
-        background: #f1f5f0;
-        color: #64748b;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 30px;
-        cursor: pointer;
-    }
-
-    .btn-modal-save {
-        background: linear-gradient(135deg, #2d8a45, #1a5c2a);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 30px;
-        cursor: pointer;
-    }
-
-    .mt-4 {
-        margin-top: 20px;
-    }
-
-    @@media (max-width: 768px) {
-        .profile-container {
-            grid-template-columns: 1fr;
-        }
-
-        .form-row {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* Toast Styles */
-    .fb-toast-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .fb-toast {
-        background: white;
-        border-radius: 12px;
-        padding: 12px 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        animation: slideInRight 0.3s ease;
-        min-width: 280px;
-        border-left: 4px solid;
-    }
-
-    .fb-toast.success {
-        border-left-color: #1a5c2a;
-    }
-
-    .fb-toast.error {
-        border-left-color: #c62828;
-    }
-
-    .fb-toast.warning {
-        border-left-color: #ed8936;
-    }
-
-    .fb-toast-icon {
-        font-size: 20px;
-    }
-
-    .fb-toast-content {
-        flex: 1;
-    }
-
-    .fb-toast-title {
-        font-weight: 700;
-        font-size: 14px;
-        margin-bottom: 2px;
-    }
-
-    .fb-toast-message {
-        font-size: 12px;
-        color: #666;
-    }
-
-    .fb-toast-close {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        color: #999;
-        padding: 0 4px;
-    }
-
-    .fade-out {
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    @@keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-</style>
 
 <!-- Location Modal -->
 <div id="locationModal" class="location-modal">
@@ -502,7 +50,7 @@
     <div class="profile-card">
         <div class="profile-avatar" id="profileAvatar" onclick="document.getElementById('photoInput').click()">
             <div id="avatarPreview">V</div>
-            <div class="upload-overlay">📷 Change Photo</div>
+            <div class="upload-overlay">📸 Change Photo</div>
         </div>
         <input type="file" id="photoInput" accept="image/jpeg,image/png" style="display:none"
                onchange="uploadPhoto(this)">
@@ -712,8 +260,8 @@
                         ${loc.isDefault ? '<span class="location-default">Default</span>' : ''}
                     </div>
                     <div class="location-actions">
-                        <button onclick="openEditLocationModal(${loc.id})" title="Edit">✏️</button>
-                        <button onclick="deleteLocation(${loc.id})" title="Delete">🗑️</button>
+                        <button onclick="openEditLocationModal(${loc.id})" title="Edit">✏️ </button>
+                        <button onclick="deleteLocation(${loc.id})" title="Delete">🗑️ </button>
                     </div>
                 </div>
             `).join('');
@@ -881,7 +429,6 @@
             reader.readAsDataURL(file);
         }
 
-        // ✅ FIXED saveProfile function
         async function saveProfile() {
             const profileData = {
                 vendorId: vendorId,
@@ -947,7 +494,7 @@
                 case 5: message = 'Strong'; className = 'strength-strong'; break;
             }
 
-            strengthDiv.innerHTML = `<span class="${className}">🔒 Password Strength: ${message}</span>`;
+            strengthDiv.innerHTML = `<span class="${className}">🔐 Password Strength: ${message}</span>`;
             strengthDiv.innerHTML += `<span style="font-size:10px;color:#64748b;display:block;">Min 8 chars with letters, numbers & special character</span>`;
         }
 
@@ -961,7 +508,7 @@
                 return;
             }
 
-            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@@$!%*#?&])[A-Za-z\d@@$!%*#?&]{8,}$/;
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\x40$!%*#?&])[A-Za-z\d\x40$!%*#?&]{8,}$/;
             if (!passwordRegex.test(newPw)) {
                 showToast('Password must be 8+ characters with letters, numbers & special character', 'warning');
                 return;
@@ -1032,7 +579,7 @@
                     <div class="fb-toast-title">${titles[type] || titles.info}</div>
                     <div class="fb-toast-message">${escapeHtml(message)}</div>
                 </div>
-                <button class="fb-toast-close" onclick="this.closest('.fb-toast').remove()">✕</button>
+                <button class="fb-toast-close" onclick="this.closest('.fb-toast').remove()">âœ•</button>
             `;
 
             container.appendChild(toast);
@@ -1046,3 +593,4 @@
         loadProfile();
     </script>
 }
+

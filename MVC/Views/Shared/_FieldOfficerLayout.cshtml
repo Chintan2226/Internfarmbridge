@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = null;
 }
 
@@ -7,7 +7,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewBag.Title — FarmBridge Field Officer</title>
+    <title>@ViewBag.Title â€” FarmBridge Field Officer</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -32,7 +32,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
     <!-- Field Officer Module CSS -->
-    <link rel="stylesheet" href="/css/fieldofficer.css" />
+    <link rel="stylesheet" href="~/css/pages/fieldofficer/main.css" />
 
 </head>
 
@@ -110,7 +110,7 @@
     <div class="fo-notif" id="foNotif" style="pointer-events: none;">
         <div class="fo-notif-header" style="pointer-events: auto;">
             <h3 style="margin:0; font-size:16px; font-weight:700; color:var(--fo-text);">Notifications</h3>
-            <button onclick="toggleFoNotif(event)" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--fo-muted);">✕</button>
+            <button onclick="toggleFoNotif(event)" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--fo-muted);">âœ•</button>
         </div>
         <div id="foNotifList" style="flex:1; overflow-y:auto; padding:12px 0; pointer-events: auto;">
             <div style="padding:32px;text-align:center;font-size:13px;color:var(--fo-muted)">No notifications</div>
@@ -175,3 +175,5 @@ function logout() {
 
 </body>
 </html>
+
+

@@ -133,7 +133,11 @@ namespace API.Controllers
                 if (!_vendorHelper.VerifyPassword(model.Password, user.PasswordHash))
                     return Unauthorized(new { success = false, message = "Invalid email/phone or password." });
 
-                var additionalClaims = new Dictionary<string, string>();
+                // Role is automatically included in token by JwtService
+                var additionalClaims = new Dictionary<string, string>
+                {
+                    { "full_name", vendor.BusinessName ?? "Vendor" }
+                };
                 var token = _jwtService.GenerateJwtToken(user.Id, user.Email, user.Role, additionalClaims);
 
                 return Ok(new
@@ -176,7 +180,11 @@ namespace API.Controllers
                         "vendor_registration");
                 }
 
-                var token = _jwtService.GenerateJwtToken(vendor.UserId, request.Email, "vendor");
+                var additionalClaims = new Dictionary<string, string>
+                {
+                    { "full_name", vendor.BusinessName ?? request.Name }
+                };
+                var token = _jwtService.GenerateJwtToken(vendor.UserId, request.Email, "vendor", additionalClaims);
                 return Ok(new { success = true, token = token, isGoogleUser = true, isNewUser = isNewUser });
             }
 

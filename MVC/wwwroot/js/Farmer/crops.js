@@ -63,10 +63,7 @@ function mapListingToRow(item) {
         /* ✅ FIX: these were missing and caused the ReferenceError */
         FarmDistrict: item.farmDistrict || item.district || "—",
         FarmState: item.farmState || item.state || "—",
-        Notes: item.notes || "",
-
-        ImageUrl: "https://via.placeholder.com/300x160?text=" +
-            encodeURIComponent(item.cropName || "Crop")
+        Notes: item.notes || ""
     };
 }
 

@@ -29,20 +29,12 @@
     <link href="~/lib/kendo/kendo.default-v2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/layouts/farmer_layout.css" asp-append-version="true" />
 
-    <style>
-        .fv-drawer.open {
-            left: 0 !important;
-        }
-        .fv-overlay.open {
-            opacity: 1 !important;
-            pointer-events: auto !important;
-        }
-        .fv-notif.open {
-            right: 0 !important;
-        }
-    </style>
+    
+<link rel="stylesheet" href="~/css/pages/shared/layouts__farmerlayout.css" asp-append-version="true" />
+
 
     @RenderSection("Styles", required: false)
+    <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
 </head>
 <body data-role="@role" data-title="@title">
 
@@ -91,8 +83,8 @@
                         <i class="fi fi-rr-globe"></i>
                     </button>
                     <div class="fb-lang-dropdown">
-                        <button class="fb-lang-option" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
-                        <button class="fb-lang-option" data-lang="hi" onclick="switchLang('hi')">🇮🇳 हिंदी</button>
+                        <button class="fb-lang-option" data-lang="en" onclick="switchLang('en')">🇺🇸 English</button>
+                        <button class="fb-lang-option" data-lang="hi" onclick="switchLang('hi')">🇮🇳 हिन्दी</button>
                         <button class="fb-lang-option" data-lang="gu" onclick="switchLang('gu')">🇮🇳 ગુજરાતી</button>
                     </div>
                 </div>
@@ -193,6 +185,7 @@ var decoded = token ? parseJwt(token) : null;
 
 window.USER_ROLE = '@role';
 window.FARMER_ID = decoded ? parseInt(decoded.farmer_id || 0) : 0;
+window.FARMER_NAME = decoded && decoded.full_name ? decoded.full_name : "";
 window.API_BASE = "http://localhost:5020/api/FarmerApp";
 window.CURRENT_LANG = '@currentLang';
 
@@ -242,12 +235,21 @@ console.log("Farmer ID:", window.FARMER_ID);
         
         if (notifBtn) notifBtn.addEventListener('click', toggleNotifSafe);
         if (notifCloseBtn) notifCloseBtn.addEventListener('click', toggleNotifSafe);
+
+        // 5. Update Avatar dynamically
+        const fvAvatar = document.getElementById('fvAvatar');
+        if (fvAvatar && window.FARMER_NAME) {
+            fvAvatar.textContent = window.FARMER_NAME.charAt(0).toUpperCase();
+            fvAvatar.title = window.FARMER_NAME;
+        }
     });
 </script>
 
 <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+<script src="~/js/layouts/site.js" asp-append-version="true"></script>
 <script src="~/js/layouts/farmer_layout.js" asp-append-version="true"></script>
 
 @RenderSection("Scripts", required: false)
 </body>
 </html>
+

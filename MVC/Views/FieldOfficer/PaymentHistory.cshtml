@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = "_FieldOfficerLayout";
     ViewData["Title"] = "Payment History";
 }
@@ -86,225 +86,9 @@
 </div>
 
 @section Scripts {
-<style>
-    .ph-wrapper { padding: 24px; max-width: 1200px; margin: 0 auto; }
-    .ph-header { margin-bottom: 32px; }
-    .ph-title-section { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; }
-    .ph-back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #2e7d32; }
-    .ph-back-btn:hover { color: #1b5e20; }
-    .ph-title-section h2 { margin: 0; font-size: 28px; font-weight: 700; color: #2e7d32; }
-    .ph-title-section p { margin: 4px 0 0 0; color: #666; }
 
-    .ph-summary-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 12px;
-        margin-bottom: 24px;
-    }
-    .ph-card {
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 16px;
-        text-align: center;
-    }
-    .ph-card-label { font-size: 12px; color: #999; text-transform: uppercase; font-weight: 600; }
-    .ph-card-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: #2e7d32;
-        margin-top: 8px;
-    }
+<link rel="stylesheet" href="~/css/pages/fieldofficer/paymenthistory.css" asp-append-version="true" />
 
-    .ph-filters {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 24px;
-        background: white;
-        padding: 16px;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-    }
-    .ph-filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    .ph-filter-group label { font-size: 12px; font-weight: 600; color: #666; }
-    .ph-filter-group select {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 13px;
-    }
-
-    .ph-table-container {
-        background: white;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        overflow-x: auto;
-    }
-    .ph-table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 760px;
-    }
-    .ph-table th {
-        background: #f5f5f5;
-        padding: 12px 16px;
-        text-align: left;
-        font-weight: 600;
-        font-size: 12px;
-        color: #666;
-        text-transform: uppercase;
-        border-bottom: 2px solid #e0e0e0;
-    }
-    .ph-table td {
-        padding: 12px 16px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .ph-table tbody tr:hover { background: #fafafa; }
-
-    .ph-status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    .ph-status-success {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    .ph-status-failed {
-        background: #ffebee;
-        color: #c62828;
-    }
-    .ph-status-initiated {
-        background: #fff3e0;
-        color: #f57c00;
-    }
-
-    .ph-type-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .ph-type-advance {
-        background: #e3f2fd;
-        color: #1565c0;
-    }
-    .ph-type-remaining {
-        background: #f3e5f5;
-        color: #6a1b9a;
-    }
-
-    .ph-amount { font-weight: 700; color: #2e7d32; }
-    .ph-btn-view {
-        background: #2e7d32;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-    }
-    .ph-btn-view:hover { background: #1b5e20; }
-
-    .ph-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        display: none !important;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-    .ph-modal[style*="display: block"],
-    .ph-modal[style*="display:block"] {
-        display: flex !important;
-    }
-    .ph-modal-content {
-        background: white;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    }
-    .ph-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        border-bottom: 1px solid #e0e0e0;
-    }
-    .ph-modal-header h3 { margin: 0; }
-    .ph-modal-close {
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
-        color: #999;
-    }
-    .ph-modal-body {
-        padding: 20px;
-    }
-    .ph-detail-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .ph-detail-label { color: #666; font-weight: 600; }
-    .ph-detail-value { font-weight: 700; color: #2e7d32; }
-
-    @@media (max-width: 768px) {
-        .ph-wrapper {
-            padding: 12px;
-        }
-        .ph-filters {
-            flex-direction: column;
-            gap: 10px;
-        }
-        .ph-table {
-            min-width: 0;
-        }
-        .ph-table thead {
-            display: none;
-        }
-        .ph-table tbody,
-        .ph-table tr,
-        .ph-table td {
-            display: block;
-            width: 100%;
-        }
-        .ph-table tr {
-            border-bottom: 1px solid #eaeaea;
-            padding: 8px 0;
-        }
-        .ph-table td {
-            border-bottom: none;
-            padding: 8px 12px;
-        }
-        .ph-table td::before {
-            content: attr(data-label);
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: #666;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-        .ph-table td:last-child {
-            padding-top: 4px;
-        }
-    }
-</style>
 
 <script>
     var allPayments = [];
@@ -360,7 +144,7 @@
             </div>
             <div class="ph-card">
                 <div class="ph-card-label">Total Amount</div>
-                <div class="ph-card-value">₹${Number(totalAmount).toLocaleString('en-IN')}</div>
+                <div class="ph-card-value">â‚¹${Number(totalAmount).toLocaleString('en-IN')}</div>
             </div>
         `;
 
@@ -391,7 +175,7 @@
                 <tr>
                     <td data-label="UTR / Reference"><strong>${p.utrReference}</strong></td>
                     <td data-label="Crop">${p.cropName}</td>
-                    <td data-label="Amount" class="ph-amount">₹${Number(p.amount).toLocaleString('en-IN')}</td>
+                    <td data-label="Amount" class="ph-amount">â‚¹${Number(p.amount).toLocaleString('en-IN')}</td>
                     <td data-label="Type"><span class="ph-type-badge ${typeClass}">${typeText}</span></td>
                     <td data-label="Status"><span class="ph-status-badge ${statusClass}">${statusText}</span></td>
                     <td data-label="Date">${date}</td>
@@ -467,7 +251,7 @@
             </div>
             <div class="ph-detail-row">
                 <span class="ph-detail-label">Amount</span>
-                <span class="ph-detail-value">₹${Number(payment.amount).toLocaleString('en-IN')}</span>
+                <span class="ph-detail-value">â‚¹${Number(payment.amount).toLocaleString('en-IN')}</span>
             </div>
             <div class="ph-detail-row">
                 <span class="ph-detail-label">Payment Mode</span>
@@ -525,3 +309,5 @@
     });
 </script>
 }
+
+

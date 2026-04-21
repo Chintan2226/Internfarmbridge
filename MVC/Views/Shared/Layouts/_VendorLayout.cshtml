@@ -2,9 +2,16 @@
     Layout = null;
     var role = "Vendor";
     var title = (ViewData["Title"] ?? "Dashboard").ToString();
+    /* ── Detect current language from culture cookie ── */
+    var currentLang = "en";
+    var cultureCookie = Context.Request.Cookies[".AspNetCore.Culture"];
+    if (!string.IsNullOrEmpty(cultureCookie)) {
+        var match = System.Text.RegularExpressions.Regex.Match(cultureCookie, @"c=(\w+)");
+        if (match.Success) currentLang = match.Groups[1].Value;
+    }
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@currentLang">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,47 +33,18 @@
 
     @RenderSection("Styles", required: false)
     
-    <style>
-        /* NEW: Badge Styles for Topbar (Cart & Wishlist) */
-        .nav-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            font-size: 10px;
-            font-weight: 700;
-            display: none; /* Managed by syncGlobalBadges JS */
-            align-items: center;
-            justify-content: center;
-            border: 2px solid white;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .bg-wishlist { background: #f4a621; }
-        .bg-cart { background: #2d8a45; }
-        .fv-action-btn { position: relative; }
+    
+<link rel="stylesheet" href="~/css/pages/shared/layouts__vendorlayout.css" asp-append-version="true" />
 
-        /* REVERTED: Original Notification Dot Logic */
-        .fv-dot {
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            width: 8px;
-            height: 8px;
-            background: #ff6b6b;
-            border-radius: 50%;
-            border: 2px solid #fff;
-        }
-    </style>
 
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
     <script>
         window.API_BASE_URL = 'http://localhost:5020/api/Vendor';
         window.USER_ROLE = '@role';
         window.API_BASE = `http://localhost:5020/api/@role`;
+        window.CURRENT_LANG = '@currentLang';
     </script>
+    <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
 </head>
 <body data-role="@role" data-title="@title">
 
@@ -85,16 +63,16 @@
         @{
             var path = Context.Request.Path.ToString().ToLower();
         }
-            <li><a href="/Vendor/Catalog" class="fv-nav-link @(path.Contains("/vendor/catalog") ? "active" : "")"><i class="fi fi-rr-shop"></i><span>Crops</span></a></li>
-            <li><a href="/Vendor/Orders" class="fv-nav-link @(path.Contains("/vendor/orders") ? "active" : "")"><i class="fi fi-rr-box-alt"></i><span>My Orders</span></a></li>
-            <li><a href="/Vendor/Dashboard" class="fv-nav-link @(path.Contains("/vendor/dashboard") ? "active" : "")"><i class="fi fi-rr-apps"></i><span>Dashboard</span></a></li>
-            <li><a href="/Vendor/Payments" class="fv-nav-link @(path.Contains("/vendor/payments") ? "active" : "")"><i class="fi fi-rr-credit-card"></i><span>Payments</span></a></li>
-             <li><a href="/Vendor/Profile" class="fv-nav-link @(path.Contains("/vendor/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span>Profile</span></a></li>
+            <li><a href="/Vendor/Catalog" class="fv-nav-link @(path.Contains("/vendor/catalog") ? "active" : "")"><i class="fi fi-rr-shop"></i><span data-i18n="nav_crop_catalog">Crops</span></a></li>
+            <li><a href="/Vendor/Orders" class="fv-nav-link @(path.Contains("/vendor/orders") ? "active" : "")"><i class="fi fi-rr-box-alt"></i><span data-i18n="nav_my_orders">My Orders</span></a></li>
+            <li><a href="/Vendor/Dashboard" class="fv-nav-link @(path.Contains("/vendor/dashboard") ? "active" : "")"><i class="fi fi-rr-apps"></i><span data-i18n="nav_dashboard">Dashboard</span></a></li>
+            <li><a href="/Vendor/Payments" class="fv-nav-link @(path.Contains("/vendor/payments") ? "active" : "")"><i class="fi fi-rr-credit-card"></i><span data-i18n="nav_payments">Payments</span></a></li>
+             <li><a href="/Vendor/Profile" class="fv-nav-link @(path.Contains("/vendor/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span data-i18n="nav_profile">Profile</span></a></li>
         </ul>
         <div class="fv-sidebar-foot">
     <a href="javascript:void(0)" class="fv-nav-link fv-logout" onclick="logoutVendor()">
         <i class="fi fi-rr-exit"></i>
-        <span>Logout</span>
+        <span data-i18n="nav_logout">Logout</span>
     </a>
 </div>
     </nav>
@@ -108,6 +86,16 @@
                 <h1 class="fv-page-title" id="fvPageTitle">@title</h1>
             </div>
             <div class="fv-topbar-right">
+                <div class="fb-lang-switcher">
+                    <button class="fv-action-btn fb-lang-btn" onclick="toggleLangDropdown(event)" aria-label="Language">
+                        <i class="fi fi-rr-globe"></i>
+                    </button>
+                    <div class="fb-lang-dropdown">
+                        <button class="fb-lang-option" data-lang="en" onclick="switchLang('en')">🇺🇸 English</button>
+                        <button class="fb-lang-option" data-lang="hi" onclick="switchLang('hi')">🇮🇳 हिन्दी</button>
+                        <button class="fb-lang-option" data-lang="gu" onclick="switchLang('gu')">🇮🇳 ગુજરાતી</button>
+                    </div>
+                </div>
                 <button class="fv-action-btn" id="fvBellBtn" onclick="toggleNotifDrawer(event)" aria-label="Notifications">
                     <i class="fi fi-rr-bell"></i>
                     <span class="fv-dot" id="fvBellDot" hidden></span>
@@ -142,14 +130,14 @@
     
     <div class="fv-notif" id="fvNotif">
         <div class="fv-notif-header">
-            <span>Notifications</span>
+            <span data-i18n="nav_notifications">Notifications</span>
             <button onclick="toggleNotifDrawer(event)"><i class="fi fi-rr-cross-small"></i></button>
         </div>
         <div class="fv-notif-actions">
-            <small><span id="fvUnread">0</span> unread</small>
+            <small><span id="fvUnread">0</span> <span data-i18n="notif_unread">unread</span></small>
             <div style="display:flex; gap: 12px; align-items:center;">
-                <button onclick="fvMarkAllRead()">Mark all read</button>
-                <button onclick="fvClearAll()" style="color: #ff6b6b; text-decoration: none;">Clear all</button>
+                <button onclick="fvMarkAllRead()" data-i18n="notif_mark_all">Mark all read</button>
+                <button onclick="fvClearAll()" style="color: #ff6b6b; text-decoration: none;" data-i18n="notif_clear_all">Clear all</button>
             </div>
         </div>
         <div class="fv-notif-list" id="fvNotifList"></div>
@@ -166,6 +154,8 @@
 
     <script src="/js/vendor_dashboard.js" asp-append-version="true"></script>
     <script src="~/js/Vendor/vendor_layout.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/site.js" asp-append-version="true"></script>
 
     <script>
         
@@ -223,12 +213,38 @@
             }
         }
 
+        // --- NEW LOGIC: Dynamic Avatar ---
+        function parseJwtVendor(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(atob(base64));
+            } catch (e) {
+                return null;
+            }
+        }
+
         $(document).ready(() => {
             syncGlobalBadges();
             window.addEventListener('storage', syncGlobalBadges);
+            
+            try {
+                const token = getCookie("authToken");
+                if(token) {
+                    const decoded = parseJwtVendor(token);
+                    if(decoded && decoded.full_name) {
+                        const fvAvatar = document.getElementById('fvAvatar');
+                        if (fvAvatar) {
+                            fvAvatar.textContent = decoded.full_name.charAt(0).toUpperCase();
+                            fvAvatar.title = decoded.full_name;
+                        }
+                    }
+                }
+            } catch(e) { console.warn("Avatar parsing fail", e); }
         });
     </script>
 
     @RenderSection("Scripts", required: false)
 </body>
 </html>
+

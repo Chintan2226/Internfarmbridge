@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = "_FieldOfficerLayout";
     ViewData["Title"] = "Catalog";
 }
@@ -73,7 +73,7 @@ $(document).ready(function () {
         }
     });
 
-    // 🔥 SEARCH FIX
+    // ðŸ”¥ SEARCH FIX
     $('#catalogSearch').on('input', function () {
         applyFilters();
     });
@@ -88,7 +88,7 @@ function buildCategoryFilters(data) {
     var categories = [...new Set(data.map(p => p.grade).filter(Boolean))];
 
     var container = $('#categoryFilters');
-    container.find("button:not(:first)").remove(); // 🔥 FIX duplicate
+    container.find("button:not(:first)").remove(); // ðŸ”¥ FIX duplicate
 
     categories.forEach(function (cat) {
         container.append(
@@ -143,7 +143,7 @@ function renderGrid(products) {
 
         grid.append(`
             <div class="cat-card" onclick="showDetail(${p.lotId})">
-                <div class="cat-card-icon">🌾</div>
+                <div class="cat-card-icon">ðŸŒ¾</div>
 
                 <div class="cat-card-body">
                     <div class="cat-card-top">
@@ -173,7 +173,7 @@ function showDetail(id) {
 
     var html = `
         <div style="padding:16px;">
-            <div style="font-size:48px;text-align:center;margin-bottom:16px;">🌾</div>
+            <div style="font-size:48px;text-align:center;margin-bottom:16px;">ðŸŒ¾</div>
 
             <table style="width:100%;">
                 <tr><td><b>Product</b></td><td>${product.productName}</td></tr>
@@ -193,7 +193,7 @@ function showDetail(id) {
         close: function () { this.destroy(); }
     }).data('kendoWindow');
 
-    // 🔥 IMPORTANT FIX
+    // ðŸ”¥ IMPORTANT FIX
     win.content(html);
 
     win.center().open();
@@ -201,199 +201,8 @@ function showDetail(id) {
 </script>
 }
 
-<style>
-/* ── Catalog Page ── */
-.cat-wrapper {
-    padding: clamp(14px, 3vw, 28px);
-}
 
-/* Header */
-.cat-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-bottom: 20px;
-}
-.cat-title {
-    font-size: clamp(18px, 4vw, 22px);
-    font-weight: 700;
-    color: var(--green-dark);
-    margin: 0;
-}
-.cat-sub {
-    font-size: 12px;
-    color: var(--gray-text);
-    margin: 3px 0 0;
-}
+<link rel="stylesheet" href="~/css/pages/fieldofficer/catalog.css" asp-append-version="true" />
 
-/* Search */
-.cat-search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-.cat-search-icon {
-    position: absolute;
-    left: 12px;
-    color: var(--gray-text);
-    font-size: 13px;
-}
-.cat-search-input {
-    border: 1.5px solid var(--gray-mid);
-    border-radius: 10px;
-    padding: 9px 14px 9px 34px;
-    font-size: 13px;
-    width: 220px;
-    outline: none;
-    background: #fff;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    font-family: 'DM Sans', sans-serif;
-    color: #1b2e1f;
-}
-.cat-search-input:focus {
-    border-color: var(--green-mid);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-}
 
-/* Filter Pills */
-.cat-filters {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
-.cat-filter-pill {
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1.5px solid var(--gray-mid);
-    background: #fff;
-    color: var(--gray-text);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-}
-.cat-filter-pill:hover {
-    border-color: var(--green-mid);
-    color: var(--green-dark);
-}
-.cat-filter-pill.active {
-    background: var(--green-dark);
-    border-color: var(--green-dark);
-    color: #fff;
-}
 
-/* Loading / Empty */
-.cat-loading, .cat-empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--gray-text);
-    font-size: 14px;
-}
-.cat-empty i {
-    font-size: 40px;
-    color: var(--gray-mid);
-    display: block;
-    margin-bottom: 12px;
-}
-.cat-empty p { font-weight: 600; margin: 0; }
-.cat-empty small { font-size: 12px; color: #aaa; }
-
-/* Grid */
-.cat-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-}
-
-/* Card */
-.cat-card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 2px 10px rgba(59,130,246,0.1);
-    display: flex;
-    gap: 14px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1.5px solid transparent;
-}
-.cat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59,130,246,0.18);
-    border-color: var(--green-pale);
-}
-.cat-card-icon {
-    font-size: 36px;
-    flex-shrink: 0;
-    width: 56px; height: 56px;
-    background: var(--green-mist);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-}
-.cat-card-body { flex: 1; min-width: 0; }
-.cat-card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 6px;
-}
-.cat-card-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1b2e1f;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.cat-card-badge {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.badge-grain   { background: #fff8e1; color: #f57f17; }
-.badge-pulse   { background: #fce4ec; color: #c62828; }
-.badge-oil     { background: #fff3e0; color: #e65100; }
-.badge-veg     { background: #e8f5e9; color: #2e7d32; }
-.badge-fruit   { background: #f3e5f5; color: #6a1b9a; }
-.badge-default { background: #eceff1; color: #546e7a; }
-
-.cat-card-desc {
-    font-size: 12px;
-    color: var(--gray-text);
-    margin: 0 0 10px;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.cat-card-meta {
-    display: flex;
-    gap: 14px;
-    font-size: 11px;
-    color: var(--gray-text);
-    font-weight: 500;
-}
-.cat-card-meta i { color: var(--green-mid); margin-right: 4px; }
-
-/* Detail popup table */
-.cat-detail-row td { padding: 8px 4px; border-bottom: 1px solid #f0f4f1; font-size: 13px; }
-.cat-detail-label  { color: var(--gray-text); font-weight: 600; width: 40%; font-size: 12px; }
-.cat-detail-val    { color: #1b2e1f; font-weight: 500; }
-
-/* Responsive */
-@@media (max-width: 768px) {
-    .cat-header { flex-direction: column; }
-    .cat-search-input { width: 100%; }
-    .cat-search-box { width: 100%; }
-    .cat-grid { grid-template-columns: 1fr; }
-}
-</style>

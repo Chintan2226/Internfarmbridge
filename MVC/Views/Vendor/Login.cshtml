@@ -33,32 +33,25 @@
             }
         }
     </script>
-    <style>
-        body { font-family: "Plus Jakarta Sans", sans-serif; }
-        
-        /* Premium Glass Card Effect */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-        }
+    
+<link rel="stylesheet" href="~/css/pages/vendor/login.css" asp-append-version="true" />
 
-        /* Beautiful Teal/Green Gradient Background */
-        .bg-mesh {
-            background-color: #8ec5b0;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(153, 50%, 75%, 1) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, hsla(186, 61%, 38%, 1) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(160, 52%, 40%, 1) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, hsla(139, 45%, 68%, 1) 0px, transparent 50%);
-        }
-    </style>
 </head>
 <body class="bg-mesh text-on-surface min-h-screen flex items-center justify-center antialiased overflow-y-auto py-10 px-4 sm:px-6">
 
     <div id="notificationArea" class="fixed top-4 right-4 z-[9999] w-full max-w-sm flex flex-col gap-2 pointer-events-none"></div>
+
+    <div class="fixed top-4 sm:top-6 right-4 sm:right-6 z-[100]">
+        <button onclick="document.getElementById('langMenu').classList.toggle('hidden')" class="flex items-center gap-2 text-primary hover:text-white bg-white/70 hover:bg-primary/90 px-4 py-2 sm:py-2.5 rounded-full backdrop-blur-md border border-primary/20 shadow-lg transition-all duration-300 hover:scale-105">
+            <span class="material-symbols-outlined text-[18px]">language</span>
+            <span class="text-sm font-bold tracking-wide">Language</span>
+        </button>
+        <div id="langMenu" class="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-black/5 flex flex-col hidden overflow-hidden transition-all duration-300">
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('en')">🇺🇸 English</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('hi')">🇮🇳 हिन्दी</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('gu')">🇮🇳 ગુજરાતી</button>
+        </div>
+    </div>
 
     <main class="relative z-10 w-full flex items-center justify-center my-auto">
         
@@ -183,7 +176,7 @@
     <script>
         const API_BASE = "http://localhost:5020";
 
-        // ── Eye toggles ──────────────────────────────────────────────
+        // ── Eye toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         window.togglePassword = function(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -196,7 +189,7 @@
             }
         };
 
-        // ── Toast Notifications ──────────────────────────────────────
+        // ── Toast Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         window.showToast = function(title, message, isError = false) {
             const container = document.getElementById('notificationArea');
             if (!container) return;
@@ -224,7 +217,7 @@
             }, 3500);
         };
 
-        // ── Vendor Login ─────────────────────────────────────────────
+        // ── Vendor Login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         window.handleVendorLogin = async function() {
             const emailOrPhone = document.getElementById('emailOrPhone').value.trim();
             const password = document.getElementById('password').value;
@@ -263,7 +256,7 @@
             }
         };
 
-        // ── Vendor Forgot Password ───────────────────────────────────
+        // ── Vendor Forgot Password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         window.handleVendorForgot = async function() {
             const email = document.getElementById('forgotEmail').value.trim();
             const btn = document.getElementById('forgotBtn');
@@ -299,7 +292,7 @@
             }
         };
 
-        // ── View Toggling ────────────────────────────────────────────
+        // â”€â”€ View Toggling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         document.addEventListener('DOMContentLoaded', () => {
             const loginSec = document.getElementById('loginSection');
             const forgotSec = document.getElementById('forgotPasswordSection');
@@ -317,5 +310,8 @@
             });
         });
     </script>
+    <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/site.js" asp-append-version="true"></script>
 </body>
 </html>
+
