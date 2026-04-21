@@ -1,8 +1,8 @@
 using API.BAL;
 using API.Models.FarmerApp;
 using API.Models.Farmer;
-using API.Models.Settings; 
-using API.Services; 
+using API.Models.Settings;
+using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -15,17 +15,22 @@ namespace API.Controllers
 {
     [Route("api/FarmerApp")]
     [ApiController]
-    [Authorize(Roles = "farmer")]   
+    [Authorize(Roles = "farmer")]
     public class FarmerAppController : ControllerBase
     {
         private readonly FarmerAppHelper _helper;
         private readonly EmailService _emailService;
+
+        private readonly ElasticService _elasticService;
         private readonly RabbitMqService _rabbitMqService;
 
-        public FarmerAppController(IConfiguration configuration, EmailService emailService, RabbitMqService rabbitMqService)
+        public FarmerAppController(IConfiguration configuration,
+            EmailService emailService,
+            ElasticService elasticService, RabbitMqService rabbitMqService)
         {
             _helper = new FarmerAppHelper(configuration);
             _emailService = emailService;
+            _elasticService = elasticService;
             _rabbitMqService = rabbitMqService;
         }
 
@@ -48,7 +53,7 @@ namespace API.Controllers
         // public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
         // {
         //     var (farmer, isNewUser) = await _farmerHelper.GoogleLoginAsync(request);
-            
+
         //     if (farmer != null)
         //     {
         //         // ✅ TRIGGER EMAIL ONLY IF THEY ARE A NEW USER
@@ -60,11 +65,11 @@ namespace API.Controllers
         //         var token = _jwtService.GenerateJwtToken(farmer.UserId, request.Email, "farmer");
         //         return Ok(new { success = true, token = token });
         //     }
-            
+
         //     return Unauthorized(new { message = "Authentication failed" });
         // }
 
-        
+
 
         [HttpPost("slots/book")]
         public async Task<IActionResult> BookSlot([FromBody] vm_BookQcSlotRequest req)
@@ -72,13 +77,13 @@ namespace API.Controllers
             if (!FarmerOwns(req.FarmerId)) return Forbid();
 
             bool success = await _helper.BookQcSlotAsync(req);
-            
+
             if (success)
             {
-                try 
+                try
                 {
                     var profile = await _helper.GetFarmerProfileAsync(req.FarmerId);
-                    
+
                     if (profile != null && !string.IsNullOrEmpty(profile.Email))
                     {
                          var emailData = new AcceptEmailData 
@@ -126,7 +131,7 @@ namespace API.Controllers
         // =============================================================
 
         [HttpPost("internal/send-qc-slot-accepted-notification")]
-        [Authorize(Roles="admin,fo")] 
+        [Authorize(Roles = "admin,fo")]
         public async Task<IActionResult> SendQCSlotAcceptedNotification([FromBody] InternalSubstitutionsRequest request)
         {
             try
@@ -135,7 +140,7 @@ namespace API.Controllers
                 if (profile == null || string.IsNullOrEmpty(profile.Email))
                     return BadRequest(new { success = false, message = "Farmer email not found." });
 
-                var data = new AcceptEmailData 
+                var data = new AcceptEmailData
                 {
                     FarmerEmail = profile.Email,
                     FarmerName = request.SubstitutionData.GetValueOrDefault("{{FARMER_NAME}}", "Farmer"),
@@ -165,16 +170,16 @@ namespace API.Controllers
         }
 
         [HttpPost("internal/send-slot-rescheduled-notification")]
-        [Authorize(Roles="admin")] 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> SendSlotRescheduledNotification([FromBody] InternalSubstitutionsRequest request)
         {
-             try
+            try
             {
                 var profile = await _helper.GetFarmerProfileAsync(request.FarmerId);
                 if (profile == null || string.IsNullOrEmpty(profile.Email))
                     return BadRequest(new { success = false, message = "Farmer email not found." });
 
-                var data = new RescheduleEmailData 
+                var data = new RescheduleEmailData
                 {
                     FarmerEmail = profile.Email,
                     FarmerName = request.SubstitutionData.GetValueOrDefault("{{FARMER_NAME}}", "Farmer"),
@@ -204,10 +209,10 @@ namespace API.Controllers
         }
 
         [HttpPost("internal/send-advance-payment-notification")]
-        [Authorize(Roles="admin")] 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> SendAdvancePaymentNotification([FromBody] InternalAdvancePaymentRequest request)
         {
-             try
+            try
             {
                 var profile = await _helper.GetFarmerProfileAsync(request.FarmerId);
                 if (profile == null || string.IsNullOrEmpty(profile.Email))
@@ -239,16 +244,16 @@ namespace API.Controllers
         }
 
         [HttpPost("internal/send-slot-cancelled-notification")]
-        [Authorize(Roles="admin")] 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> SendSlotCancelledNotification([FromBody] InternalSubstitutionsRequest request)
         {
-             try
+            try
             {
                 var profile = await _helper.GetFarmerProfileAsync(request.FarmerId);
                 if (profile == null || string.IsNullOrEmpty(profile.Email))
                     return BadRequest(new { success = false, message = "Farmer email not found." });
 
-                var data = new CancelEmailData 
+                var data = new CancelEmailData
                 {
                     FarmerEmail = profile.Email,
                     FarmerName = request.SubstitutionData.GetValueOrDefault("{{FARMER_NAME}}", "Farmer"),
@@ -470,6 +475,17 @@ namespace API.Controllers
 
             if (success) return Ok(new { success = true, message = "Profile updated successfully." });
             return StatusCode(500, new { success = false, message = "Failed to update profile." });
+        }
+
+        //Elastic Search - Method (Mansi)
+
+        [HttpPost("search/my-crops")]
+        public async Task<IActionResult> SearchMyCrops([FromBody] SearchRequestModel request)
+        {
+            var farmerId = GetTokenFarmerId(); // Your existing method
+            request.FarmerId = farmerId;
+            var results = await _elasticService.SearchCropsForMVCAsync(request);
+            return Ok(results);
         }
     }
 

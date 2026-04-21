@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using API.Models.Settings;
 
 namespace API.Controllers
 {
@@ -31,12 +32,14 @@ namespace API.Controllers
             EmailService emailService,
             ILogger<FieldOfficerController> logger,
             RabbitMqService rabbitMqService)
+            ElasticService elasticService)
         {
             _helper = helper;
             _cloudinaryService = cloudinaryService;
             _emailService = emailService;
             _logger = logger;
             _rabbitMqService = rabbitMqService;
+            _elasticService = elasticService;
         }
 
         private async Task TryNotifyFarmerAsync(Func<Task> send)
@@ -177,9 +180,9 @@ namespace API.Controllers
         {
             try
             {
-                var date  = DateTime.Parse(slotDate);
+                var date = DateTime.Parse(slotDate);
                 var start = TimeSpan.Parse(startTime);
-                var end   = TimeSpan.Parse(endTime);
+                var end = TimeSpan.Parse(endTime);
 
                 var emailData = await _helper.RescheduleRequest(requestId, date, start, end);
 
@@ -296,7 +299,7 @@ namespace API.Controllers
             try
             {
                 int foId = await GetFieldOfficerProfileIdAsync();
-                
+
                 var model = new QualityInspectionForm
                 {
                     ProcurementRequestId = procurementRequestId,
@@ -314,7 +317,7 @@ namespace API.Controllers
                     FoAssessedPrice = foAssessedPrice,
                     Passed = passed
                 };
-                
+
                 var inspectionId = await _helper.SubmitInspectionAndGetId(model);
                 if (!inspectionId.HasValue)
                     return BadRequest(new { message = "Submission failed. Please try again." });
@@ -395,9 +398,9 @@ namespace API.Controllers
                 decimal advanceAmount = request.advanceAmount;
 
                 var result = await _helper.RequestPayment(
-                    inspectionId, 
-                    farmerId, 
-                    procurementRequestId, 
+                    inspectionId,
+                    farmerId,
+                    procurementRequestId,
                     advanceAmount
                 );
 
@@ -418,7 +421,7 @@ namespace API.Controllers
 
                 return Ok(new { 
                     message = "Payment request created successfully",
-                    advanceAmount = advanceAmount 
+                    advanceAmount = advanceAmount
                 });
             }
             catch (Exception ex)
@@ -757,6 +760,16 @@ namespace API.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
+        }
+
+        //Elastic Search - Method (Mansi)
+        [HttpPost("search/qc-records")]
+        public async Task<IActionResult> SearchQCRecords([FromBody] SearchRequestModel request)
+        {
+            var foId = await GetFieldOfficerProfileIdAsync(); // Your existing method
+            request.FoId = foId;
+            var results = await _elasticService.SearchQCRecordsForMVCAsync(request);
+            return Ok(results);
         }
     }
 }

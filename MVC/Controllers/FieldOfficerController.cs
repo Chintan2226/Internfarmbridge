@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MVC.Filters;
+using MVC.Models;                    
+using System.Text.Json;
+using System.Text;
 
 namespace MVC.Controllers
 {
@@ -15,11 +18,42 @@ namespace MVC.Controllers
     public class FieldOfficerController : Controller
     {
         private readonly ILogger<FieldOfficerController> _logger;
+        private readonly HttpClient _httpClient;           
+        private readonly IConfiguration _configuration;   
+        private readonly string _apiBase;  
 
-        public FieldOfficerController(ILogger<FieldOfficerController> logger)
+        public FieldOfficerController(ILogger<FieldOfficerController> logger,
+            IHttpClientFactory httpClientFactory,          
+            IConfiguration configuration)
         {
             _logger = logger;
+            _httpClient = httpClientFactory.CreateClient(); 
+            _configuration = configuration;                 
+            _apiBase = (configuration["ApiBaseUrl"] ?? "http://localhost:5020").TrimEnd('/'); 
         }
+
+        // ========== ELASTICSEARCH SEARCH METHODS (ADD AT THE END OF CLASS) ==========
+
+        [HttpPost]
+        public async Task<IActionResult> SearchQCRecords([FromBody] SearchRequestModel request)
+        {
+            try
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"{_apiBase}/api/FieldOfficer/search/qc-records", content);
+                var result = await response.Content.ReadAsStringAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SearchQCRecords failed");
+                return Json(new { success = false, results = new List<QCSearchResult>() });
+            }
+        }
+
 
         public IActionResult Dashboard()
         {

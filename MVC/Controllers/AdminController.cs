@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MVC.Filters;
+using MVC.Models;
+
 
 namespace MVC.Controllers
 {
@@ -294,11 +296,82 @@ namespace MVC.Controllers
             return View();
         }
 
+        //Elastic Search - Method (Mansi)
+        // ========== ELASTICSEARCH SEARCH METHODS ==========
+
+        [HttpPost]
+        public async Task<IActionResult> UniversalSearch([FromBody] SearchRequestModel request)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _http.PostAsync($"{_apiBase}/api/Admin/search/universal", content);
+                var result = await response.Content.ReadAsStringAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "UniversalSearch failed");
+                return Json(new { success = false, data = new List<UniversalSearchResult>() });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ReIndex()
+        {
+            try
+            {
+                var response = await _http.PostAsync($"{_apiBase}/api/Admin/reindex", null);
+                var result = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var reindexResult = JsonSerializer.Deserialize<ReindexResult>(result);
+                    TempData["SuccessMessage"] = $"✅ Re-indexed {reindexResult?.TotalIndexed} records";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "❌ Re-index failed";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ReIndex failed");
+                TempData["ErrorMessage"] = "❌ Re-index failed: Connection error";
+            }
+
+            return RedirectToAction("Dashboard");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SearchCatalog([FromBody] SearchRequestModel request)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _http.PostAsync($"{_apiBase}/api/Admin/search/catalog", content);
+                var result = await response.Content.ReadAsStringAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SearchCatalog failed");
+                return Json(new { success = false, results = new List<CatalogSearchResult>() });
+            }
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View();
         }
+
     }
 
     public class vm_ToggleStatus
