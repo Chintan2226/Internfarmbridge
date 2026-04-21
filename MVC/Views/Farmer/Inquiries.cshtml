@@ -1,157 +1,3 @@
-@* @{
-    ViewData["Title"] = "Inquiries & Help";
-    ViewData["UserRole"] = "Farmer";
-    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
-}
-
-@section Styles {
-    <!-- Dashboard Integration Styling -->
-    <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/Farmer/inquiries.css" asp-append-version="true" />
-}
-
-<div class="db-wrap" style="gap: 20px; padding-bottom: 20px;">
-
-    <!-- Reintroduced KPI Metrics -->
-    <section>
-        <div class="f-action-row" style="margin-bottom: 20px;">
-            <h2 style="font-size: 20px; font-weight: 700; color: #2e7d32; margin: 0;">Helpdesk Overview</h2>
-        </div>
-        <div class="kpi-grid" style="display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
-            <div class="kpi-card" style="padding: 20px; border-radius: 16px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                <div class="kpi-top" style="margin-bottom: 12px;">
-                    <div class="kpi-lbl" style="font-size:12px; font-weight:700; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Total Queries</div>
-                    <div class="kpi-icon" style="background:var(--grad-farm); width: 40px; height: 40px; border-radius: 10px;"><i class="fi fi-rr-apps" style="color:white; font-size: 18px;"></i></div>
-                </div>
-                <div class="kpi-val" id="kpiTotal" style="font-size: 28px; font-weight:800; color:#1e293b;">0</div>
-            </div>
-            
-            <div class="kpi-card" style="padding: 20px; border-radius: 16px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                <div class="kpi-top" style="margin-bottom: 12px;">
-                    <div class="kpi-lbl" style="font-size:12px; font-weight:700; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Pending Action</div>
-                    <div class="kpi-icon" style="background:#fef3c7; width: 40px; height: 40px; border-radius: 10px;"><i class="fi fi-rr-time-quarter-to" style="color:#d97706; font-size: 18px;"></i></div>
-                </div>
-                <div class="kpi-val" id="kpiPending" style="font-size: 28px; font-weight:800; color:#1e293b;">0</div>
-            </div>
-
-            <div class="kpi-card" style="padding: 20px; border-radius: 16px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                <div class="kpi-top" style="margin-bottom: 12px;">
-                    <div class="kpi-lbl" style="font-size:12px; font-weight:700; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Solved</div>
-                    <div class="kpi-icon" style="background:#dcfce7; width: 40px; height: 40px; border-radius: 10px;"><i class="fi fi-rr-check-circle" style="color:#16a34a; font-size: 18px;"></i></div>
-                </div>
-                <div class="kpi-val" id="kpiSolved" style="font-size: 28px; font-weight:800; color:#1e293b;">0</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Hyper-Premium Form Container -->
-    <section class="inquiry-split-layout">
-        
-        <!-- Left Side Helpful Info -->
-        <div style="flex: 1; max-width: 320px; display: flex; flex-direction: column; gap: 20px;">
-            
-            <!-- Contact Card -->
-            <div class="grid-card" style="padding: 24px; background: #fff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); height: max-content;">
-                <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;"><i class="fi fi-rr-address-book" style="color: #10b981;"></i> Direct Contact</h4>
-                
-                <div style="display: flex; gap: 14px; margin-bottom: 20px; align-items: center;">
-                    <div style="min-width: 42px; height: 42px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center;">
-                        <i class="fi fi-rr-phone-call" style="color: #10b981; font-size: 18px;"></i>
-                    </div>
-                    <div>
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Toll-Free Helpline</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-top: 2px;">1800-123-4567</div>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 14px; align-items: center;">
-                    <div style="min-width: 42px; height: 42px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#25D366" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-                    </div>
-                    <div>
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">WhatsApp Support</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-top: 2px;">+91 98765 43210</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FAQ Card -->
-            <div class="grid-card" style="padding: 24px; background: #fff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); flex-grow: 1;">
-                <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;"><i class="fi fi-rr-interrogation" style="color: #f59e0b;"></i> Quick Answers</h4>
-                
-                <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #e2e8f0;">
-                    <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">When will I get paid?</div>
-                    <div style="font-size: 12px; color: #64748b; line-height: 1.5;">An initial advance is released after the Quality Check is cleared, and the pending settlement is completed once your crop is completely sold out.</div>
-                </div>
-
-                <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #e2e8f0;">
-                    <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Can I reschedule a QC slot?</div>
-                    <div style="font-size: 12px; color: #64748b; line-height: 1.5;">Yes, you can edit or cancel active appointments directly from the QC Appointments tab.</div>
-                </div>
-
-                <div>
-                    <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">How to update bank details?</div>
-                    <div style="font-size: 12px; color: #64748b; line-height: 1.5;">Navigate to Profile Settings to securely update your active banking routing info.</div>
-                </div>
-            </div>
-            
-        </div>
-
-        <!-- Right Side Form Actions -->
-        <div class="inquiry-form-card">
-            <form id="inquiryForm" style="display: flex; flex-direction: column;">
-                
-                <div class="row g-3" style="margin-bottom: 20px;">
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label">ROUTING DEPARTMENT</label>
-                        <select id="inquiryType" class="text-field" style="cursor: pointer; appearance: auto; -webkit-appearance: auto;">
-                            <option value="">Select Department...</option>
-                            <option value="finance">Finance & Payments</option>
-                            <option value="logistics">Logistics & Transport</option>
-                            <option value="qc_dispute">Quality Check Disputes</option>
-                            <option value="tech">Platform Technical Issue</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label">URGENCY LEVEL</label>
-                        <select id="inquiryPriority" class="text-field" style="cursor: pointer; appearance: auto; -webkit-appearance: auto;">
-                            <option value="">Select Urgency...</option>
-                            <option value="low">🟢 Low</option>
-                            <option value="medium">🟡 Medium</option>
-                            <option value="high">🔴 High</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label class="premium-label">SUBJECT HEADLINE</label>
-                    <input id="subject" class="text-field" placeholder="Briefly describe your issue..." required />
-                </div>
-
-                <div class="form-group" style="margin-bottom: 24px;">
-                    <label class="premium-label">COMPREHENSIVE DETAILS</label>
-                    <textarea id="messageBody" class="text-field premium-textarea" placeholder="Please provide all relevant order numbers, crop listings, or error codes..." required></textarea>
-                </div>
-
-                <div class="form-footer-actions">
-                    <div class="secure-badge"><i class="fi fi-rr-shield-check"></i> Data is encrypted securely</div>
-                    <div style="display: flex; gap: 16px;">
-                        <button type="button" class="btn-premium-ghost" onclick="$('#inquiryForm')[0].reset();">Reset</button>
-                        <button type="button" class="btn-premium-solid" onclick="submitInquiry()">Submit Support Query <i class="fi fi-rr-arrow-right" style="margin-left: 8px;"></i></button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-    </section>
-
-</div>
-
-@section Scripts {
-    <script src="~/js/Farmer/inquiries.js" asp-append-version="true"></script>
-} *@
-
-
 @{
     ViewData["Title"] = "Inquiries & Help";
     ViewData["UserRole"] = "Farmer";
@@ -163,35 +9,35 @@
     <link rel="stylesheet" href="~/css/Farmer/inquiries.css" asp-append-version="true" />
 }
 
-<div class="db-wrap" style="gap: 20px; padding-bottom: 20px;">
+<div class="db-wrap inq-db-wrap">
 
     <section>
-        <div class="f-action-row" style="margin-bottom: 20px;">
-            <h2 style="font-size: 20px; font-weight: 700; color: #2e7d32; margin: 0;">Helpdesk Overview</h2>
+        <div class="f-action-row inq-header-row">
+            <h2 class="inq-header-title">Helpdesk Overview</h2>
         </div>
         <div class="kpi-grid inq-kpi-grid">
-            <div class="kpi-card" style="padding: 20px; border-radius: 16px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                <div class="kpi-top" style="margin-bottom: 12px;">
-                    <div class="kpi-lbl" style="font-size:12px; font-weight:700; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Total Queries</div>
-                    <div class="kpi-icon" style="background:var(--grad-farm); width: 40px; height: 40px; border-radius: 10px;"><i class="fi fi-rr-apps" style="color:white; font-size: 18px;"></i></div>
+            <div class="kpi-card inq-kpi-card-style">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Total Queries</div>
+                    <div class="kpi-icon inq-icon-total"><i class="fi fi-rr-apps text-white"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiTotal" style="font-size: 28px; font-weight:800; color:#1e293b;">0</div>
+                <div class="kpi-val" id="kpiTotal">0</div>
             </div>
             
-            <div class="kpi-card" style="padding: 20px; border-radius: 16px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                <div class="kpi-top" style="margin-bottom: 12px;">
-                    <div class="kpi-lbl" style="font-size:12px; font-weight:700; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Pending Action</div>
-                    <div class="kpi-icon" style="background:#fef3c7; width: 40px; height: 40px; border-radius: 10px;"><i class="fi fi-rr-time-quarter-to" style="color:#d97706; font-size: 18px;"></i></div>
+            <div class="kpi-card inq-kpi-card-style">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Pending Action</div>
+                    <div class="kpi-icon inq-icon-pending"><i class="fi fi-rr-time-quarter-to text-orange"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiPending" style="font-size: 28px; font-weight:800; color:#1e293b;">0</div>
+                <div class="kpi-val" id="kpiPending">0</div>
             </div>
 
-            <div class="kpi-card" style="padding: 20px; border-radius: 16px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                <div class="kpi-top" style="margin-bottom: 12px;">
-                    <div class="kpi-lbl" style="font-size:12px; font-weight:700; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Solved</div>
-                    <div class="kpi-icon" style="background:#dcfce7; width: 40px; height: 40px; border-radius: 10px;"><i class="fi fi-rr-check-circle" style="color:#16a34a; font-size: 18px;"></i></div>
+            <div class="kpi-card inq-kpi-card-style">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Solved</div>
+                    <div class="kpi-icon inq-icon-solved"><i class="fi fi-rr-check-circle text-green"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiSolved" style="font-size: 28px; font-weight:800; color:#1e293b;">0</div>
+                <div class="kpi-val" id="kpiSolved">0</div>
             </div>
         </div>
     </section>
@@ -200,58 +46,58 @@
         
         <div class="inq-sidebar-left">
             
-            <div class="grid-card" style="padding: 24px; background: #fff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); height: max-content;">
-                <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;"><i class="fi fi-rr-address-book" style="color: #10b981;"></i> Direct Contact</h4>
+            <div class="grid-card inq-sidebar-card">
+                <h4 class="inq-card-title"><i class="fi fi-rr-address-book text-emerald"></i> Direct Contact</h4>
                 
-                <div style="display: flex; gap: 14px; margin-bottom: 20px; align-items: center;">
-                    <div style="min-width: 42px; height: 42px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center;">
-                        <i class="fi fi-rr-phone-call" style="color: #10b981; font-size: 18px;"></i>
+                <div class="inq-contact-row">
+                    <div class="inq-contact-icon">
+                        <i class="fi fi-rr-phone-call text-emerald"></i>
                     </div>
                     <div>
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Toll-Free Helpline</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-top: 2px;">1800-123-4567</div>
+                        <div class="inq-contact-lbl">Toll-Free Helpline</div>
+                        <div class="inq-contact-val">1800-123-4567</div>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 14px; align-items: center;">
-                    <div style="min-width: 42px; height: 42px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center;">
+                <div class="inq-contact-row inq-contact-last">
+                    <div class="inq-contact-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#25D366" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                     </div>
                     <div>
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">WhatsApp Support</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-top: 2px;">+91 98765 43210</div>
+                        <div class="inq-contact-lbl">WhatsApp Support</div>
+                        <div class="inq-contact-val">+91 98765 43210</div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid-card" style="padding: 24px; background: #fff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); flex-grow: 1;">
-                <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;"><i class="fi fi-rr-interrogation" style="color: #f59e0b;"></i> Quick Answers</h4>
+            <div class="grid-card inq-sidebar-card flex-grow-1">
+                <h4 class="inq-card-title"><i class="fi fi-rr-interrogation text-amber"></i> Quick Answers</h4>
                 
-                <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #e2e8f0;">
-                    <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">When will I get paid?</div>
-                    <div style="font-size: 12px; color: #64748b; line-height: 1.5;">An initial advance is released after the Quality Check is cleared, and the pending settlement is completed once your crop is completely sold out.</div>
+                <div class="inq-faq-item">
+                    <div class="inq-faq-q">When will I get paid?</div>
+                    <div class="inq-faq-a">An initial advance is released after the Quality Check is cleared, and the pending settlement is completed once your crop is completely sold out.</div>
                 </div>
 
-                <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #e2e8f0;">
-                    <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Can I reschedule a QC slot?</div>
-                    <div style="font-size: 12px; color: #64748b; line-height: 1.5;">Yes, you can edit or cancel active appointments directly from the QC Appointments tab.</div>
+                <div class="inq-faq-item">
+                    <div class="inq-faq-q">Can I reschedule a QC slot?</div>
+                    <div class="inq-faq-a">Yes, you can edit or cancel active appointments directly from the QC Appointments tab.</div>
                 </div>
 
-                <div>
-                    <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">How to update bank details?</div>
-                    <div style="font-size: 12px; color: #64748b; line-height: 1.5;">Navigate to Profile Settings to securely update your active banking routing info.</div>
+                <div class="inq-faq-item inq-faq-last">
+                    <div class="inq-faq-q">How to update bank details?</div>
+                    <div class="inq-faq-a">Navigate to Profile Settings to securely update your active banking routing info.</div>
                 </div>
             </div>
             
         </div>
 
         <div class="inquiry-form-card">
-            <form id="inquiryForm" style="display: flex; flex-direction: column;">
+            <form id="inquiryForm" class="inq-form-body">
                 
-                <div class="row g-3" style="margin-bottom: 20px;">
+                <div class="row g-3 inq-form-row">
                     <div class="col-md-6 form-group">
                         <label class="premium-label">ROUTING DEPARTMENT</label>
-                        <select id="inquiryType" class="text-field" style="cursor: pointer; appearance: auto; -webkit-appearance: auto;">
+                        <select id="inquiryType" class="text-field select-field">
                             <option value="">Select Department...</option>
                             <option value="finance">Finance & Payments</option>
                             <option value="logistics">Logistics & Transport</option>
@@ -261,7 +107,7 @@
                     </div>
                     <div class="col-md-6 form-group">
                         <label class="premium-label">URGENCY LEVEL</label>
-                        <select id="inquiryPriority" class="text-field" style="cursor: pointer; appearance: auto; -webkit-appearance: auto;">
+                        <select id="inquiryPriority" class="text-field select-field">
                             <option value="">Select Urgency...</option>
                             <option value="low">🟢 Low</option>
                             <option value="medium">🟡 Medium</option>
@@ -270,12 +116,12 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-bottom: 20px;">
+                <div class="form-group inq-form-row">
                     <label class="premium-label">SUBJECT HEADLINE</label>
                     <input id="subject" class="text-field" placeholder="Briefly describe your issue..." required />
                 </div>
 
-                <div class="form-group" style="margin-bottom: 24px;">
+                <div class="form-group inq-form-row-last">
                     <label class="premium-label">COMPREHENSIVE DETAILS</label>
                     <textarea id="messageBody" class="text-field premium-textarea" placeholder="Please provide all relevant order numbers, crop listings, or error codes..." required></textarea>
                 </div>
@@ -283,8 +129,8 @@
                 <div class="form-footer-actions form-actions-responsive">
                     <div class="secure-badge"><i class="fi fi-rr-shield-check"></i> Data is encrypted securely</div>
                     <div class="btn-group-responsive">
-                        <button type="button" class="btn-premium-ghost" onclick="$('#inquiryForm')[0].reset();">Reset</button>
-                        <button type="button" class="btn-premium-solid" onclick="submitInquiry()">Submit Support Query <i class="fi fi-rr-arrow-right" style="margin-left: 8px;"></i></button>
+                        <button type="button" id="btnResetInquiry" class="btn-premium-ghost">Reset</button>
+                        <button type="button" id="btnSubmitInquiry" class="btn-premium-solid">Submit Support Query <i class="fi fi-rr-arrow-right" class="ms-2"></i></button>
                     </div>
                 </div>
             </form>
