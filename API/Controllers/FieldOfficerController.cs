@@ -25,13 +25,15 @@ namespace API.Controllers
         private readonly EmailService _emailService;
         private readonly ILogger<FieldOfficerController> _logger;
         private readonly RabbitMqService _rabbitMqService;
+        private readonly ElasticService _elasticService;
+
 
         public FieldOfficerController(
             FieldOfficerHelper helper,
             CloudinaryService cloudinaryService,
             EmailService emailService,
             ILogger<FieldOfficerController> logger,
-            RabbitMqService rabbitMqService)
+            RabbitMqService rabbitMqService,
             ElasticService elasticService)
         {
             _helper = helper;
