@@ -137,7 +137,8 @@ namespace API.Controllers
                 // Generate JWT with farmer-specific claims
                 var additionalClaims = new Dictionary<string, string>
                 {
-                    { "farmer_id", farmer.Id.ToString() }
+                    { "farmer_id", farmer.Id.ToString() },
+                    { "full_name", farmer.FullName }
                 };
  
                 var token = _jwtService.GenerateJwtToken(user.Id, user.Email, user.Role, additionalClaims);

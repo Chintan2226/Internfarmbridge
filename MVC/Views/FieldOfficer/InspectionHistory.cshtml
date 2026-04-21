@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = "_FieldOfficerLayout";
     ViewData["Title"] = "Inspection History";
 }
@@ -35,79 +35,9 @@
 </div>
 
 @section Scripts {
-    <style>
-        .ih-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .ih-table th {
-            text-transform: uppercase;
-            font-size: 12px;
-            color: #475569;
-            text-align: left;
-            padding: 12px 10px;
-            border-bottom: 1px solid #e7efe9;
-        }
-        .ih-table td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #f1f5f2;
-            vertical-align: middle;
-        }
-        .ih-empty {
-            text-align: center;
-            color: #999;
-            padding: 24px !important;
-        }
-        .ih-report-btn {
-            border: 1px solid #2e7d32;
-            color: #2e7d32;
-            border-radius: 20px;
-            padding: 6px 12px;
-            background: transparent;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .ih-report-btn:hover {
-            background: #f0f7f0;
-        }
-        .ih-action-wrap {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        @@media (max-width: 768px) {
-            .ih-table thead {
-                display: none;
-            }
-            .ih-table,
-            .ih-table tbody,
-            .ih-table tr,
-            .ih-table td {
-                display: block;
-                width: 100%;
-            }
-            .ih-table tr {
-                border: 1px solid #e0ede5;
-                border-radius: 12px;
-                margin-bottom: 12px;
-                padding: 8px 0;
-                background: #fff;
-            }
-            .ih-table td {
-                border-bottom: none;
-                padding: 8px 12px;
-            }
-            .ih-table td::before {
-                content: attr(data-label);
-                display: block;
-                font-size: 11px;
-                font-weight: 700;
-                color: #666;
-                text-transform: uppercase;
-                margin-bottom: 4px;
-            }
-        }
-    </style>
+    
+<link rel="stylesheet" href="~/css/pages/fieldofficer/inspectionhistory.css" asp-append-version="true" />
+
     <script>
         $(document).ready(function () {
             function normalizeStatus(status) {
@@ -141,7 +71,7 @@
             }
 
             function fmtDateTime(item) {
-                if (!item.slotDate) return "—";
+                if (!item.slotDate) return "â€”";
                 try {
                     var date = new Date(item.slotDate);
                     var timeStr = item.startTime ? (" &#64; " + item.startTime.substring(0, 5)) : "";
@@ -167,7 +97,7 @@
                             <td data-label="Farmer">${item.farmerName || "N/A"}</td>
                             <td data-label="Crop">${item.cropType || "N/A"}</td>
                             <td data-label="Qty">${item.quantity || 0} ${item.unit || "kg"}</td>
-                            <td data-label="Asking Price">₹${Number(item.askingPrice || 0).toLocaleString('en-IN')}</td>
+                            <td data-label="Asking Price">â‚¹${Number(item.askingPrice || 0).toLocaleString('en-IN')}</td>
                             <td data-label="Status">${statusPill(item.status)}</td>
                             <td data-label="Date & Time">${fmtDateTime(item)}</td>
                             <td data-label="Action">
@@ -209,3 +139,5 @@
         });
     </script>
 }
+
+

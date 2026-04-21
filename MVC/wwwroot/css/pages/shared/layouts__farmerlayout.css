@@ -1,0 +1,10 @@
+﻿.fv-drawer.open {
+            left: 0 !important;
+        }
+        .fv-overlay.open {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        .fv-notif.open {
+            right: 0 !important;
+        }

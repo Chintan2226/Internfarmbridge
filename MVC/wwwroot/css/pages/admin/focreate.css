@@ -1,0 +1,504 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+    --g-900: #0a1f0b;
+    --g-800: #1b5e20;
+    --g-700: #2e7d32;
+    --g-600: #388e3c;
+    --g-400: #66bb6a;
+    --g-100: #e8f5e9;
+    --g-50:  #f1f8f1;
+    --black: #0d0d0d;
+    --white: #ffffff;
+    --gray:  #6b7280;
+    --border: #c8e6c9;
+    --radius: 10px;
+    --shadow: 0 4px 24px rgba(46,125,50,.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--g-50);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: var(--black);
+    min-height: 100vh;
+}
+
+/* --- Page wrapper --- */
+.fo-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+}
+
+.fo-shell {
+    width: 100%;
+    max-width: 700px;
+}
+
+/* --- Top badge --- */
+.fo-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.fo-badge-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--g-600);
+}
+
+.fo-badge span {
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--g-700);
+}
+
+/* --- Card --- */
+.fo-card {
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* --- Card header --- */
+.fo-card-header {
+    background: var(--g-700);
+    padding: 26px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.fo-card-header::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.05);
+    pointer-events: none;
+}
+
+.fo-card-header::before {
+    content: '';
+    position: absolute;
+    right: 40px;
+    bottom: -60px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.04);
+    pointer-events: none;
+}
+
+.fo-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fo-avatar .k-icon {
+    font-size: 22px;
+    color: white;
+}
+
+.fo-card-header h2 {
+    color: white;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.fo-card-header p {
+    color: rgba(255,255,255,.72);
+    font-size: .8rem;
+    font-weight: 400;
+}
+
+/* --- Card body --- */
+.fo-card-body {
+    padding: 30px 32px 32px;
+}
+
+/* --- Info bar --- */
+.fo-info-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--g-100);
+    border: 1px solid #a5d6a7;
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 26px;
+    font-size: .82rem;
+    color: var(--g-800);
+    line-height: 1.5;
+}
+
+.fo-info-bar .k-icon {
+    font-size: 16px;
+    color: var(--g-600);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* --- Section label --- */
+.fo-section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 16px;
+}
+
+.fo-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* --- Kendo Form overrides --- */
+.k-form .k-form-field {
+    margin-bottom: 0;
+}
+
+.k-form .k-label,
+.k-form .k-form-label {
+    font-family: 'Inter', sans-serif !important;
+    font-size: .78rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    letter-spacing: .02em;
+    margin-bottom: 6px !important;
+    text-transform: uppercase;
+}
+
+.k-form .k-textbox,
+.k-form .k-input,
+.k-form .k-maskedtextbox .k-textbox,
+.k-form .k-dropdown .k-dropdown-wrap,
+.k-form .k-combobox .k-dropdown-wrap {
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: .9rem !important;
+    color: var(--black) !important;
+    background: #fafffe !important;
+    height: 42px !important;
+    padding: 0 12px !important;
+    transition: border-color .15s, box-shadow .15s !important;
+    box-shadow: none !important;
+}
+
+.k-form .k-textbox:focus,
+.k-form .k-input:focus,
+.k-form .k-maskedtextbox .k-textbox:focus,
+.k-form .k-dropdown .k-dropdown-wrap.k-state-focused,
+.k-form .k-state-focused .k-dropdown-wrap {
+    border-color: var(--g-600) !important;
+    box-shadow: 0 0 0 3px rgba(56,142,60,.14) !important;
+    outline: none !important;
+}
+
+.k-form .k-dropdown .k-dropdown-wrap {
+    display: flex;
+    align-items: center;
+}
+
+.k-form .k-dropdown .k-select {
+    background: transparent !important;
+    border: none !important;
+}
+
+.k-form .k-dropdown .k-select .k-icon {
+    color: var(--g-700) !important;
+}
+
+/* Grid layout */
+.k-form-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 18px 20px !important;
+}
+
+.k-form-layout > .k-form-field[data-colspan="2"],
+.k-form-layout > .k-form-field:last-child {
+    grid-column: 1 / -1;
+}
+
+/* Validation */
+.k-form .k-form-error,
+.k-form .k-form-hint {
+    font-size: .75rem !important;
+    margin-top: 4px !important;
+}
+
+/* --- Hide default Kendo Form buttons --- */
+.k-form-buttons,
+.k-form > .k-form-buttons,
+.k-form .k-actions,
+.k-form .k-form-buttons.k-actions {
+    display: none !important;
+}
+
+/* MODERN DROPDOWN - full redesign */
+
+/* Trigger: open state - flush bottom edge into panel */
+.k-dropdown .k-dropdown-wrap.k-state-active,
+.k-dropdown.k-state-focused .k-dropdown-wrap,
+.k-dropdown .k-dropdown-wrap.k-state-focused {
+    border-color: var(--g-600) !important;
+    border-bottom-color: transparent !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    box-shadow: 0 0 0 3px rgba(56,142,60,.13) !important;
+    background: #fff !important;
+    z-index: 1001;
+    position: relative;
+}
+
+/* Chevron arrow - green tint */
+.k-form .k-dropdown .k-select .k-icon,
+.k-dropdown .k-select .k-icon {
+    color: var(--g-700) !important;
+    font-size: 14px !important;
+}
+
+/* --- Popup container --- */
+.k-list-container,
+.k-popup.k-list-container {
+    border: 1.5px solid var(--g-600) !important;
+    border-top: none !important;
+    border-radius: 0 0 12px 12px !important;
+    box-shadow: 0 10px 28px rgba(46,125,50,.14) !important;
+    overflow: hidden !important;
+    background: var(--white) !important;
+    margin-top: -1px !important;
+}
+
+/* --- Search box area --- */
+.k-list-container .k-searchbox,
+.k-popup .k-searchbox {
+    padding: 8px 8px 6px !important;
+    border-bottom: 1px solid var(--g-100) !important;
+    background: #f9fdf9 !important;
+    position: relative !important;
+}
+
+.k-list-container .k-searchbox .k-input,
+.k-popup .k-searchbox .k-input {
+    border: 1.5px solid var(--border) !important;
+    border-radius: 8px !important;
+    height: 34px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: .84rem !important;
+    padding: 0 10px 0 32px !important;
+    background: var(--white) !important;
+    color: var(--g-800) !important;
+    width: 100% !important;
+    outline: none !important;
+    transition: border-color .15s, box-shadow .15s !important;
+}
+
+.k-list-container .k-searchbox .k-input:focus,
+.k-popup .k-searchbox .k-input:focus {
+    border-color: var(--g-600) !important;
+    box-shadow: 0 0 0 3px rgba(56,142,60,.12) !important;
+}
+
+/* search icon color */
+.k-popup .k-searchbox .k-icon,
+.k-list-container .k-searchbox .k-icon {
+    color: var(--g-400) !important;
+    font-size: 14px !important;
+}
+
+/* --- List wrapper --- */
+.k-list-container .k-list,
+.k-popup .k-list {
+    background: var(--white) !important;
+    padding: 5px !important;
+    margin: 0 !important;
+}
+
+/* --- Each option item --- */
+.k-list-container .k-item,
+.k-popup .k-item {
+    font-family: 'Inter', sans-serif !important;
+    font-size: .875rem !important;
+    color: #2e4a2e !important;
+    padding: 9px 12px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: background .1s, color .1s !important;
+    background: transparent !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    line-height: 1.4 !important;
+}
+
+/* hover */
+.k-list-container .k-item:hover,
+.k-popup .k-item:hover {
+    background: var(--g-100) !important;
+    color: var(--g-800) !important;
+}
+
+/* selected / active */
+.k-list-container .k-item.k-state-selected,
+.k-list-container .k-item.k-selected,
+.k-popup .k-item.k-state-selected,
+.k-popup .k-item.k-selected {
+    background: var(--g-700) !important;
+    color: var(--white) !important;
+    font-weight: 600 !important;
+}
+
+/* focused (keyboard nav) */
+.k-list-container .k-item.k-state-focused,
+.k-list-container .k-item.k-focus,
+.k-popup .k-item.k-state-focused,
+.k-popup .k-item.k-focus {
+    background: var(--g-100) !important;
+    color: var(--g-800) !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* placeholder / option-label */
+.k-list-container .k-item.k-first,
+.k-popup .k-item.k-first {
+    color: var(--gray) !important;
+    font-style: italic !important;
+    font-size: .84rem !important;
+}
+
+/* scrollbar */
+.k-list-container .k-list::-webkit-scrollbar,
+.k-popup .k-list::-webkit-scrollbar {
+    width: 4px !important;
+}
+.k-list-container .k-list::-webkit-scrollbar-track,
+.k-popup .k-list::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+.k-list-container .k-list::-webkit-scrollbar-thumb,
+.k-popup .k-list::-webkit-scrollbar-thumb {
+    background: var(--border) !important;
+    border-radius: 4px !important;
+}
+
+/* --- Button row --- */
+.fo-btn-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid var(--g-100);
+}
+
+.fo-btn-primary.k-button {
+    background: var(--g-700) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: var(--radius) !important;
+    padding: 11px 26px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: .88rem !important;
+    font-weight: 600 !important;
+    height: auto !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background .15s, transform .1s !important;
+    letter-spacing: .01em;
+}
+
+.fo-btn-primary.k-button:hover {
+    background: var(--g-800) !important;
+    transform: translateY(-1px);
+}
+
+.fo-btn-primary.k-button:active {
+    transform: translateY(0);
+}
+
+.fo-btn-primary.k-button:disabled,
+.fo-btn-primary.k-button[disabled] {
+    opacity: .6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+.fo-btn-secondary.k-button {
+    background: white !important;
+    color: var(--g-700) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 11px 20px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: .88rem !important;
+    font-weight: 600 !important;
+    height: auto !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s, border-color .15s !important;
+}
+
+.fo-btn-secondary.k-button:hover {
+    background: var(--g-100) !important;
+    border-color: var(--g-400) !important;
+}
+
+
+.fo-footer-hint {
+    text-align: center;
+    font-size: .75rem;
+    color: var(--gray);
+    margin-top: 16px;
+}
+
+/* */
+@media (max-width: 540px) {
+    .fo-card-body { padding: 20px 18px 24px; }
+    .fo-card-header { padding: 20px 18px; }
+    .k-form-layout {
+        grid-template-columns: 1fr !important;
+    }
+    .fo-btn-row { flex-direction: column; }
+    .fo-btn-primary.k-button,
+    .fo-btn-secondary.k-button { width: 100% !important; justify-content: center; }
+}

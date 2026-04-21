@@ -26,6 +26,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Global Language Logic
   const savedLang = localStorage.getItem("preferredLanguage") || "en";
   changeLanguage(savedLang);
+
+  // Protect Material Icons from Google Translate to prevent ligature breaking
+  document.querySelectorAll('.material-symbols-outlined').forEach(icon => icon.classList.add('notranslate'));
+  
+  new MutationObserver(mutations => {
+    mutations.forEach(m => m.addedNodes.forEach(node => {
+      if (node.nodeType === 1) {
+        if (node.classList && node.classList.contains('material-symbols-outlined')) node.classList.add('notranslate');
+        node.querySelectorAll('.material-symbols-outlined').forEach(i => i.classList.add('notranslate'));
+      }
+    }));
+  }).observe(document.body, { childList: true, subtree: true });
 });
 
 // --- GOOGLE TRANSLATE LOGIC (For Dynamic Content) ---

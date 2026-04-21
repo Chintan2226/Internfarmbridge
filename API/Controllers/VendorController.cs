@@ -118,7 +118,10 @@ namespace API.Controllers
                     return Unauthorized(new { success = false, message = "Invalid email/phone or password." });
 
                 // Role is automatically included in token by JwtService
-                var additionalClaims = new Dictionary<string, string>(); // Removed duplicate NameIdentifier
+                var additionalClaims = new Dictionary<string, string>
+                {
+                    { "full_name", vendor.BusinessName ?? "Vendor" }
+                };
                 var token = _jwtService.GenerateJwtToken(user.Id, user.Email, user.Role, additionalClaims);
 
                 // Return JWT token on successful login with role included
@@ -158,7 +161,11 @@ namespace API.Controllers
                     await _emailService.SendVendorWelcomeEmailAsync(request.Email, request.Name);
                 }
 
-                var token = _jwtService.GenerateJwtToken(vendor.UserId, request.Email, "vendor");
+                var additionalClaims = new Dictionary<string, string>
+                {
+                    { "full_name", vendor.BusinessName ?? request.Name }
+                };
+                var token = _jwtService.GenerateJwtToken(vendor.UserId, request.Email, "vendor", additionalClaims);
                 return Ok(new { success = true, token = token, isGoogleUser = true, isNewUser = isNewUser });
             }
             

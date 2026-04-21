@@ -27,8 +27,9 @@
         --shadow-md:    0 10px 15px -3px rgba(0,0,0,0.1);
     }
 
+    body { font-family: 'Inter', sans-serif; background: var(--bg-page); color: var(--text-primary); }
     .page { flex: 1; padding: 28px 32px; overflow-y: auto; }
-    .page-title { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+    .page-title { font-size: 26px; font-weight: 800; margin-bottom: 4px; font-family: 'Plus Jakarta Sans', sans-serif;}
     .page-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
 
     /* Stats Section */
@@ -59,7 +60,7 @@
     .avatar-circle { width: 48px; height: 48px; border-radius: 50%; background: var(--green-light); color: var(--green-main); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
     
     .vendor-biz { font-weight: 800; font-size: 15px; color: var(--text-primary); }
-    .vendor-id  { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+    .vendor-id  { font-size: 11px; color: var(--text-muted); font-family: 'Inter', monospace; }
 
     .v-card-body { 
         display: grid; 
@@ -80,12 +81,12 @@
     .pill-inactive { background: var(--red-bg);      color: var(--red); }
 
     /* Buttons */
-    .btn-sm { width: 100%; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; }
+    .btn-sm { width: 100%; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; font-family: 'Inter', sans-serif;}
     .btn-primary  { background: var(--green-main); color: #fff; }
     .btn-primary:hover { background: var(--green-dark); }
     .btn-approved { background: #f0fdf4; color: #166534; cursor: not-allowed; border: 1px solid #bbf7d0; }
 
-    /* Modal Overlay (Fixed) */
+    /* Modal Overlay */
     .modal-overlay {
         position: fixed !important;
         inset: 0 !important;
@@ -126,6 +127,7 @@
         box-shadow: var(--shadow-md); z-index: 1000000;
         display: flex; align-items: center; gap: 10px;
         transform: translateY(100px); transition: 0.3s;
+        pointer-events: none;
     }
     .toast.show { transform: translateY(0); }
 
@@ -162,18 +164,20 @@
     </div>
 
     <div id="vendor-grid" class="vendor-grid">
-        </div>
+        <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">Loading vendors...</div>
+    </div>
 </div>
-@* 
-<div class="modal-overlay" id="vendorModalOverlay">
-    <div class="modal">
+
+<!-- Vendor Detail Modal (Restored) -->
+<div class="modal-overlay" id="vendorModalOverlay" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-header">
             <span style="font-weight:700;">Vendor Details</span>
             <button class="close-btn" onclick="closeModal()">&times;</button>
         </div>
         <div class="modal-body" id="modalBody"></div>
     </div>
-</div> *@
+</div>
 
 <div class="toast" id="toast">
     <span id="toastIcon"></span> <span id="toastMsg"></span>
@@ -188,38 +192,60 @@
 
     async function loadInitialData() {
         try {
+            console.log("Fetching Vendor data...");
             // Stats
             const kpiRes = await fetch(`${API}/Admin/analytics/vendors/kpi`);
             if (kpiRes.ok) {
                 const json = await kpiRes.json();
-                const d = json.data;
-                document.getElementById('stat-total').textContent = d.totalVendors;
-                document.getElementById('stat-value').textContent = '₹' + (d.totalOrdersValue / 100000).toFixed(2) + ' L';
-                document.getElementById('stat-orders').textContent = d.ordersPlaced;
-                document.getElementById('stat-rate').textContent = d.fulfillmentRate + '%';
+                const d = json.data || json;
+                if (d) {
+                    document.getElementById('stat-total').textContent = d.totalVendors || '0';
+                    document.getElementById('stat-value').textContent = '₹' + ((d.totalOrdersValue || 0) / 100000).toFixed(2) + ' L';
+                    document.getElementById('stat-orders').textContent = d.ordersPlaced || '0';
+                    document.getElementById('stat-rate').textContent = (d.fulfillmentRate || 0) + '%';
+                }
             }
 
-            // Vendors
+            // Vendors list
             const res = await fetch(`${API}/Admin/Vendors`);
+            if (!res.ok) throw new Error("Could not fetch vendors");
+            
             const json = await res.json();
             allVendors = json.data || json;
-            renderVendorGrid();
+            console.log("Vendors received:", allVendors);
+
+            if (Array.isArray(allVendors)) {
+                renderVendorGrid();
+            } else {
+                throw new Error("API returned non-array data for vendors");
+            }
         } catch (e) {
-            console.error(e);
+            console.error("Initial load error:", e);
+            document.getElementById('vendor-grid').innerHTML = 
+                `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--red);">
+                    <strong>Failed to load data.</strong><br/>
+                    <small>Ensure the API at ${API} is running.</small>
+                </div>`;
         }
     }
 
     function renderVendorGrid() {
         const grid = document.getElementById('vendor-grid');
+        if (!allVendors.length) {
+            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">No vendors found.</div>';
+            return;
+        }
+        
         grid.innerHTML = allVendors.map(v => {
             const active = (v.status === 'active' || v.status === 'approved');
+            const initials = (v.businessName || 'V').charAt(0).toUpperCase();
             
             return `
             <div class="v-card" onclick="openVendorModal('${v.id}')">
                 <div class="v-card-header">
-                    <div class="avatar-circle">${(v.businessName || 'V').charAt(0).toUpperCase()}</div>
-                    <div style="flex:1;">
-                        <div class="vendor-biz">${esc(v.businessName)}</div>
+                    <div class="avatar-circle">${initials}</div>
+                    <div style="flex:1; overflow:hidden;">
+                        <div class="vendor-biz" title="${v.businessName}">${esc(v.businessName)}</div>
                         <div class="vendor-id">ID: #VND-${v.id}</div>
                     </div>
                     <span class="status-pill ${pillCls(v.status)}">${statusLbl(v.status)}</span>
@@ -254,16 +280,13 @@
         }).join('');
     }
 
-    @* window.openVendorModal = (id) => {
+    window.openVendorModal = (id) => {
         const v = allVendors.find(x => x.id == id);
         if (!v) return;
 
         const overlay = document.getElementById('vendorModalOverlay');
         const body = document.getElementById('modalBody');
         
-        // Teleport modal to body to prevent clipping
-        document.body.appendChild(overlay);
-
         body.innerHTML = `
             <div style="text-align:center; margin-bottom:20px;">
                 <div class="avatar-circle" style="width:64px; height:64px; margin:0 auto 10px; font-size:24px;">${v.businessName[0]}</div>
@@ -292,7 +315,7 @@
         overlay.classList.remove('open');
         setTimeout(() => { overlay.style.display = 'none'; }, 200);
         document.body.style.overflow = '';
-    }; *@
+    };
 
     window.approveVendor = async (id) => {
         try {
@@ -318,7 +341,12 @@
     // Helpers
     function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
     function fmt(n) { return Number(n || 0).toLocaleString('en-IN'); }
-    function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : '—'; }
+    function fmtDate(d) { 
+        if (!d || d.startsWith('0001')) return '—';
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return '—';
+        return date.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}); 
+    }
     function pillCls(s) { return (s==='active'||s==='approved') ? 'pill-active' : (s==='inactive'?'pill-inactive':'pill-pending'); }
     function statusLbl(s) { return s === 'active' || s === 'approved' ? 'Active' : 'Pending'; }
 

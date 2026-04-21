@@ -35,31 +35,9 @@
             }
         }
     </script>
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.55);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-        .form-input {
-            background: rgba(255, 255, 255, 0.65);
-            border: 1px solid rgba(0, 69, 13, 0.1);
-            transition: all 0.3s ease;
-        }
-        .form-input:focus {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 0 0 2px rgba(0, 69, 13, 0.15);
-            outline: none;
-            border-color: #00450d;
-        }
-        .agri-gradient {
-            background: linear-gradient(145deg, #00450d 0%, #065f18 100%);
-        }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 69, 13, 0.2); border-radius: 10px; }
-    </style>
+    
+<link rel="stylesheet" href="~/css/pages/farmer/register.css" asp-append-version="true" />
+
 </head>
 <body class="bg-background text-on-surface m-0 p-0 h-screen overflow-y-auto sm:overflow-hidden relative">
 
@@ -69,6 +47,18 @@
         <span class="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
         <span class="text-sm font-bold tracking-wide">Home</span>
     </a>
+
+    <div class="fixed top-4 sm:top-6 right-4 sm:right-6 z-[100]">
+        <button onclick="document.getElementById('langMenu').classList.toggle('hidden')" class="flex items-center gap-2 text-primary hover:text-white bg-white/70 hover:bg-primary/90 px-4 py-2 sm:py-2.5 rounded-full backdrop-blur-md border border-primary/20 shadow-lg transition-all duration-300 hover:scale-105">
+            <span class="material-symbols-outlined text-[18px]">language</span>
+            <span class="text-sm font-bold tracking-wide">Language</span>
+        </button>
+        <div id="langMenu" class="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-black/5 flex flex-col hidden overflow-hidden transition-all duration-300">
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('en')">🇺🇸 English</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('hi')">🇮🇳 हिन्दी</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('gu')">🇮🇳 ગુજરાતી</button>
+        </div>
+    </div>
 
     <div class="fixed inset-0 z-0">
         <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRvWi1e4NeJcmz6oHu3OXQcJjULUuchjyEiyoXyyLvAbjhzMTOumJNseBeZ5jjXZosRad-s-8aJEHBf8-fJ8uTANnX0gpt8NdB_-YwdUSgLhAYmhOS9WeBVr6L-jrJpbXuP1kTUzIwxws-F0g9Rzv9FS5G1fbebtl9w9EJ446Oq4CyfqFYcFb8pzOjGt0N6XGWwd3G6wQQdVtyHUO12HDQQUmcc-JOD580AaIi9Y9fjh-SKomikSeJ8nRy_kjL7UM-5I1dY-RKZu4" alt="Farm Sunrise" />
@@ -165,7 +155,7 @@
     </main>
 
     <script>
-        // ── Eye toggles ──
+        // ── Eye toggles â”€â”€
         window.togglePassword = function(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -178,7 +168,7 @@
             }
         };
 
-        // ── Universal Toast ──
+        // ── Universal Toast â”€â”€
         window.showToast = function(title, message, isError = false) {
             const container = document.getElementById('notificationArea');
             if (!container) return;
@@ -206,7 +196,7 @@
             }, 4500);
         };
 
-        // ── Password Strength ──
+        // ── Password Strength â”€â”€
         document.addEventListener('DOMContentLoaded', function() {
             const pwdInput = document.getElementById("password");
             if(!pwdInput) return;
@@ -236,7 +226,7 @@
             });
         });
 
-        // ── Form Submission & Validation ──
+        // ── Form Submission & Validation â”€â”€
         window.handleRegister = function(e) {
             if (e) e.preventDefault();
 
@@ -255,7 +245,7 @@
                 return false;
             }
 
-            if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(email)) {
+            if (!/^[^\s\x40]+\x40[^\s\x40]+\.[^\s\x40]+$/.test(email)) {
                 window.showToast("Invalid Email", "Please enter a valid email address.", true);
                 return false;
             }
@@ -321,5 +311,8 @@
             return false;
         }
     </script>
+    <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/site.js" asp-append-version="true"></script>
 </body>
 </html>
+

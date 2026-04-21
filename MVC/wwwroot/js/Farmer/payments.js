@@ -152,16 +152,48 @@ $(document).ready(function () {
                     },
 
                     {
-                        title: "Status",
-
-                        width: 360,
-
+                        title: "Payment Progress",
+                        width: 380,
                         template: function (d) {
+                            var amt = d.Amount || 0;
+                            var advance = Math.round(amt * 0.3);
+                            var finalPay = amt - advance;
+                            
+                            var isSuccess = d.Status === "success";
+                            
+                            // Visual classes for steps based on status
+                            var line1Class = "active";
+                            var step2Class = "active";
+                            var line2Class = isSuccess ? "settled" : "";
+                            var step3Class = isSuccess ? "settled" : "";
+                            
+                            var color1 = "#059669";
+                            var color2 = "#059669";
+                            var color3 = isSuccess ? "#0d9488" : "#94a3b8";
 
-                            if (d.Status === "success")
-                                return "<span class='status-badge status-paid'>✔ Paid Successfully</span>";
-
-                            return "<span class='status-badge status-pending'>Processing</span>";
+                            return "<div style='padding: 5px 0;'>" +
+                                       "<div class='pay-tracker' style='padding: 0 10px;'>" +
+                                           "<div class='tracker-step initiated'></div>" +
+                                           "<div class='tracker-line " + line1Class + "'></div>" +
+                                           "<div class='tracker-step " + step2Class + "'></div>" +
+                                           "<div class='tracker-line " + line2Class + "'></div>" +
+                                           "<div class='tracker-step " + step3Class + "'></div>" +
+                                       "</div>" +
+                                       "<div class='tracker-label' style='margin-top: 8px;'>" +
+                                           "<div style='text-align: left; color: " + color1 + "; width:33%;'>" +
+                                              "<span style='display:block; font-size:9px; text-transform:uppercase; opacity:0.8;'>Initialized</span>" +
+                                              "<span style='font-size:11px;'>₹" + kendo.toString(amt, 'n0') + "</span>" +
+                                           "</div>" +
+                                           "<div style='text-align: center; color: " + color2 + "; width:33%;'>" +
+                                              "<span style='display:block; font-size:9px; text-transform:uppercase; opacity:0.8;'>30% Advance</span>" +
+                                              "<span style='font-size:11px;'>₹" + kendo.toString(advance, 'n0') + "</span>" +
+                                           "</div>" +
+                                           "<div style='text-align: right; color: " + color3 + "; width:33%;'>" +
+                                              "<span style='display:block; font-size:9px; text-transform:uppercase; opacity:0.8;'>70% Balance</span>" +
+                                              "<span style='font-size:11px;'>₹" + kendo.toString(finalPay, 'n0') + "</span>" +
+                                           "</div>" +
+                                       "</div>" +
+                                   "</div>";
                         }
                     }
 
@@ -199,7 +231,7 @@ $(document).ready(function () {
 
                     { field: "Amount", title: "Agreement Value", width: 160 },
 
-                    { title: "Status", width: 360 }
+                    { title: "Payment Progress", width: 380 }
 
                 ]
 

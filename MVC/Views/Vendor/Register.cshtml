@@ -33,23 +33,9 @@
             }
         }
     </script>
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
+    
+<link rel="stylesheet" href="~/css/pages/vendor/register.css" asp-append-version="true" />
 
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 69, 13, 0.2); border-radius: 10px; }
-    </style>
 </head>
 <body class="bg-[#faf9f5] text-[#1a1c1a] min-h-screen relative m-0 p-0 overflow-x-hidden">
 
@@ -59,6 +45,18 @@
         <span class="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
         <span class="text-sm font-bold tracking-wide">Home</span>
     </a>
+
+    <div class="fixed top-4 right-4 sm:top-6 sm:right-6 z-[100]">
+        <button onclick="document.getElementById('langMenu').classList.toggle('hidden')" class="flex items-center gap-2 text-primary hover:text-white bg-white/70 hover:bg-primary/90 px-4 py-2 sm:py-2.5 rounded-full backdrop-blur-md border border-primary/20 shadow-lg transition-all duration-300 hover:scale-105">
+            <span class="material-symbols-outlined text-[18px]">language</span>
+            <span class="text-sm font-bold tracking-wide">Language</span>
+        </button>
+        <div id="langMenu" class="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-black/5 flex flex-col hidden overflow-hidden transition-all duration-300">
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('en')">🇺🇸 English</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('hi')">🇮🇳 हिन्दी</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('gu')">🇮🇳 ગુજરાતી</button>
+        </div>
+    </div>
 
     <div class="fixed inset-0 z-0">
         <img alt="Agricultural Landscape" class="w-full h-full object-cover" 
@@ -209,7 +207,7 @@
                 return;
             }
 
-            if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(email)) {
+            if (!/^[^\s\x40]+\x40[^\s\x40]+\.[^\s\x40]+$/.test(email)) {
                 showToast("Invalid Email", "Please enter a valid email address.", true);
                 return;
             }
@@ -277,5 +275,8 @@
             }
         };
     </script>
+    <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/site.js" asp-append-version="true"></script>
 </body>
 </html>
+

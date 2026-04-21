@@ -1,0 +1,32 @@
+﻿/* NEW: Badge Styles for Topbar (Cart & Wishlist) */
+        .nav-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 700;
+            display: none; /* Managed by syncGlobalBadges JS */
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .bg-wishlist { background: #f4a621; }
+        .bg-cart { background: #2d8a45; }
+        .fv-action-btn { position: relative; }
+
+        /* REVERTED: Original Notification Dot Logic */
+        .fv-dot {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 8px;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
