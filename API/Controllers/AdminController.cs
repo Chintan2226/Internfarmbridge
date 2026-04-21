@@ -740,10 +740,10 @@
 //             var data = await _adminRepo.GetFoDetailAsync(foId);
 //             if (data == null)
 //                 return NotFound(new { success = false, message = "Field officer not found." });
- 
+
 //             return Ok(new { success = true, data });
 //         }
- 
+
 //         // ─────────────────────────────────────────────────────────────────────
 //         // GET /api/Admin/FoInspections/{foId}
 //         // Returns all quality inspections performed by this FO
@@ -761,7 +761,7 @@
 //                 data
 //             });
 //         }
- 
+
 //         // ─────────────────────────────────────────────────────────────────────
 //         // GET /api/Admin/FoWarehouseSlots/{foId}
 //         // Returns all warehouse slot bookings linked to this FO's assignments
@@ -910,7 +910,7 @@
 //             {
 //                 // CHANGED: _helper to _adminRepo to match your constructor
 //                 var data = await _adminRepo.GetWarehouseInventoryAsync(warehouseId);
-                
+
 //                 // Return exactly what the JavaScript expects: { success: true, data: { ... } }
 //                 return Ok(new { success = true, data });
 //             }
@@ -927,7 +927,7 @@
 //             // 1. Fetch the FO's email and name before we update them
 //             string email = "", name = "";
 //             string getInfoSql = "SELECT u.c_email, p.c_full_name FROM t_users u LEFT JOIN t_field_officer_profiles p ON u.c_id = p.c_user_id WHERE u.c_id = @id";
-            
+
 //             if (_conn.State != System.Data.ConnectionState.Open) await _conn.OpenAsync();
 //             using (var fetchCmd = new NpgsqlCommand(getInfoSql, _conn))
 //             {
@@ -1018,6 +1018,7 @@ using API.Models.Notification;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
+using API.Models.Settings;
 
 namespace API.Controllers
 {
@@ -1032,6 +1033,8 @@ namespace API.Controllers
         private readonly CloudinaryService _cloudinary;
         private readonly EmailService _emailService;
         private const string NotifKey = "admin:notifs";
+        private readonly IConfiguration _configuration;
+        private readonly ElasticService _elasticService;
 
         public AdminController(
             AdminHelper adminRepo,
@@ -1039,7 +1042,9 @@ namespace API.Controllers
             RedisService redisService,
             RabbitMqService rabbitMqService,
             EmailService emailService,
-            NpgsqlConnection conn
+            NpgsqlConnection conn,
+            IConfiguration configuration,
+            ElasticService elasticService
         )
         {
             _adminRepo = adminRepo;
@@ -1048,6 +1053,8 @@ namespace API.Controllers
             _rabbitMqService = rabbitMqService;
             _emailService = emailService;
             _conn = conn;
+            _configuration = configuration;
+            _elasticService = elasticService;
         }
 
         [HttpGet("TriggerTest")]
@@ -1317,17 +1324,17 @@ namespace API.Controllers
         public async Task<IActionResult> ApproveUser([FromForm] int userId)
         {
             Console.WriteLine($"\n--- STARTING VENDOR APPROVAL FOR ID: {userId} ---");
-            
+
             var status = await _adminRepo.ApproveUser(userId);
             Console.WriteLine($"AdminRepo Status returned: {status}");
-            
+
             if (status == 1)
             {
                 string email = "", businessName = "Vendor";
-                
-                try 
+
+                try
                 {
-                    if (_conn.State != System.Data.ConnectionState.Open) 
+                    if (_conn.State != System.Data.ConnectionState.Open)
                         await _conn.OpenAsync();
 
                     string getInfoSql = @"
@@ -1336,7 +1343,7 @@ namespace API.Controllers
                         JOIN t_users u ON v.c_user_id = u.c_id
                         WHERE v.c_id = @id OR u.c_id = @id 
                         LIMIT 1";
-                    
+
                     using (var fetchCmd = new NpgsqlCommand(getInfoSql, _conn))
                     {
                         fetchCmd.Parameters.AddWithValue("@id", userId);
@@ -1348,7 +1355,7 @@ namespace API.Controllers
                         }
                     }
                     _conn.Close();
-                    
+
                     Console.WriteLine($"DB SEARCH RESULT -> Email: '{email}', Business: '{businessName}'");
                 }
                 catch (Exception dbEx)
@@ -1359,7 +1366,7 @@ namespace API.Controllers
                 // 3. TRIGGER THE REAL EMAIL
                 if (!string.IsNullOrEmpty(email))
                 {
-                    try 
+                    try
                     {
                         Console.WriteLine($"ATTEMPTING TO SEND EMAIL TO: {email}...");
                         await _emailService.SendVendorApprovedEmailAsync(email, businessName);
@@ -1370,14 +1377,14 @@ namespace API.Controllers
                         Console.WriteLine($"EMAIL CRASHED: {emailEx.Message}");
                     }
                 }
-                else 
+                else
                 {
                     Console.WriteLine("EMAIL SKIPPED: The email address was empty or not found in the DB!");
                 }
 
                 return Ok(new { success = true, message = "User approved successfully." });
             }
-            
+
             return BadRequest(new { success = false, message = "Approval failed." });
         }
 
@@ -1546,8 +1553,8 @@ namespace API.Controllers
         {
             string email = "", name = "";
             string getInfoSql = "SELECT u.c_email, p.c_full_name FROM t_users u LEFT JOIN t_field_officer_profiles p ON u.c_id = p.c_user_id WHERE u.c_id = @id";
-            
-            if (_conn.State != System.Data.ConnectionState.Open) 
+
+            if (_conn.State != System.Data.ConnectionState.Open)
                 await _conn.OpenAsync();
 
             using (var fetchCmd = new NpgsqlCommand(getInfoSql, _conn))
@@ -1612,14 +1619,14 @@ namespace API.Controllers
             if (data == null) return NotFound(new { success = false, message = "Field officer not found." });
             return Ok(new { success = true, data });
         }
- 
+
         [HttpGet("FoInspections/{foId:long}")]
         public async Task<IActionResult> GetFoInspections(long foId)
         {
             var data = await _adminRepo.GetFoInspectionsAsync(foId);
             return Ok(new { success = true, total = data.Count, passed = data.Count(x => x.Passed), failed = data.Count(x => !x.Passed), data });
         }
- 
+
         [HttpGet("FoWarehouseSlots/{foId:long}")]
         public async Task<IActionResult> GetFoWarehouseSlots(long foId)
         {
@@ -1634,13 +1641,13 @@ namespace API.Controllers
             if (!result.Success) return BadRequest(new { success = false, message = result.Message });
 
             // ✅ 1. TRIGGER THE REAL EMAIL HERE (This is the endpoint the frontend actually uses!)
-            try 
+            try
             {
                 string email = "", name = "";
                 // Safe query that checks both User ID and Profile ID just in case
                 string getInfoSql = "SELECT u.c_email, p.c_full_name FROM t_users u JOIN t_field_officer_profiles p ON u.c_id = p.c_user_id WHERE p.c_id = @id OR u.c_id = @id LIMIT 1";
-                
-                if (_conn.State != System.Data.ConnectionState.Open) 
+
+                if (_conn.State != System.Data.ConnectionState.Open)
                     await _conn.OpenAsync();
 
                 using (var fetchCmd = new NpgsqlCommand(getInfoSql, _conn))
@@ -1659,16 +1666,16 @@ namespace API.Controllers
                 if (!string.IsNullOrEmpty(email))
                 {
                     await _emailService.SendFieldOfficerStatusChangedEmailAsync(
-                        email, 
-                        name, 
-                        "Assigned Region", 
+                        email,
+                        name,
+                        "Assigned Region",
                         request.IsActive // Passes true/false directly to decide which template to use
                     );
                 }
-            } 
-            catch (Exception ex) 
-            { 
-                Console.WriteLine("Email trigger failed: " + ex.Message); 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Email trigger failed: " + ex.Message);
             }
 
             return Ok(new { success = true, message = result.Message });
@@ -1796,6 +1803,63 @@ namespace API.Controllers
             return Ok(new { success = true, message = result.Message });
         }
 
+        ////Elastic Search - Method (Mansi)
+        [HttpPost("search/universal")]
+        public async Task<IActionResult> UniversalSearch([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.UniversalSearchForMVCAsync(request.Query);
+            return Ok(new { success = true, data = results });
+        }
+
+        [HttpPost("search/catalog")]
+        public async Task<IActionResult> SearchCatalog([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchCatalogForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/crops")]
+        public async Task<IActionResult> SearchCrops([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchCropsForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/orders")]
+        public async Task<IActionResult> SearchOrders([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchOrdersForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/users")]
+        public async Task<IActionResult> SearchUsers([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchUsersForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/qc-records")]
+        public async Task<IActionResult> SearchQCRecords([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchQCRecordsForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("reindex")]
+        public async Task<IActionResult> ReIndex()
+        {
+            var result = await _elasticService.ReindexAllAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("search/health")]
+        public async Task<IActionResult> HealthCheck()
+        {
+            var isHealthy = await _elasticService.IsHealthyAsync();
+            return Ok(new { healthy = isHealthy });
+        }
+
     }
 
     public class vm_CatalogProductForm
@@ -1828,4 +1892,7 @@ namespace API.Controllers
         public string NewPassword { get; set; } = "";
         public string ConfirmPassword { get; set; } = "";
     }
+
+
+
 }

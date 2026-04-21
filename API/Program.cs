@@ -31,6 +31,8 @@ builder.Services.AddScoped<RedisService>();
 builder.Services.AddScoped<RabbitMqService>();
 builder.Services.AddHostedService<NotificationConsumer>();
 builder.Services.AddScoped<CloudinaryService>();
+builder.Services.AddScoped<ElasticService>();
+
 
 //Email
 builder.Services.Configure<API.Models.Settings.EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
