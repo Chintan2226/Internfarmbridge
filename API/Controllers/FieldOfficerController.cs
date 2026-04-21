@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using API.Models.Settings;
 
 namespace API.Controllers
 {
@@ -23,17 +24,20 @@ namespace API.Controllers
         private readonly CloudinaryService _cloudinaryService;
         private readonly EmailService _emailService;
         private readonly ILogger<FieldOfficerController> _logger;
+        private readonly ElasticService _elasticService;
 
         public FieldOfficerController(
             FieldOfficerHelper helper,
             CloudinaryService cloudinaryService,
             EmailService emailService,
-            ILogger<FieldOfficerController> logger)
+            ILogger<FieldOfficerController> logger,
+            ElasticService elasticService)
         {
             _helper = helper;
             _cloudinaryService = cloudinaryService;
             _emailService = emailService;
             _logger = logger;
+            _elasticService = elasticService;
         }
 
         private async Task TryNotifyFarmerAsync(Func<Task> send)
@@ -162,9 +166,9 @@ namespace API.Controllers
         {
             try
             {
-                var date  = DateTime.Parse(slotDate);
+                var date = DateTime.Parse(slotDate);
                 var start = TimeSpan.Parse(startTime);
-                var end   = TimeSpan.Parse(endTime);
+                var end = TimeSpan.Parse(endTime);
 
                 var emailData = await _helper.RescheduleRequest(requestId, date, start, end);
 
@@ -240,7 +244,7 @@ namespace API.Controllers
             try
             {
                 int foId = await GetFieldOfficerProfileIdAsync();
-                
+
                 var model = new QualityInspectionForm
                 {
                     ProcurementRequestId = procurementRequestId,
@@ -258,7 +262,7 @@ namespace API.Controllers
                     FoAssessedPrice = foAssessedPrice,
                     Passed = passed
                 };
-                
+
                 var inspectionId = await _helper.SubmitInspectionAndGetId(model);
                 if (!inspectionId.HasValue)
                     return BadRequest(new { message = "Submission failed. Please try again." });
@@ -322,18 +326,19 @@ namespace API.Controllers
                 decimal advanceAmount = request.advanceAmount;
 
                 var result = await _helper.RequestPayment(
-                    inspectionId, 
-                    farmerId, 
-                    procurementRequestId, 
+                    inspectionId,
+                    farmerId,
+                    procurementRequestId,
                     advanceAmount
                 );
 
                 if (!result)
                     return BadRequest(new { message = "Payment request failed" });
 
-                return Ok(new { 
+                return Ok(new
+                {
                     message = "Payment request created successfully",
-                    advanceAmount = advanceAmount 
+                    advanceAmount = advanceAmount
                 });
             }
             catch (Exception ex)
@@ -354,51 +359,51 @@ namespace API.Controllers
             return Ok(new { success = true, data = profile });
         }
 
-    // Add these 3 new endpoints:
-    [HttpGet("GetNotifications")]
-    public async Task<IActionResult> GetNotifications()
-    {
-        try
+        // Add these 3 new endpoints:
+        [HttpGet("GetNotifications")]
+        public async Task<IActionResult> GetNotifications()
         {
-            int foId = await GetFieldOfficerProfileIdAsync();
-            var notifications = await _helper.GetNotificationsAsync(foId);
-            return Ok(new { success = true, data = notifications });
+            try
+            {
+                int foId = await GetFieldOfficerProfileIdAsync();
+                var notifications = await _helper.GetNotificationsAsync(foId);
+                return Ok(new { success = true, data = notifications });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { success = false, message = ex.Message });
-        }
-    }
 
-    [HttpPost("MarkAllNotificationsRead")]
-    public async Task<IActionResult> MarkAllNotificationsRead()
-    {
-        try
+        [HttpPost("MarkAllNotificationsRead")]
+        public async Task<IActionResult> MarkAllNotificationsRead()
         {
-            int foId = await GetFieldOfficerProfileIdAsync();
-            await _helper.MarkAllNotificationsReadAsync(foId);
-            return Ok(new { success = true });
+            try
+            {
+                int foId = await GetFieldOfficerProfileIdAsync();
+                await _helper.MarkAllNotificationsReadAsync(foId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = ex.Message });
-        }
-    }
 
-    [HttpPost("ClearAllNotifications")]
-    public async Task<IActionResult> ClearAllNotifications()
-    {
-        try
+        [HttpPost("ClearAllNotifications")]
+        public async Task<IActionResult> ClearAllNotifications()
         {
-            int foId = await GetFieldOfficerProfileIdAsync();
-            await _helper.ClearAllNotificationsAsync(foId);
-            return Ok(new { success = true });
+            try
+            {
+                int foId = await GetFieldOfficerProfileIdAsync();
+                await _helper.ClearAllNotificationsAsync(foId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = ex.Message });
-        }
-    }
 
         // ── UPDATE PROFILE ───────────────────────────────────────────
         [HttpPut("update-profile")]
@@ -645,6 +650,16 @@ namespace API.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
+        }
+
+        //Elastic Search - Method (Mansi)
+        [HttpPost("search/qc-records")]
+        public async Task<IActionResult> SearchQCRecords([FromBody] SearchRequestModel request)
+        {
+            var foId = await GetFieldOfficerProfileIdAsync(); // Your existing method
+            request.FoId = foId;
+            var results = await _elasticService.SearchQCRecordsForMVCAsync(request);
+            return Ok(results);
         }
     }
 }
