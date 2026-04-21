@@ -288,9 +288,9 @@ namespace API.BAL
                     {
                         SlotId = Convert.ToInt32(r[0]),
                         // Converting to string first to bypass strict Npgsql time casting rules
-                        SlotDate = DateTime.Parse(r[1].ToString()),
-                        TimeStart = TimeSpan.Parse(r[2].ToString()),
-                        TimeEnd = TimeSpan.Parse(r[3].ToString()),
+                        SlotDate = DateTime.TryParse(r[1].ToString(), out var d) ? d : DateTime.MinValue,
+                        TimeStart = DateTime.TryParse(r[2].ToString(), out var t1) ? t1.TimeOfDay : TimeSpan.Zero,
+                        TimeEnd = DateTime.TryParse(r[3].ToString(), out var t2) ? t2.TimeOfDay : TimeSpan.Zero,
                         AvailableCapacityMt = Convert.ToDecimal(r[4])
                     });
                 }
@@ -732,13 +732,16 @@ namespace API.BAL
             using var r2 = await cmd2.ExecuteReaderAsync();
             while (await r2.ReadAsync())
             {
+                var rawDate = r2[0].ToString() ?? "";
+                var rawStart = r2[1].ToString() ?? "";
+
                 dash.Appointments.Add(new vm_QcAppointment
                 {
-                    // PROACTIVE FIX: Safely parse Date and Time as strings so .NET 8 doesn't crash!
-                    SlotDate = DateTime.Parse(r2[0].ToString()),
-                    TimeStart = TimeSpan.Parse(r2[1].ToString()),
-                    CropName = r2.GetString(2),
-                    Status = r2.GetString(3)
+                    // PROACTIVE FIX: Check formats like 11:00 AM
+                    SlotDate = DateTime.TryParse(rawDate, out var d) ? d : DateTime.MinValue,
+                    TimeStart = DateTime.TryParse(rawStart, out var t) ? t.TimeOfDay : TimeSpan.Zero,
+                    CropName = r2.IsDBNull(2) ? "" : r2.GetString(2),
+                    Status = r2.IsDBNull(3) ? "" : r2.GetString(3)
                 });
             }
             return dash;
@@ -778,7 +781,7 @@ namespace API.BAL
         }
 
         // 11. GET & UPDATE PROFILE
-        public async Task<vm_FarmerProfileResponse> GetFarmerProfileAsync(int farmerId)
+        public async Task<vm_FarmerProfileResponse> GetFarmerProfileAsync(int userId)
         {
             var profile = new vm_FarmerProfileResponse();
             await using var _conn = CreateConnection();
@@ -790,10 +793,10 @@ namespace API.BAL
                 FROM t_users u
                 JOIN t_farmer_profiles fp ON u.c_id = fp.c_user_id
                 LEFT JOIN t_bank_accounts b ON u.c_id = b.c_user_id
-                WHERE u.c_id = @fid";
+                WHERE u.c_id = @uid";
 
             using var cmd = new NpgsqlCommand(sql, _conn);
-            cmd.Parameters.AddWithValue("@fid", farmerId);
+            cmd.Parameters.AddWithValue("@uid", userId);
             using var r = await cmd.ExecuteReaderAsync();
             if (await r.ReadAsync())
             {

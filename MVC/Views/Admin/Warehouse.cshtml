@@ -2,138 +2,9 @@
     ViewData["Title"] = "Warehouse Management";
     Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
 }
-<style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-            --green-dark:   #14532D;
-            --green-main:   #1B7A3E;
-            --green-mid:    #34C759;
-            --green-light:  #EAF5EC;
-            --amber:        #D97706;
-            --amber-bg:     #FFF7ED;
-            --amber-border: #FDE68A;
-            --red:          #991B1B;
-            --red-bg:       #FEF2F2;
-            --blue:         #1E40AF;
-            --text-primary: #111827;
-            --text-muted:   #6B7280;
-            --text-light:   #9CA3AF;
-            --bg-page:      #F3F4F6;
-            --bg-white:     #ffffff;
-            --border:       #E5E7EB;
-            --radius-sm:    8px;
-            --radius-md:    12px;
-            --radius-lg:    16px;
-            --shadow-sm:    0 1px 3px rgba(0,0,0,0.06);
-            --shadow-md:    0 4px 20px rgba(0,0,0,0.1);
-        }
+<link rel="stylesheet" href="~/css/pages/admin/warehouse.css" asp-append-version="true" />
 
-        .page { flex: 1; padding: 28px 32px; overflow-y: auto; }
-        .page-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
-        .page-title { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
-        .page-sub { font-size: 13px; color: var(--text-muted); }
-
-        .btn-primary { background: var(--green-main); color: #fff; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: 'Manrope', sans-serif; transition: background .2s; }
-        .btn-primary:hover { background: var(--green-dark); }
-        .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; position: relative; overflow: hidden; box-shadow: var(--shadow-sm); }
-        .stat-strip { position: absolute; top: 0; left: 0; right: 0; height: 4px; }
-        .stat-label { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
-        .stat-value { font-size: 28px; font-weight: 800; }
-
-        .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-        .search-wrap { position: relative; flex: 1; }
-        .search-input { width: 100%; padding: 10px 12px 10px 34px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; outline: none; font-family: 'Manrope', sans-serif; transition: border-color .2s; }
-        .search-input:focus { border-color: var(--green-main); }
-        .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text-light); pointer-events: none; }
-
-        .wh-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(340px,1fr)); gap: 20px; padding-bottom: 20px; }
-        .wh-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; transition: .2s; display: flex; flex-direction: column; gap: 16px; }
-        .wh-card.inactive { opacity: .6; filter: grayscale(50%); }
-        .wh-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--green-main); }
-        .wh-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .wh-name { font-weight: 800; font-size: 16px; color: var(--green-dark); }
-        .wh-id { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .wh-status { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
-        .wh-status.operational   { background: var(--green-light); color: var(--green-main); }
-        .wh-status.stopped       { background: var(--red-bg);      color: var(--red); }
-        .wh-status.near-capacity { background: var(--red-bg);      color: var(--red); }
-        .wh-status.high-load     { background: var(--amber-bg);    color: var(--amber); }
-
-        .wh-body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px; background: #F9FAFB; padding: 12px; border-radius: var(--radius-sm); }
-        .wh-label { font-size: 10px; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 2px; }
-        .wh-val { font-weight: 700; }
-
-        .progress-sec { display: flex; flex-direction: column; gap: 6px; }
-        .progress-text { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); }
-        .progress-bar-bg { width: 100%; height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
-
-        .card-actions { display: flex; gap: 8px; margin-top: auto; }
-        .btn-outline { padding: 8px; border: 1px solid var(--border); background: var(--bg-white); border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--text-primary); transition: .2s; font-family: 'Manrope', sans-serif; }
-        .btn-outline:hover { border-color: var(--green-main); color: var(--green-main); }
-        .btn-outline:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
-        .btn-edit { width: 42px; flex-shrink: 0; color: var(--amber); border-color: var(--amber-border); }
-        .btn-edit:hover { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
-        .btn-manage { flex: 1; }
-
-        /* FIXED MODAL CLASSES (Avoids Bootstrap Conflict) */
-        .fb-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .fb-modal-overlay.open { display: flex !important; }
-        .fb-modal { background: var(--bg-white); border-radius: var(--radius-lg); width: 800px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-md); overflow: hidden; }
-        .fb-modal-sm { width: 650px; }
-        .fb-modal-header { background: var(--green-main); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; color: #fff; flex-shrink: 0; }
-        .fb-modal-header-title { font-weight: 800; font-size: 18px; }
-        .fb-modal-header-sub { font-size: 12px; margin-top: 2px; color: rgba(255,255,255,.75); }
-        .fb-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
-        .fb-modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--border); background: #f9fafb; flex-shrink: 0; }
-        .close-btn { cursor: pointer; background: none; border: none; color: #fff; font-size: 24px; font-weight: 300; line-height: 1; padding: 0; }
-
-        .m-stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-        .m-stat-box { flex: 1; min-width: 100px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; text-align: center; }
-        .m-stat-val { font-size: 20px; font-weight: 800; }
-        .m-stat-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
-        .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .tab-item { padding: 10px 20px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: .2s; user-select: none; }
-        .tab-item.active { color: var(--green-main); border-bottom-color: var(--green-main); }
-        .stock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .stock-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
-        .stock-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .stock-name { font-weight: 700; font-size: 14px; }
-        .stock-cat { font-size: 11px; color: var(--text-muted); }
-        .stock-grade { font-size: 12px; font-weight: 700; color: var(--green-main); }
-        .stock-grade.grade-b { color: var(--blue); }
-        .stock-qty { font-size: 20px; font-weight: 800; color: var(--green-dark); }
-        .stock-qty span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .info-box { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
-        .info-box-lbl { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .info-box-val { font-size: 14px; font-weight: 700; }
-
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .form-col-full { grid-column: 1/-1; }
-        .form-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .form-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'Manrope', sans-serif; outline: none; transition: border-color .2s; background: #fff; }
-        .form-input:focus { border-color: var(--green-main); }
-        .form-input.warn { border-color: var(--amber); }
-        select.form-input { cursor: pointer; }
-
-        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green-dark); color: #fff; padding: 12px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; z-index: 10000; transform: translateY(80px); opacity: 0; transition: .3s; max-width: 320px; pointer-events: none; }
-        .toast.show { transform: translateY(0); opacity: 1; }
-
-        .empty-state { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text-muted); }
-        .empty-state svg { width: 48px; height: 48px; opacity: .3; margin: 0 auto 12px; display: block; }
-        .empty-state p { font-size: 14px; font-weight: 600; }
-
-        @@media (max-width:700px) {
-            .stats-grid { grid-template-columns: repeat(2,1fr); }
-            .form-grid { grid-template-columns: 1fr; }
-            .form-col-full { grid-column: 1; }
-        }
-    </style>
 <div class="page">
             <div class="page-top">
                 <div>
@@ -163,7 +34,7 @@
             </div>
 
             <div id="wh-grid" class="wh-grid">
-                <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">Loading warehouses…</div>
+                <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">Loading warehousesâ€¦</div>
             </div>
 </div>
 
@@ -319,7 +190,7 @@
 
     document.addEventListener('DOMContentLoaded', loadData);
 
-    // ── LOAD ──────────────────────────────────────────
+    // â”€â”€ LOAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function loadData() {
         try {
             const [kpiRes, gridRes] = await Promise.all([
@@ -368,7 +239,7 @@
         }
     }
 
-    // ── RENDER GRID ────────────────────────────────────
+    // â”€â”€ RENDER GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function renderGrid(data) {
         const container = document.getElementById('wh-grid');
         if (!data || !data.length) {
@@ -394,7 +265,7 @@
                 <div class="wh-header">
                     <div>
                         <div class="wh-name">${escHtml(w.name)}</div>
-                        <div class="wh-id">ID #${w.id}${w.region ? ' · ' + escHtml(w.region) : ''}</div>
+                        <div class="wh-id">ID #${w.id}${w.region ? ' Â· ' + escHtml(w.region) : ''}</div>
                     </div>
                     <span class="wh-status ${statusClass}">${statusText}</span>
                 </div>
@@ -431,13 +302,13 @@
         document.getElementById('wh-grid').innerHTML = `<div class="empty-state"><p>${escHtml(msg)}</p></div>`;
     }
 
-    // ── MANAGE STOCK MODAL ─────────────────────────────
+    // â”€â”€ MANAGE STOCK MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function openManageModal(id) {
         const w = allWarehouses.find(x => x.id === id);
         if (!w) return;
 
         document.getElementById('m-title').textContent    = w.name;
-        document.getElementById('m-subtitle').textContent = `ID #${w.id}${w.region ? ' · ' + w.region : ''}${w.type ? ' · ' + w.type : ''}`;
+        document.getElementById('m-subtitle').textContent = `ID #${w.id}${w.region ? ' Â· ' + w.region : ''}${w.type ? ' Â· ' + w.type : ''}`;
         
         // Show temporary loading dots
         document.getElementById('m-cap').textContent   = '...';
@@ -530,13 +401,13 @@
         }
     }
 
-    // ── ADD MODAL ──────────────────────────────────────
+    // â”€â”€ ADD MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function openAddModal() {
         document.getElementById('addWhForm').reset();
         document.getElementById('addWhModalOverlay').classList.add('open');
     }
 
-    // ── EDIT MODAL ─────────────────────────────────────
+    // â”€â”€ EDIT MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function openEditModal(id) {
         const w = allWarehouses.find(x => x.id === id);
         if (!w) return;
@@ -573,12 +444,12 @@
         } catch (e) { /* non-critical, form still works */ }
     }
 
-    // ── CLOSE MODAL ────────────────────────────────────
+    // â”€â”€ CLOSE MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function closeModal(modalId) {
         document.getElementById(modalId).classList.remove('open');
     }
 
-    // ── SUBMIT (POST = add, PUT = edit) ────────────────
+    // â”€â”€ SUBMIT (POST = add, PUT = edit) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function submitWarehouse(e, method) {
         e.preventDefault();
         const form = e.target;
@@ -635,7 +506,7 @@
         }
     }
 
-    // ── TAB SWITCH ─────────────────────────────────────
+    // â”€â”€ TAB SWITCH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function switchTab(tabId, element) {
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
         if (element) element.classList.add('active');
@@ -643,7 +514,7 @@
         document.getElementById('tab-info').style.display  = tabId === 'tab-info'  ? 'grid' : 'none';
     }
 
-    // ── FILTER ─────────────────────────────────────────
+    // â”€â”€ FILTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function filterData() {
         const q      = document.getElementById('search-input').value.toLowerCase();
         const status = document.getElementById('filter-status').value;
@@ -655,7 +526,7 @@
         }));
     }
 
-    // ── GENERATE & DOWNLOAD PDF (Using Kendo UI) ───────────────────────
+    // â”€â”€ GENERATE & DOWNLOAD PDF (Using Kendo UI) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function downloadInventoryPDF(warehouseName, stockData) {
         const btn = document.getElementById('btnDownloadInv');
         const origText = btn.textContent;
@@ -727,7 +598,7 @@
         }, 300); 
     }
 
-    // ── HELPERS ────────────────────────────────────────
+    // â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function escHtml(s) {
         if (s === null || s === undefined) return '';
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -750,3 +621,5 @@
     window.filterData = filterData;
     })();
 </script>
+
+

@@ -1,365 +1,11 @@
-@{
+﻿@{
     Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
     ViewData["Title"] = "Wishlist";
 }
 
-<style>
-    /* ========== WISHLIST PAGE ENHANCED STYLING ========== */
-    
-    .wishlist-header-area {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 28px;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
 
-    .wishlist-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 32px;
-        font-weight: 700;
-        color: #0a2108;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
+<link rel="stylesheet" href="~/css/pages/vendor/wishlist.css" asp-append-version="true" />
 
-    .btn-clear-all {
-        background: transparent;
-        border: 1.5px solid #dc2626;
-        color: #dc2626;
-        padding: 10px 24px;
-        border-radius: 24px;
-        font-weight: 700;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        font-family: 'Poppins', sans-serif;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-clear-all:hover {
-        background: #dc2626;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
-    }
-
-    .wishlist-empty {
-        text-align: center;
-        padding: 80px 40px;
-        background: rgba(255, 255, 255, 0.82);
-        border-radius: 20px;
-        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07);
-    }
-
-    .wishlist-empty i {
-        font-size: 64px;
-        margin-bottom: 20px;
-        color: var(--green-300, #84d17c);
-    }
-
-    .wishlist-empty h4 {
-        color: #1b5e19;
-        margin-bottom: 12px;
-        font-family: 'Playfair Display', serif;
-        font-size: 24px;
-    }
-
-    .wishlist-empty p {
-        margin-bottom: 24px;
-        color: #5a7257;
-    }
-
-    .wishlist-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 24px;
-    }
-
-    .wishlist-category-section {
-        margin-bottom: 40px;
-    }
-
-    .wishlist-category-title {
-        font-size: 22px;
-        font-weight: 700;
-        color: #1b5e19;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid var(--border-soft, rgba(45, 122, 39, 0.12));
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-family: 'Playfair Display', serif;
-    }
-
-    .wishlist-category-icon {
-        font-size: 24px;
-        color: #2d7a27;
-    }
-
-    .wishlist-card {
-        background: rgba(255, 255, 255, 0.82);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07), 0 1px 4px rgba(21, 66, 18, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        display: flex;
-        flex-direction: column;
-        position: relative;
-    }
-
-    .wishlist-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, #2d7a27 0%, #52b34a 100%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        z-index: 1;
-    }
-
-    .wishlist-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 60px rgba(21, 66, 18, 0.14), 0 10px 30px rgba(21, 66, 18, 0.1);
-    }
-
-    .wishlist-card:hover::before {
-        opacity: 1;
-    }
-
-    .wishlist-card-img {
-        height: 200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--bg-base, #f5f9f4);
-        overflow: hidden;
-        position: relative;
-        color: #2d7a27;
-        font-size: 48px;
-    }
-
-    .wishlist-card-img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .wishlist-card:hover .wishlist-card-img img {
-        transform: scale(1.05);
-    }
-
-    .wishlist-card-img i {
-        font-size: 48px;
-        color: #2d7a27;
-    }
-
-    .wishlist-grade-badge {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        background: var(--gold-light, #FDF8E1);
-        color: var(--gold, #C9950A);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-        z-index: 10;
-        border: 1px solid #f5d5b5;
-        letter-spacing: 0.5px;
-    }
-
-    .wishlist-card-remove {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: white;
-        border: none;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #dc2626;
-        font-size: 16px;
-        z-index: 10;
-    }
-
-    .wishlist-card-remove:hover {
-        transform: scale(1.15);
-        background: #dc2626;
-        color: white;
-    }
-
-    .wishlist-card-body {
-        padding: 18px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .wishlist-card-name {
-        font-weight: 700;
-        font-size: 15px;
-        color: #1b5e19;
-        margin-bottom: 8px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .wishlist-card-category {
-        font-size: 12px;
-        color: #5a7257;
-        margin-bottom: 12px;
-    }
-
-    .wishlist-card-price {
-        font-size: 22px;
-        font-weight: 800;
-        color: #1b5e19;
-        margin-bottom: 8px;
-        font-family: 'Playfair Display', serif;
-    }
-
-    .wishlist-card-price small {
-        font-size: 12px;
-        font-weight: 600;
-        color: #5a7257;
-    }
-
-    .wishlist-card-stock {
-        font-size: 12px;
-        color: #5a7257;
-        margin-bottom: 16px;
-    }
-
-    .wishlist-card-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: auto;
-    }
-
-    .btn-wishlist-add-cart {
-        background: linear-gradient(135deg, #2d7a27 0%, #1b5e19 100%);
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 12px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 13px;
-        flex: 1;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        text-decoration: none;
-        font-family: 'Poppins', sans-serif;
-        box-shadow: 0 4px 12px rgba(45, 122, 39, 0.2);
-    }
-
-    .btn-wishlist-add-cart:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(45, 122, 39, 0.3);
-        color: white;
-        text-decoration: none;
-    }
-
-    .btn-browse-catalog {
-        background: transparent;
-        border: 1.5px solid #2d7a27;
-        color: #2d7a27;
-        padding: 10px 24px;
-        border-radius: 24px;
-        font-weight: 700;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .btn-browse-catalog:hover {
-        background: #2d7a27;
-        color: white;
-        text-decoration: none;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(45, 122, 39, 0.2);
-    }
-
-    /* Toast Styles */
-    .toast-message {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 16px 20px;
-        border-radius: 12px;
-        color: white;
-        z-index: 9999;
-        animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        font-weight: 600;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        border-left: 4px solid white;
-    }
-
-    .toast-success {
-        background: linear-gradient(135deg, #2d7a27 0%, #1b5e19 100%);
-        border-left-color: #52b34a;
-    }
-
-    .toast-error {
-        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-        border-left-color: #fecaca;
-    }
-
-    .toast-info {
-        background: linear-gradient(135deg, #2d6a7a 0%, #1a5e5e 100%);
-        border-left-color: #cce8f2;
-    }
-
-    @@keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-
-    @@media (max-width: 768px) {
-        .wishlist-title {
-            font-size: 24px;
-        }
-
-        .wishlist-grid {
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 16px;
-        }
-
-        .wishlist-card-body {
-            padding: 14px;
-        }
-    }
-</style>
 
 <div class="wishlist-header-area">
     <h2 class="wishlist-title">
@@ -384,7 +30,7 @@
         <div id="wishlistModalIcon" style="font-size: 48px; color: #2d8a45;"></div>
         <h3 id="wishlistModalProductName" style="color: #1a5c2a; margin: 10px 0;">Product Name</h3>
         <div class="stock-info" id="wishlistModalStock" style="color: #64748b; font-size: 13px;">Available: 0 kg</div>
-        <div class="min-info" style="color: #e65100; font-size: 12px; margin-top: 5px;">⚠️ Minimum order: 20kg</div>
+        <div class="min-info" style="color: #e65100; font-size: 12px; margin-top: 5px;">âš ï¸ Minimum order: 20kg</div>
     </div>
 
     <div class="quantity-selector"
@@ -403,7 +49,7 @@
 
     <div class="price-display" style="text-align: center; margin-bottom: 20px;">
         <span style="color: #64748b;">Total Price: </span>
-        <span id="wishlistModalTotalPrice" style="font-size: 24px; font-weight: 700; color: #2d8a45;">₹0</span>
+        <span id="wishlistModalTotalPrice" style="font-size: 24px; font-weight: 700; color: #2d8a45;">â‚¹0</span>
     </div>
 
     <div class="popup-actions" style="display: flex; gap: 12px; margin-top: 20px;">
@@ -550,7 +196,7 @@
                                         <i class="fas fa-tag"></i> ${escapeHtml(item.category || 'Farm Product')}
                                     </div>
                                     <div class="wishlist-card-price">
-                                        ₹${(item.avgPrice || 0).toLocaleString('en-IN')}<small>/${item.unit || 'kg'}</small>
+                                        â‚¹${(item.avgPrice || 0).toLocaleString('en-IN')}<small>/${item.unit || 'kg'}</small>
                                     </div>
                                     <div class="wishlist-card-stock">
                                         <i class="fas fa-box"></i> ${(item.quantityAvailable || 0).toLocaleString()} ${item.unit || 'kg'} available
@@ -649,7 +295,7 @@
         function updateWishlistModalPrice() {
             const qty = parseFloat(document.getElementById('wishlistPopupQuantity').value) || 0;
             const total = qty * currentWishlistProduct.price;
-            document.getElementById('wishlistModalTotalPrice').innerHTML = `₹${total.toLocaleString('en-IN')}`;
+            document.getElementById('wishlistModalTotalPrice').innerHTML = `â‚¹${total.toLocaleString('en-IN')}`;
         }
 
         function openWishlistQuantityWindow() {
@@ -793,3 +439,4 @@
         });
     </script>
 }
+

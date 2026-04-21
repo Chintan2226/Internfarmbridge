@@ -77,7 +77,10 @@ body {
 body::before {
     content: '';
     position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100dvh;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
     background: radial-gradient(circle at 10% 20%, rgba(232, 114, 12, 0.08) 0%, transparent 35%), radial-gradient(circle at 90% 80%, rgba(34, 197, 94, 0.08) 0%, transparent 35%);
     z-index: -1;
     pointer-events: none;
@@ -930,6 +933,7 @@ ul {
     .fv-menu-btn {
         display: flex;
     }
+
     .fv-sidebar {
         display: flex;
         position: fixed;
@@ -952,28 +956,34 @@ ul {
         transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1050;
     }
+
     .fv-sidebar.open {
         left: 0;
     }
+
     .fv-sidebar-logo {
         padding: 24px 20px;
         width: 100%;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         flex-direction: row;
         flex-shrink: 0;
         margin-right: 0;
         justify-content: flex-start;
     }
-    .fv-sidebar-name, .fv-role-badge {
+
+    .fv-sidebar-name,
+    .fv-role-badge {
         display: block !important;
         opacity: 1 !important;
         max-width: none !important;
         max-height: none !important;
     }
+
     .fv-role-badge {
         margin: 12px 20px 4px;
         align-self: flex-start;
     }
+
     .fv-nav {
         flex-direction: column;
         overflow-y: auto;
@@ -984,9 +994,11 @@ ul {
         width: 100%;
         display: flex;
     }
+
     .fv-nav::-webkit-scrollbar {
         display: block;
     }
+
     .fv-nav-link {
         width: calc(100% - 24px) !important;
         margin: 0 12px !important;
@@ -996,37 +1008,45 @@ ul {
         gap: 12px !important;
         align-items: center !important;
     }
+
     .fv-nav-link span {
         display: inline-block !important;
         opacity: 1 !important;
         max-width: none !important;
         width: auto !important;
     }
+
     .fv-sidebar-foot {
         display: block;
         margin-top: auto;
         width: 100%;
         padding: 16px;
     }
+
     .fv-bottom-nav {
         display: none !important;
     }
+
     .fv-main {
         margin-left: 0 !important;
         margin-top: 0;
     }
+
     .fv-topbar {
         padding: 0 14px;
     }
+
     .fv-content {
         padding: 16px 14px 20px;
     }
+
     .fv-notif {
         right: 8px;
         left: 8px;
         width: auto;
         top: calc(var(--topbar-h) + 6px);
     }
+
     .fv-toasts {
         right: 8px;
         bottom: 16px;
@@ -1041,4 +1061,45 @@ ul {
     .fv-topbar {
         padding: 0 20px;
     }
+}
+
+/* Language Switcher */
+.fb-lang-switcher {
+    position: relative;
+}
+
+.fb-lang-dropdown {
+    display: none;
+    position: absolute;
+    top: 45px;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    flex-direction: column;
+    min-width: 130px;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.fb-lang-dropdown.show {
+    display: flex;
+}
+
+.fb-lang-option {
+    background: none;
+    border: none;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--text-primary);
+}
+
+.fb-lang-option:hover {
+    background: #f8fafc;
+    color: #10b981;
 }

@@ -1,0 +1,123 @@
+/* FarmBridge Premium Kendo Grid Overrides (Platform-Wide) */
+
+/* General Grid Transparency */
+.k-grid, .k-widget, .k-grid-content {
+    border: none !important;
+    font-family: 'Inter', sans-serif !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.k-grid-header, .k-grid-header-wrap {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid rgba(22, 163, 74, 0.1) !important;
+}
+
+.k-grid-header th.k-header {
+    background: transparent !important;
+    border: none !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    color: #64748b !important;
+    letter-spacing: 1.2px !important;
+    padding: 14px 16px !important;
+}
+
+/* Rows styling */
+.k-grid tbody {
+    background: transparent !important;
+}
+
+.k-grid tbody tr {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(22, 163, 74, 0.05) !important;
+    transition: all 0.2s ease !important;
+}
+
+.k-grid tbody tr:last-child {
+    border-bottom: none !important;
+}
+
+.k-grid tbody tr:hover {
+    background: rgba(22, 163, 74, 0.03) !important;
+    transform: scale(1.002);
+}
+
+.k-grid tbody td {
+    padding: 14px 16px !important;
+    border: none !important;
+    color: #0f1f0e !important;
+}
+
+/* ─── PAGINATION (Matches Platform Screenshot) ─── */
+.k-pager-wrap {
+    background: transparent !important;
+    border: none !important;
+    border-top: 1px solid rgba(22, 163, 74, 0.1) !important;
+    padding: 12px 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important; /* Move pager to the right usually */
+    font-family: 'Inter', sans-serif !important;
+    color: #64748b !important;
+}
+
+.k-pager-numbers {
+    display: flex !important;
+    gap: 8px !important;
+    margin: 0 10px !important;
+}
+
+/* Basic Link styling (prev, next, inactive pages) */
+.k-pager-wrap .k-link, .k-pager-numbers .k-link {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    background: #fafaf9 !important; /* Standard off-white */
+    border: 1px solid #f1f5f9 !important;
+    color: #94a3b8 !important;
+    font-size: 13px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    padding: 0 !important;
+}
+
+/* Hover for links */
+.k-pager-wrap .k-link:hover {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border-color: #e2e8f0 !important;
+}
+
+/* Disabled state */
+.k-pager-wrap .k-state-disabled {
+    opacity: 0.5;
+    background: transparent !important;
+}
+
+/* Active page solid green badge */
+.k-pager-numbers .k-state-selected {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    background: #2e7d32 !important; /* Matches exactly the screenshot's green */
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    padding: 0 !important;
+    box-shadow: 0 3px 8px rgba(46, 125, 50, 0.25) !important;
+}
+
+.k-pager-info {
+    display: none !important; /* Usually hide raw text "1 - 10 of 20 items" if clean UI is requested, or float it left */
+}
