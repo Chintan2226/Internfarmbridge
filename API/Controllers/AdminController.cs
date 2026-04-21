@@ -1,3 +1,4 @@
+
 using System.Data;
 using API.BAL;
 using API.Models.Admin;
@@ -7,6 +8,7 @@ using API.Models.Notification;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
+using API.Models.Settings;
 
 namespace API.Controllers
 {
@@ -21,6 +23,8 @@ namespace API.Controllers
         private readonly CloudinaryService _cloudinary;
         private readonly EmailService _emailService;
         private const string NotifKey = "admin:notifs";
+        private readonly IConfiguration _configuration;
+        private readonly ElasticService _elasticService;
 
         public AdminController(
             AdminHelper adminRepo,
@@ -28,7 +32,9 @@ namespace API.Controllers
             RedisService redisService,
             RabbitMqService rabbitMqService,
             EmailService emailService,
-            NpgsqlConnection conn
+            NpgsqlConnection conn,
+            IConfiguration configuration,
+            ElasticService elasticService
         )
         {
             _adminRepo = adminRepo;
@@ -37,6 +43,8 @@ namespace API.Controllers
             _rabbitMqService = rabbitMqService;
             _emailService = emailService;
             _conn = conn;
+            _configuration = configuration;
+            _elasticService = elasticService;
         }
 
         // ==================== NOTIFICATIONS ====================
@@ -688,6 +696,7 @@ namespace API.Controllers
             var result = await _adminRepo.ToggleFoStatusAsync("1", id, request.IsActive, "Status changed via Admin UI");
             if (!result.Success) return BadRequest(new { success = false, message = result.Message });
 
+            // ✅ 1. TRIGGER THE REAL EMAIL HERE (This is the endpoint the frontend actually uses!)
             try
             {
                 string email = "", name = "";
@@ -717,6 +726,12 @@ namespace API.Controllers
                         request.IsActive ? "Account Activated ✅" : "Account Deactivated ❌",
                         request.IsActive ? "Your field officer account has been activated by admin." : "Your field officer account has been deactivated by admin.",
                         "account_status");
+                    await _emailService.SendFieldOfficerStatusChangedEmailAsync(
+                        email,
+                        name,
+                        "Assigned Region",
+                        request.IsActive // Passes true/false directly to decide which template to use
+                    );
                 }
             }
             catch (Exception ex)
@@ -880,6 +895,64 @@ namespace API.Controllers
 
             return Ok(new { success = true, message = result.Message });
         }
+
+        ////Elastic Search - Method (Mansi)
+        [HttpPost("search/universal")]
+        public async Task<IActionResult> UniversalSearch([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.UniversalSearchForMVCAsync(request.Query);
+            return Ok(new { success = true, data = results });
+        }
+
+        [HttpPost("search/catalog")]
+        public async Task<IActionResult> SearchCatalog([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchCatalogForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/crops")]
+        public async Task<IActionResult> SearchCrops([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchCropsForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/orders")]
+        public async Task<IActionResult> SearchOrders([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchOrdersForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/users")]
+        public async Task<IActionResult> SearchUsers([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchUsersForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/qc-records")]
+        public async Task<IActionResult> SearchQCRecords([FromBody] SearchRequestModel request)
+        {
+            var results = await _elasticService.SearchQCRecordsForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("reindex")]
+        public async Task<IActionResult> ReIndex()
+        {
+            var result = await _elasticService.ReindexAllAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("search/health")]
+        public async Task<IActionResult> HealthCheck()
+        {
+            var isHealthy = await _elasticService.IsHealthyAsync();
+            return Ok(new { healthy = isHealthy });
+        }
+
     }
 
     public class vm_CatalogProductForm
@@ -912,4 +985,7 @@ namespace API.Controllers
         public string NewPassword { get; set; } = "";
         public string ConfirmPassword { get; set; } = "";
     }
+
+
+
 }

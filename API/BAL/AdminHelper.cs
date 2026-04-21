@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using API.Models.Admin;
 using API.Models.Farmer;
 using API.Models.Payment;
+using API.Models.Settings;
+using API.Services;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -16,10 +18,17 @@ namespace API.BAL
     public class AdminHelper
     {
         private readonly NpgsqlConnection _conn;
+        private readonly ElasticService _elasticService;
+        private readonly IConfiguration _configuration;
 
-        public AdminHelper(NpgsqlConnection conn)
+        public AdminHelper(
+            NpgsqlConnection conn,
+            IConfiguration configuration,
+            ElasticService elasticService)
         {
             _conn = conn;
+            _configuration = configuration;
+            _elasticService = elasticService;
         }
 
         public async Task<List<dynamic>> GetFarmerList(string searchTerm, int pageNumber = 1)
@@ -894,36 +903,46 @@ namespace API.BAL
             {
                 await EnsureOpenConnection();
 
-                string qry =
-                    @"
-                    INSERT INTO t_catalog_products
-                        (c_name, c_category, c_unit_of_measure, c_description,
-                         c_image_url, c_quality_parameters,
-                         c_is_active, c_created_by, c_created_at, c_updated_at)
-                    VALUES
-                        (@name, @category, @unit, @description,
-                         @imageUrl, @qualityParams::JSONB,
-                         @isActive, @createdBy, NOW(), NOW())
-                    RETURNING c_id";
+                string qry = @"
+            INSERT INTO t_catalog_products
+                (c_name, c_category, c_unit_of_measure, c_description,
+                 c_image_url, c_quality_parameters,
+                 c_is_active, c_created_by, c_created_at, c_updated_at)
+            VALUES
+                (@name, @category, @unit, @description,
+                 @imageUrl, @qualityParams::JSONB,
+                 @isActive, @createdBy, NOW(), NOW())
+            RETURNING c_id";
 
                 using var cmd = new NpgsqlCommand(qry, _conn);
                 cmd.Parameters.AddWithValue("@name", model.Name);
                 cmd.Parameters.AddWithValue("@category", (object?)model.Category ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@unit", model.UnitOfMeasure);
-                cmd.Parameters.AddWithValue(
-                    "@description",
-                    (object?)model.Description ?? DBNull.Value
-                );
+                cmd.Parameters.AddWithValue("@description", (object?)model.Description ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@imageUrl", (object?)model.ImageUrl ?? DBNull.Value);
-                cmd.Parameters.AddWithValue(
-                    "@qualityParams",
-                    (object?)model.QualityParameters ?? DBNull.Value
-                );
+                cmd.Parameters.AddWithValue("@qualityParams", (object?)model.QualityParameters ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@isActive", model.IsActive);
                 cmd.Parameters.AddWithValue("@createdBy", adminId);
 
                 var result = await cmd.ExecuteScalarAsync();
                 newId = Convert.ToInt64(result);
+
+                // ✅ INDEX IN ELASTICSEARCH - AFTER INSERT
+                if (newId > 0)
+                {
+                    var productDoc = new CatalogProductDocument
+                    {
+                        Id = (int)newId,
+                        Name = model.Name,
+                        Category = model.Category,
+                        UnitOfMeasure = model.UnitOfMeasure,
+                        Description = model.Description,
+                        ImageUrl = model.ImageUrl,
+                        IsActive = model.IsActive,
+                        CreatedBy = (int)adminId
+                    };
+                    await _elasticService.IndexCatalogProductAsync(productDoc);
+                }
             }
             catch (Exception ex)
             {
@@ -943,36 +962,47 @@ namespace API.BAL
             {
                 await EnsureOpenConnection();
 
-                string qry =
-                    @"
-                    UPDATE t_catalog_products
-                    SET c_name               = @name,
-                        c_category           = @category,
-                        c_unit_of_measure    = @unit,
-                        c_description        = @description,
-                        c_image_url          = @imageUrl,
-                        c_quality_parameters = @qualityParams::JSONB,
-                        c_is_active          = @isActive,
-                        c_updated_at         = NOW()
-                    WHERE c_id = @id";
+                string qry = @"
+            UPDATE t_catalog_products
+            SET c_name               = @name,
+                c_category           = @category,
+                c_unit_of_measure    = @unit,
+                c_description        = @description,
+                c_image_url          = @imageUrl,
+                c_quality_parameters = @qualityParams::JSONB,
+                c_is_active          = @isActive,
+                c_updated_at         = NOW()
+            WHERE c_id = @id";
 
                 using var cmd = new NpgsqlCommand(qry, _conn);
                 cmd.Parameters.AddWithValue("@id", model.Id);
                 cmd.Parameters.AddWithValue("@name", model.Name);
                 cmd.Parameters.AddWithValue("@category", (object?)model.Category ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@unit", model.UnitOfMeasure);
-                cmd.Parameters.AddWithValue(
-                    "@description",
-                    (object?)model.Description ?? DBNull.Value
-                );
+                cmd.Parameters.AddWithValue("@description", (object?)model.Description ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@imageUrl", (object?)model.ImageUrl ?? DBNull.Value);
-                cmd.Parameters.AddWithValue(
-                    "@qualityParams",
-                    (object?)model.QualityParameters ?? DBNull.Value
-                );
+                cmd.Parameters.AddWithValue("@qualityParams", (object?)model.QualityParameters ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@isActive", model.IsActive);
 
                 int rows = await cmd.ExecuteNonQueryAsync();
+
+                // ✅ UPDATE INDEX IN ELASTICSEARCH - AFTER UPDATE
+                if (rows > 0)
+                {
+                    var productDoc = new CatalogProductDocument
+                    {
+                        Id = (int)model.Id,
+                        Name = model.Name,
+                        Category = model.Category,
+                        UnitOfMeasure = model.UnitOfMeasure,
+                        Description = model.Description,
+                        ImageUrl = model.ImageUrl,
+                        IsActive = model.IsActive,
+                        CreatedBy = (int)adminId
+                    };
+                    await _elasticService.IndexCatalogProductAsync(productDoc);
+                }
+
                 return rows;
             }
             catch (Exception ex)
@@ -987,56 +1017,41 @@ namespace API.BAL
         /// Returns the existing c_image_url so the API controller can call
         /// CloudinaryService.DeleteImageAsync(ExtractPublicId(imageUrl)) after DB deletion.
         /// </summary>
-        public async Task<(
-            bool Success,
-            string Message,
-            string? ExistingImageUrl
-        )> DeleteCatalogProduct(long id, long adminId)
+        public async Task<(bool Success, string Message, string? ExistingImageUrl)> DeleteCatalogProduct(long id, long adminId)
         {
             try
             {
                 await EnsureOpenConnection();
 
                 // Block if active listings exist
-                string depQry =
-                    @"
-                    SELECT COUNT(*) FROM t_farmer_crop_listings
-                    WHERE c_catalog_product_id = @id
-                      AND c_status IN ('active','qc_requested','qc_scheduled','qc_passed','payment_pending')";
+                string depQry = @"
+            SELECT COUNT(*) FROM t_farmer_crop_listings
+            WHERE c_catalog_product_id = @id
+              AND c_status IN ('active','qc_requested','qc_scheduled','qc_passed','payment_pending')";
 
                 using var depCmd = new NpgsqlCommand(depQry, _conn);
                 depCmd.Parameters.AddWithValue("@id", id);
                 long activeListings = Convert.ToInt64(await depCmd.ExecuteScalarAsync());
 
                 if (activeListings > 0)
-                    return (
-                        false,
-                        $"Cannot delete: {activeListings} active listing(s) reference this product. Resolve dependencies first.",
-                        null
-                    );
+                    return (false, $"Cannot delete: {activeListings} active listing(s) reference this product. Resolve dependencies first.", null);
 
                 // Block if open orders exist
-                string orderQry =
-                    @"
-                    SELECT COUNT(*) FROM t_order_items oi
-                    JOIN t_vendor_orders vo ON vo.c_id = oi.c_order_id
-                    WHERE oi.c_catalog_product_id = @id
-                      AND vo.c_status IN ('placed','admin_confirmed','farmer_notified','dispatched','in_transit')";
+                string orderQry = @"
+            SELECT COUNT(*) FROM t_order_items oi
+            JOIN t_vendor_orders vo ON vo.c_id = oi.c_order_id
+            WHERE oi.c_catalog_product_id = @id
+              AND vo.c_status IN ('placed','admin_confirmed','farmer_notified','dispatched','in_transit')";
 
                 using var orderCmd = new NpgsqlCommand(orderQry, _conn);
                 orderCmd.Parameters.AddWithValue("@id", id);
                 long openOrders = Convert.ToInt64(await orderCmd.ExecuteScalarAsync());
 
                 if (openOrders > 0)
-                    return (
-                        false,
-                        $"Cannot delete: {openOrders} open order(s) reference this product. Resolve dependencies first.",
-                        null
-                    );
+                    return (false, $"Cannot delete: {openOrders} open order(s) reference this product. Resolve dependencies first.", null);
 
                 // Fetch name + image_url before deletion
-                string infoQry =
-                    "SELECT c_name, c_image_url FROM t_catalog_products WHERE c_id = @id";
+                string infoQry = "SELECT c_name, c_image_url FROM t_catalog_products WHERE c_id = @id";
                 using var infoCmd = new NpgsqlCommand(infoQry, _conn);
                 infoCmd.Parameters.AddWithValue("@id", id);
 
@@ -1046,8 +1061,7 @@ namespace API.BAL
                 {
                     if (await r.ReadAsync())
                     {
-                        existingImageUrl =
-                            r["c_image_url"] == DBNull.Value ? null : r["c_image_url"].ToString();
+                        existingImageUrl = r["c_image_url"] == DBNull.Value ? null : r["c_image_url"].ToString();
                     }
                 }
 
@@ -1055,6 +1069,9 @@ namespace API.BAL
                 using var delCmd = new NpgsqlCommand(delQry, _conn);
                 delCmd.Parameters.AddWithValue("@id", id);
                 await delCmd.ExecuteNonQueryAsync();
+
+                // ✅ DELETE FROM ELASTICSEARCH
+                await _elasticService.DeleteDocumentAsync<CatalogProductDocument>("catalog_products", (int)id);
 
                 return (true, "Catalog product deleted successfully.", existingImageUrl);
             }
@@ -2477,6 +2494,18 @@ namespace API.BAL
                 Utilization = utilPct,
                 Stock = stockList
             };
+        }
+
+        //Elastic Search - Method (Mansi)
+
+        public async Task<SearchResponseModel<UserSearchResult>> SearchUsersAsync(SearchRequestModel request)
+        {
+            return await _elasticService.SearchUsersForMVCAsync(request);
+        }
+
+        public async Task<ReindexResult> ReindexAllAsync()
+        {
+            return await _elasticService.ReindexAllAsync();
         }
     }
 }

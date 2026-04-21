@@ -10,6 +10,7 @@ using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using API.Models.Settings;
 
 namespace API.Controllers
 {
@@ -26,6 +27,15 @@ namespace API.Controllers
         private readonly RabbitMqService _rabbitMqService;
 
         public VendorController(VendorHelper vendorHelper, JwtService jwtService, IConfiguration configuration, RedisService redisService, EmailService emailService, RabbitMqService rabbitMqService)
+        private readonly ElasticService _elasticService;
+
+        public VendorController(
+            VendorHelper vendorHelper,
+            JwtService jwtService,
+            IConfiguration configuration,
+            RedisService redisService,
+            EmailService emailService,
+            ElasticService elasticService)
         {
             _vendorHelper = vendorHelper;
             _jwtService = jwtService;
@@ -33,6 +43,7 @@ namespace API.Controllers
             _redisService = redisService;
             _emailService = emailService;
             _rabbitMqService = rabbitMqService;
+            _elasticService = elasticService;
         }
 
         private int CurrentVendorId
@@ -151,7 +162,7 @@ namespace API.Controllers
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
         {
             var (vendor, isNewUser) = await _vendorHelper.RegisterVendorGoogleAsync(request.Email, request.Name, request.ProviderId);
-            
+
             if (vendor != null)
             {
                 if (isNewUser)
@@ -168,7 +179,7 @@ namespace API.Controllers
                 var token = _jwtService.GenerateJwtToken(vendor.UserId, request.Email, "vendor");
                 return Ok(new { success = true, token = token, isGoogleUser = true, isNewUser = isNewUser });
             }
-            
+
             return Unauthorized(new { message = "Authentication failed" });
         }
 
@@ -705,6 +716,27 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
         {
             public int OrderId { get; set; }
             public decimal Amount { get; set; }
+        }
+
+
+        ////Elastic Search - Method (Mansi)
+
+        [HttpPost("search/catalog")]
+        public async Task<IActionResult> SearchCatalog([FromBody] SearchRequestModel request)
+        {
+            request.IsActive = true; // Only active products for vendors
+            var results = await _elasticService.SearchCatalogForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/my-orders")]
+        public async Task<IActionResult> SearchMyOrders([FromBody] SearchRequestModel request)
+        {
+            // Get vendorId from your existing method (session/token)
+            var vendorId = CurrentVendorId; // Your existing method
+            request.VendorId = vendorId;
+            var results = await _elasticService.SearchOrdersForMVCAsync(request);
+            return Ok(results);
         }
     }
 }

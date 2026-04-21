@@ -11,6 +11,7 @@ using API.Models.FieldOfficer;
 using API.Services;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using API.Models.Settings;
 
 namespace API.BAL
 {
@@ -18,11 +19,16 @@ namespace API.BAL
     {
         private readonly NpgsqlConnection _conn;
         private readonly IConfiguration _configuration;
+        private readonly ElasticService _elasticService;
 
-        public VendorHelper(NpgsqlConnection conn, IConfiguration configuration)
+        public VendorHelper(
+            NpgsqlConnection conn,
+            IConfiguration configuration,
+            ElasticService elasticService)
         {
             _conn = conn;
             _configuration = configuration;
+            _elasticService = elasticService;
         }
         //Shreya - Vendor Register login Jwt,token verify
 
@@ -402,20 +408,26 @@ namespace API.BAL
             {
                 // 1. Get vendor profile id
                 await using var getVendorCmd = new NpgsqlCommand(@"
-            SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @userId
+            SELECT c_id, c_business_name FROM t_vendor_profiles WHERE c_user_id = @userId
         ", _conn, transaction);
                 getVendorCmd.Parameters.AddWithValue("@userId", vendorUserId);
 
-                var vendorIdRaw = await getVendorCmd.ExecuteScalarAsync();
-                if (vendorIdRaw == null)
+                int vendorId = 0;
+                string businessName = "Vendor";
+
+                await using var reader = await getVendorCmd.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
                 {
-                    // No need to rollback here as nothing was written yet, 
-                    // but we must return to stop execution.
+                    vendorId = reader.GetInt32(0);
+                    businessName = reader.IsDBNull(1) ? "Vendor" : reader.GetString(1);
+                }
+
+                if (vendorId == 0)
+                {
                     response.Success = false;
                     response.Message = "Vendor profile not found.";
                     return response;
                 }
-                int vendorId = Convert.ToInt32(vendorIdRaw);
 
                 // 2. Insert order
                 await using var orderCmd = new NpgsqlCommand(@"
@@ -460,7 +472,7 @@ namespace API.BAL
                     lotCmd.Parameters.AddWithValue("@productId", item.ProductId);
 
                     var lotResult = await lotCmd.ExecuteScalarAsync();
-                    int lotId = lotResult != null ? Convert.ToInt32(lotResult) : 1; // Default to 1 if no lot found
+                    int lotId = lotResult != null ? Convert.ToInt32(lotResult) : 1;
 
                     await using var itemCmd = new NpgsqlCommand(@"
                 INSERT INTO t_order_items 
@@ -484,7 +496,7 @@ namespace API.BAL
                 trackCmd.Parameters.AddWithValue("@orderId", orderId);
                 await trackCmd.ExecuteNonQueryAsync();
 
-                // 6. Clear cart (Do this BEFORE the single Commit)
+                // 6. Clear cart
                 await using var clearCartCmd = new NpgsqlCommand(@"
             DELETE FROM t_vendor_cart_items 
             WHERE c_vendor_id = @vendorId
@@ -493,8 +505,34 @@ namespace API.BAL
                 await clearCartCmd.ExecuteNonQueryAsync();
 
                 // --- SINGLE COMMIT POINT ---
-                // This commits all 6 steps above as one atomic unit.
                 await transaction.CommitAsync();
+
+                // ✅ INDEX ORDER IN ELASTICSEARCH
+                try
+                {
+                    var orderDoc = new OrderDocument
+                    {
+                        Id = orderId,
+                        VendorId = vendorId,
+                        VendorBusinessName = businessName,
+                        Status = "placed",
+                        TotalAmount = request.TotalAmount,
+                        OrderedAt = DateTime.UtcNow,
+                        Items = request.Items.Select(item => new OrderItemDocument
+                        {
+                            CatalogProductId = item.ProductId,
+                            ProductName = item.ProductName ?? "",
+                            Quantity = item.Quantity,
+                            UnitPrice = item.Price,
+                            Subtotal = item.Quantity * item.Price
+                        }).ToList()
+                    };
+                    await _elasticService.IndexOrderAsync(orderDoc);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to index order: {ex.Message}");
+                }
 
                 response.Success = true;
                 response.OrderId = "FB-ORD-" + orderId.ToString("D8");
@@ -503,9 +541,7 @@ namespace API.BAL
             }
             catch (Exception ex)
             {
-                // Only rollback if the transaction hasn't been completed/disposed
-                try { await transaction.RollbackAsync(); } catch { /* Ignore rollback failure */ }
-
+                try { await transaction.RollbackAsync(); } catch { }
                 response.Success = false;
                 response.Message = "Database Error: " + ex.Message;
             }
@@ -525,14 +561,22 @@ namespace API.BAL
             await using var transaction = await _conn.BeginTransactionAsync();
             try
             {
+                // ✅ GET VENDOR ID FIRST
+                int vendorId = 0;
+                await using var getVendorIdCmd = new NpgsqlCommand(
+                    "SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid", _conn, transaction);
+                getVendorIdCmd.Parameters.AddWithValue("@uid", vendorUserId);
+                var vendorIdResult = await getVendorIdCmd.ExecuteScalarAsync();
+                if (vendorIdResult != null) vendorId = Convert.ToInt32(vendorIdResult);
+
                 // Verify order belongs to vendor and is cancellable
                 await using var checkCmd = new NpgsqlCommand(@"
             SELECT c_status FROM t_vendor_orders 
             WHERE c_id = @oid 
-            AND c_vendor_id = (SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid)
+            AND c_vendor_id = @vendorId
         ", _conn, transaction);
                 checkCmd.Parameters.AddWithValue("@oid", orderNumId);
-                checkCmd.Parameters.AddWithValue("@uid", vendorUserId);
+                checkCmd.Parameters.AddWithValue("@vendorId", vendorId);
 
                 var statusRaw = await checkCmd.ExecuteScalarAsync();
                 if (statusRaw == null) return "Order not found.";
@@ -571,6 +615,24 @@ namespace API.BAL
                 await payCmd.ExecuteNonQueryAsync();
 
                 await transaction.CommitAsync();
+
+                // ✅ UPDATE ORDER INDEX IN ELASTICSEARCH
+                try
+                {
+                    var orderDoc = new OrderDocument
+                    {
+                        Id = orderNumId,
+                        VendorId = vendorId,
+                        Status = "cancelled",
+                        OrderedAt = DateTime.UtcNow
+                    };
+                    await _elasticService.IndexOrderAsync(orderDoc);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to update order index: {ex.Message}");
+                }
+
                 return "Success";
             }
             catch (Exception ex)
@@ -1866,6 +1928,14 @@ namespace API.BAL
             }
 
             return list;
+        }
+
+        //Elastic Search - Method (Mansi)
+
+        public async Task<SearchResponseModel<CatalogSearchResult>> SearchCatalogAsync(SearchRequestModel request)
+        {
+            request.IsActive = true;
+            return await _elasticService.SearchCatalogForMVCAsync(request);
         }
     }
 }
