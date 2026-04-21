@@ -1,4 +1,5 @@
 (() => {
+  console.log("tyuiop")
   const FARMER_API_BASE = "http://localhost:5020/api/Admin";
   const ADMIN_ID = 1;
 
@@ -108,6 +109,7 @@
   // ── PAYMENTS MODAL ─────────────────────────────────────────────────────
   async function openPaymentModal(farmerId) {
     currentPaymentFarmerId = farmerId;
+    alert("kjhgfd")
     document.getElementById("paymentModalOverlay").classList.add("open");
     const tbody = document.getElementById("pending-payments-body");
     tbody.innerHTML =

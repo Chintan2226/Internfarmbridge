@@ -23,17 +23,20 @@ namespace API.Controllers
         private readonly CloudinaryService _cloudinaryService;
         private readonly EmailService _emailService;
         private readonly ILogger<FieldOfficerController> _logger;
+        private readonly RabbitMqService _rabbitMqService;
 
         public FieldOfficerController(
             FieldOfficerHelper helper,
             CloudinaryService cloudinaryService,
             EmailService emailService,
-            ILogger<FieldOfficerController> logger)
+            ILogger<FieldOfficerController> logger,
+            RabbitMqService rabbitMqService)
         {
             _helper = helper;
             _cloudinaryService = cloudinaryService;
             _emailService = emailService;
             _logger = logger;
+            _rabbitMqService = rabbitMqService;
         }
 
         private async Task TryNotifyFarmerAsync(Func<Task> send)
@@ -149,6 +152,18 @@ namespace API.Controllers
 
             await TryNotifyFarmerAsync(() => _emailService.SendFarmerRequestAcceptedEmailAsync(data));
 
+            // ✅ NOTIFICATION: QC Request Accepted
+            await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                "QC Request Accepted ✅",
+                $"Your QC request has been accepted by Field Officer. Your slot is confirmed for {data.SlotDateFormatted}",
+                "qc_request");
+
+            // ✅ NOTIFICATION to Admin
+            await _rabbitMqService.PublishToRoleAsync("admin",
+                "QC Request Accepted by FO",
+                $"Field Officer has accepted a QC request for farmer {data.FarmerName}.",
+                "qc_request");
+
             return Ok(new { message = "Request accepted" });
         }
 
@@ -173,6 +188,12 @@ namespace API.Controllers
 
                 await TryNotifyFarmerAsync(() => _emailService.SendFarmerSlotRescheduledEmailAsync(emailData));
 
+                // ✅ NOTIFICATION: QC Request Rescheduled
+                await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                    "QC Slot Rescheduled 📅",
+                    $"Your QC slot has been rescheduled to {date:dd MMM yyyy} at {start}.",
+                    "qc_request");
+
                 return Ok(new { message = "Rescheduled successfully" });
             }
             catch (Exception ex)
@@ -195,6 +216,18 @@ namespace API.Controllers
 
             await TryNotifyFarmerAsync(() => _emailService.SendFarmerRequestCancelledEmailAsync(data));
 
+            // ✅ NOTIFICATION: QC Request Cancelled
+            await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                "QC Request Cancelled ❌",
+                $"Your QC request has been cancelled. Reason: {data.CancelReason ?? "No reason provided"}",
+                "qc_request");
+
+            // ✅ NOTIFICATION to Admin
+            await _rabbitMqService.PublishToRoleAsync("admin",
+                "QC Request Cancelled by FO",
+                $"Field Officer has cancelled a QC request for farmer {data.FarmerName}.",
+                "qc_request");
+
             return Ok(new { message = "Request cancelled" });
         }
 
@@ -215,6 +248,29 @@ namespace API.Controllers
                 return BadRequest(new { message = "Submission failed. Please try again." });
 
             await SendInspectionReportEmailAsync(model.ProcurementRequestId, model.Grade, model.Passed);
+
+            // ✅ NOTIFICATION: Inspection Results
+            var farmerInfo = await _helper.GetFarmerNotifyInfo(model.ProcurementRequestId);
+            if (model.Passed)
+            {
+                await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                    "QC Inspection Passed! 🎉",
+                    $"Great news! Your {farmerInfo?.CropName} has passed QC inspection with {model.Grade} grade.",
+                    "qc_result");
+            }
+            else
+            {
+                await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                    "QC Inspection Failed",
+                    $"Your {farmerInfo?.CropName} did not pass QC inspection. Please check the report for details.",
+                    "qc_result");
+            }
+
+            // ✅ NOTIFICATION to Admin
+            await _rabbitMqService.PublishToRoleAsync("admin",
+                model.Passed ? "QC Inspection Passed" : "QC Inspection Failed",
+                $"Field Officer completed inspection for {farmerInfo?.CropName} - Result: {(model.Passed ? "Passed" : "Failed")}",
+                "qc_result");
 
             return Ok(new { message = "Inspection submitted successfully" });
         }
@@ -281,6 +337,23 @@ namespace API.Controllers
 
                 await SendInspectionReportEmailAsync(procurementRequestId, grade, passed);
 
+                // ✅ NOTIFICATION: Inspection Results
+                var farmerInfo = await _helper.GetFarmerNotifyInfo(procurementRequestId);
+                if (passed)
+                {
+                    await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                        "QC Inspection Passed! 🎉",
+                        $"Great news! Your {farmerInfo?.CropName} has passed QC inspection with {grade} grade.",
+                        "qc_result");
+                }
+                else
+                {
+                    await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                        "QC Inspection Failed",
+                        $"Your {farmerInfo?.CropName} did not pass QC inspection. Please check the report for details.",
+                        "qc_result");
+                }
+
                 return Ok(new
                 {
                     message = "Inspection submitted successfully",
@@ -331,6 +404,18 @@ namespace API.Controllers
                 if (!result)
                     return BadRequest(new { message = "Payment request failed" });
 
+                // ✅ NOTIFICATION: Payment Request Created
+                await _rabbitMqService.PublishToUserAsync(farmerId,
+                    "Payment Initiated 💰",
+                    $"Your payment of ₹{advanceAmount:N2} has been initiated. It will be credited within 3-5 business days.",
+                    "payment");
+
+                // ✅ NOTIFICATION to Admin
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "Payment Request Created",
+                    $"Field Officer has initiated a payment request of ₹{advanceAmount:N2} for farmer.",
+                    "payment");
+
                 return Ok(new { 
                     message = "Payment request created successfully",
                     advanceAmount = advanceAmount 
@@ -343,7 +428,6 @@ namespace API.Controllers
         }
 
         // ── GET PROFILE ──────────────────────────────────────────────
-        // Fix GetProfile to wrap response:
         [HttpGet("profile/me")]
         public async Task<IActionResult> GetProfile()
         {
@@ -354,51 +438,51 @@ namespace API.Controllers
             return Ok(new { success = true, data = profile });
         }
 
-    // Add these 3 new endpoints:
-    [HttpGet("GetNotifications")]
-    public async Task<IActionResult> GetNotifications()
-    {
-        try
+        // ── GET NOTIFICATIONS ─────────────────────────────────────────
+        [HttpGet("GetNotifications")]
+        public async Task<IActionResult> GetNotifications()
         {
-            int foId = await GetFieldOfficerProfileIdAsync();
-            var notifications = await _helper.GetNotificationsAsync(foId);
-            return Ok(new { success = true, data = notifications });
+            try
+            {
+                int foId = await GetFieldOfficerProfileIdAsync();
+                var notifications = await _helper.GetNotificationsAsync(foId);
+                return Ok(new { success = true, data = notifications });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { success = false, message = ex.Message });
-        }
-    }
 
-    [HttpPost("MarkAllNotificationsRead")]
-    public async Task<IActionResult> MarkAllNotificationsRead()
-    {
-        try
+        [HttpPost("MarkAllNotificationsRead")]
+        public async Task<IActionResult> MarkAllNotificationsRead()
         {
-            int foId = await GetFieldOfficerProfileIdAsync();
-            await _helper.MarkAllNotificationsReadAsync(foId);
-            return Ok(new { success = true });
+            try
+            {
+                int foId = await GetFieldOfficerProfileIdAsync();
+                await _helper.MarkAllNotificationsReadAsync(foId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = ex.Message });
-        }
-    }
 
-    [HttpPost("ClearAllNotifications")]
-    public async Task<IActionResult> ClearAllNotifications()
-    {
-        try
+        [HttpPost("ClearAllNotifications")]
+        public async Task<IActionResult> ClearAllNotifications()
         {
-            int foId = await GetFieldOfficerProfileIdAsync();
-            await _helper.ClearAllNotificationsAsync(foId);
-            return Ok(new { success = true });
+            try
+            {
+                int foId = await GetFieldOfficerProfileIdAsync();
+                await _helper.ClearAllNotificationsAsync(foId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = ex.Message });
-        }
-    }
 
         // ── UPDATE PROFILE ───────────────────────────────────────────
         [HttpPut("update-profile")]
@@ -413,6 +497,12 @@ namespace API.Controllers
 
             if (!result)
                 return BadRequest(new { message = "Update failed" });
+
+            // ✅ NOTIFICATION: Profile Updated
+            await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                "Profile Updated",
+                "Your profile has been updated successfully.",
+                "profile");
 
             return Ok(new { message = "Profile updated successfully" });
         }
@@ -431,8 +521,19 @@ namespace API.Controllers
             if (!result)
                 return BadRequest(new { message = "Update failed" });
 
+            // ✅ NOTIFICATION: Password Changed
+            var user = await _helper.GetUserByEmailAsync(email);
+            if (user != null)
+            {
+                await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                    "Password Changed",
+                    "Your password has been changed successfully.",
+                    "security");
+            }
+
             return Ok(new { message = "Password updated successfully" });
         }
+
         [HttpGet("warehouse-catalog")]
         public async Task<IActionResult> GetWarehouseCatalog()
         {
@@ -440,6 +541,7 @@ namespace API.Controllers
             var data = await _helper.GetWarehouseCatalog(foId);
             return Ok(data);
         }
+
         // ── UPLOAD PROFILE IMAGE ─────────────────────────────────────
         [HttpPost("upload-image")]
         public async Task<IActionResult> UploadImage(IFormFile image)
@@ -475,13 +577,13 @@ namespace API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
         [HttpGet("inspection-report/{procurementRequestId}")]
         public async Task<IActionResult> DownloadInspectionReport(int procurementRequestId)
         {
             try
             {
                 var pdfBytes = await _helper.GenerateInspectionPdfAsync(procurementRequestId);
-
                 return File(pdfBytes, "application/pdf", $"Inspection_{procurementRequestId}.pdf");
             }
             catch (Exception ex)
@@ -506,7 +608,6 @@ namespace API.Controllers
                 int inspectionId = request.inspectionId;
                 decimal advanceAmount = request.advanceAmount;
 
-                // Check if payment already exists
                 var hasPayment = await _helper.HasAdvancePayment(procurementRequestId);
                 if (hasPayment)
                     return BadRequest(new { message = "Payment already processed for this inspection" });
@@ -520,6 +621,18 @@ namespace API.Controllers
 
                 if (result?.success == false)
                     return BadRequest(result);
+
+                // ✅ NOTIFICATION: Advance Payment Processed
+                await _rabbitMqService.PublishToUserAsync(farmerId,
+                    "Advance Payment Processed 💰",
+                    $"Your advance payment of ₹{advanceAmount:N2} has been processed. UTR: {result?.utrReference}",
+                    "payment");
+
+                // ✅ NOTIFICATION to Admin
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "Advance Payment Processed",
+                    $"Advance payment of ₹{advanceAmount:N2} has been processed for farmer.",
+                    "payment");
 
                 await TryNotifyFarmerAsync(async () =>
                 {
@@ -611,7 +724,6 @@ namespace API.Controllers
         {
             try
             {
-                // Keep route shape for backward compatibility, but enforce current user context.
                 var currentFoId = await GetFieldOfficerProfileIdAsync();
                 var payments = await _helper.GetFoPaymentSummary(currentFoId);
 

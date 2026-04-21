@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using API.BAL;
-using API.Models.Vendor;  // ← Changed: removed .ViewModels
+using API.Models.Vendor;
 using API.Models.Auth;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -23,28 +23,29 @@ namespace API.Controllers
         private readonly IConfiguration _configuration;
         private readonly RedisService _redisService;
         private readonly EmailService _emailService;
+        private readonly RabbitMqService _rabbitMqService;
 
-        public VendorController(VendorHelper vendorHelper, JwtService jwtService, IConfiguration configuration, RedisService redisService, EmailService emailService)
+        public VendorController(VendorHelper vendorHelper, JwtService jwtService, IConfiguration configuration, RedisService redisService, EmailService emailService, RabbitMqService rabbitMqService)
         {
             _vendorHelper = vendorHelper;
             _jwtService = jwtService;
             _configuration = configuration;
             _redisService = redisService;
             _emailService = emailService;
+            _rabbitMqService = rabbitMqService;
         }
 
         private int CurrentVendorId
         {
             get
             {
-                // We use "vendor_id" because that's what you saved during login
                 var claim = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                 return int.TryParse(claim, out int id) ? id : 0;
             }
         }
 
-        //login register vendor jwt,token verify
-        /// Register new vendor account
+        // ============ REGISTER & LOGIN ============
+        
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] vm_VendorRegister model)
@@ -68,8 +69,13 @@ namespace API.Controllers
                     model.Email, hashedPassword, model.BusinessName, model.ContactPerson, model.Phone, model.Gstin
                 );
 
-                // ✅ TRIGGER THE REAL WELCOME EMAIL
                 await _emailService.SendVendorWelcomeEmailAsync(model.Email, model.BusinessName);
+
+                // ✅ NOTIFICATION: New vendor registered
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "New Vendor Registered",
+                    $"New vendor {model.BusinessName} ({model.Email}) has registered.",
+                    "vendor_registration");
 
                 return Ok(new
                 {
@@ -113,15 +119,12 @@ namespace API.Controllers
                 if (!user.IsActive)
                     return Unauthorized(new { success = false, message = "Account is inactive." });
 
-                //Verify password using BCrypt
                 if (!_vendorHelper.VerifyPassword(model.Password, user.PasswordHash))
                     return Unauthorized(new { success = false, message = "Invalid email/phone or password." });
 
-                // Role is automatically included in token by JwtService
-                var additionalClaims = new Dictionary<string, string>(); // Removed duplicate NameIdentifier
+                var additionalClaims = new Dictionary<string, string>();
                 var token = _jwtService.GenerateJwtToken(user.Id, user.Email, user.Role, additionalClaims);
 
-                // Return JWT token on successful login with role included
                 return Ok(new
                 {
                     success = true,
@@ -134,7 +137,7 @@ namespace API.Controllers
                     email = user.Email,
                     phone = vendor.Phone,
                     expiryMinutes = int.Parse(_configuration["Jwt:ExpiryMinutes"] ?? "30"),
-                    isGoogleUser = false   // ✅ ADD THIS
+                    isGoogleUser = false
                 });
             }
             catch (Exception ex)
@@ -151,11 +154,15 @@ namespace API.Controllers
             
             if (vendor != null)
             {
-                // ✅ TRIGGER EMAIL ONLY IF THEY ARE A NEW USER
                 if (isNewUser)
                 {
-                    // We use their Google Name as the Business Name since they didn't fill out a form
                     await _emailService.SendVendorWelcomeEmailAsync(request.Email, request.Name);
+                    
+                    // ✅ NOTIFICATION: New vendor via Google
+                    await _rabbitMqService.PublishToRoleAsync("admin",
+                        "New Vendor Registered (Google)",
+                        $"New vendor {request.Name} ({request.Email}) has registered via Google.",
+                        "vendor_registration");
                 }
 
                 var token = _jwtService.GenerateJwtToken(vendor.UserId, request.Email, "vendor");
@@ -165,27 +172,20 @@ namespace API.Controllers
             return Unauthorized(new { message = "Authentication failed" });
         }
 
-        // 
         [HttpGet("verify")]
         public IActionResult VerifyToken()
         {
             try
             {
-                // 🔹 1. Get token from Authorization header
                 var authHeader = Request.Headers["Authorization"].FirstOrDefault();
 
                 if (authHeader == null || !authHeader.StartsWith("Bearer "))
                 {
-                    return Unauthorized(new
-                    {
-                        success = false,
-                        message = "Token missing"
-                    });
+                    return Unauthorized(new { success = false, message = "Token missing" });
                 }
 
                 var token = authHeader.Substring("Bearer ".Length).Trim();
 
-                // 🔹 2. Validate Token
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
 
@@ -195,63 +195,43 @@ namespace API.Controllers
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-
                     ValidIssuer = _configuration["Jwt:Issuer"],
                     ValidAudience = _configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-
-                    ClockSkew = TimeSpan.Zero // no delay in expiry
+                    ClockSkew = TimeSpan.Zero
                 };
 
                 ClaimsPrincipal principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
 
-                // 🔹 3. Extract Claims
                 var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;
                 var role = principal.FindFirst(ClaimTypes.Role)?.Value;
                 var vendorId = principal.FindFirst("vendor_id")?.Value;
 
-                // 🔹 4. Return response
-                return Ok(new
-                {
-                    success = true,
-                    userId,
-                    email,
-                    role,
-                    vendorId
-                });
+                return Ok(new { success = true, userId, email, role, vendorId });
             }
             catch (SecurityTokenExpiredException)
             {
-                return Unauthorized(new
-                {
-                    success = false,
-                    message = "Token expired"
-                });
+                return Unauthorized(new { success = false, message = "Token expired" });
             }
             catch (Exception)
             {
-                return Unauthorized(new
-                {
-                    success = false,
-                    message = "Invalid token"
-                });
+                return Unauthorized(new { success = false, message = "Invalid token" });
             }
         }
-
 
         // ============ CATALOG ============
         [HttpGet("catalog")]
         public async Task<IActionResult> GetCatalog(
              [FromQuery] string category = "all",
              [FromQuery] string search = "",
-             [FromQuery] string grade = "all")  // ← GRADE PARAMETER ADD KARO
+             [FromQuery] string grade = "all")
         {
             var filter = new VM_CropFilter
             {
                 CropType = string.IsNullOrEmpty(search) ? null : search,
-                Category = category == "all" ? null : category,  // ← CATEGORY PROPERLY SET
-                Grade = grade == "all" ? null : grade            // ← GRADE PROPERLY SET
+                Category = category == "all" ? null : category,
+                Grade = grade == "all" ? null : grade
             };
             var products = await _vendorHelper.GetFilteredCatalogAsync(filter);
             return Ok(new { success = true, data = products });
@@ -268,32 +248,44 @@ namespace API.Controllers
         [HttpGet("cart")]
         public async Task<IActionResult> GetCart()
         {
-            // 🔹 FIX 2: Removed hardcoded '4', using CurrentUserId
             return Ok(new { success = true, data = await _vendorHelper.GetCartSummaryAsync(CurrentVendorId) });
         }
 
         [HttpPost("cart/add")]
         public async Task<IActionResult> AddToCart([FromBody] VM_AddToCartRequest req)
         {
-            // 🔹 FIX 3: Passing CurrentUserId (The BAL helper handles finding the profile id via subquery)
             var result = await _vendorHelper.AddItemToCartAsync(CurrentVendorId, req.CropId, req.Quantity);
 
-            // ✅ Clear KPI cache (because cart count changed)
             if (result == "Success")
             {
                 await _redisService.RemoveUserAsync($"vendor:dashboard:kpi:{CurrentVendorId}");
+                
+                // ✅ NOTIFICATION: Item added to cart
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Item Added to Cart",
+                    $"{req.Quantity} item(s) added to your cart.",
+                    "cart");
             }
 
             if (result == "Success")
                 return Ok(new { success = true, message = "Item added to cart" });
             return BadRequest(new { success = false, message = result });
         }
+
         [HttpDelete("cart/remove/{cartId}")]
         public async Task<IActionResult> RemoveFromCart(int cartId)
         {
             var result = await _vendorHelper.RemoveCartItemAsync(CurrentVendorId, cartId);
             if (result == "Success")
+            {
+                // ✅ NOTIFICATION: Item removed from cart
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Item Removed from Cart",
+                    "An item has been removed from your cart.",
+                    "cart");
+                    
                 return Ok(new { success = true });
+            }
             return BadRequest(new { success = false, message = result });
         }
 
@@ -325,18 +317,27 @@ namespace API.Controllers
                 await _redisService.RemoveUserAsync($"vendor:dashboard:monthly:{CurrentVendorId}");
                 await _redisService.RemoveUserAsync($"vendor:dashboard:category:{CurrentVendorId}");
 
-                // ✅ SAFE FIX: Convert the string OrderId to an int for the EmailService
                 int.TryParse(request.OrderId, out int parsedOrderId);
-
-                // ✅ TRIGGER CANCEL EMAIL
                 var profile = await _vendorHelper.GetProfileAsync(CurrentVendorId);
                 await _emailService.SendVendorOrderCancelledEmailAsync(
                     profile?.Email,
                     profile?.BusinessName,
-                    parsedOrderId, // <-- Passes the converted number!
-                    0m, 
+                    parsedOrderId,
+                    0m,
                     request.Reason
                 );
+
+                // ✅ NOTIFICATION: Order cancelled
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Order Cancelled",
+                    $"Your order #{request.OrderId} has been cancelled. Reason: {request.Reason}",
+                    "order");
+                    
+                // ✅ NOTIFICATION to Admin
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "Order Cancelled by Vendor",
+                    $"Vendor {profile?.BusinessName} cancelled order #{request.OrderId}",
+                    "order");
 
                 return Ok(new { success = true, message = "Order cancelled successfully." });
             }
@@ -348,7 +349,15 @@ namespace API.Controllers
         {
             var result = await _vendorHelper.RepeatOrderAsync(CurrentVendorId, orderId);
             if (result.StartsWith("Success"))
+            {
+                // ✅ NOTIFICATION: Order repeated
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Order Repeated",
+                    $"Your previous order #{orderId} has been placed again.",
+                    "order");
+                    
                 return Ok(new { success = true, message = result });
+            }
             return BadRequest(new { success = false, message = result });
         }
 
@@ -372,6 +381,30 @@ namespace API.Controllers
         public async Task<IActionResult> SaveAddress([FromBody] VM_SaveAddressRequest request)
         {
             var result = await _vendorHelper.SaveAddressAsync(CurrentVendorId, request);
+            
+            if (result.Success)
+            {
+                // ✅ NOTIFICATION: New address added
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "New Address Added",
+                    "A new delivery address has been added to your account.",
+                    "address");
+            }
+            
+            return Ok(result);
+        }
+
+        [HttpPut("addresses/update/{id}")]
+        public async Task<IActionResult> UpdateAddress(int id, [FromBody] VM_SaveAddressRequest request)
+        {
+            var result = await _vendorHelper.UpdateAddressAsync(CurrentVendorId, id, request);
+            return Ok(result);
+        }
+
+        [HttpDelete("addresses/delete/{id}")]
+        public async Task<IActionResult> DeleteAddress(int id)
+        {
+            var result = await _vendorHelper.DeleteAddressAsync(CurrentVendorId, id);
             return Ok(result);
         }
 
@@ -387,17 +420,28 @@ namespace API.Controllers
                 await _redisService.RemoveUserAsync($"vendor:dashboard:monthly:{CurrentVendorId}");
                 await _redisService.RemoveUserAsync($"vendor:dashboard:category:{CurrentVendorId}");
 
-                // ✅ TRIGGER ORDER SUCCESS EMAIL
                 var profile = await _vendorHelper.GetProfileAsync(CurrentVendorId);
                 await _emailService.SendVendorOrderSuccessEmailAsync(
-                    profile?.Email, 
-                    profile?.BusinessName, 
-                    0, // We will just pass 0 for now until you connect it to your Order ID
-                    0m, 
-                    "Registered Address", // Fixed compiler error
-                    "Standard Delivery",  // Fixed compiler error
+                    profile?.Email,
+                    profile?.BusinessName,
+                    0,
+                    0m,
+                    "Registered Address",
+                    "Standard Delivery",
                     "Order Confirmed"
                 );
+
+                // ✅ NOTIFICATION: Order placed successfully
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Order Placed Successfully 🎉",
+                    $"Your order has been placed successfully. Order ID: {result.OrderId}",
+                    "order");
+                    
+                // ✅ NOTIFICATION to Admin
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "New Order Placed",
+                    $"Vendor {profile?.BusinessName} has placed a new order.",
+                    "order");
             }
             return Ok(result);
         }
@@ -409,6 +453,29 @@ namespace API.Controllers
             return Ok(new { success = true, data = await _vendorHelper.GetPaymentHistoryAsync(CurrentVendorId) });
         }
 
+        [HttpPost("payment/create-order")]
+        public async Task<IActionResult> CreateRazorpayOrder([FromBody] CreateRazorpayOrderRequest request)
+        {
+            var result = await _vendorHelper.CreateRazorpayOrderAsync(CurrentVendorId, request.OrderId, request.Amount);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
+        }
+
+      [HttpPost("payment/verify")]
+public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPaymentVerification verification)
+{
+    var result = await _vendorHelper.VerifyRazorpayPaymentAsync(CurrentVendorId, verification);
+    if (result.Success)
+    {
+        // ✅ NOTIFICATION: Payment successful - Now verification.Amount exists!
+        await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+            "Payment Successful 💰",
+            $"Your payment of ₹{verification.Amount} has been successful.",
+            "payment");
+    }
+    return Ok(result);
+}
         // ============ PROFILE ============
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -427,7 +494,15 @@ namespace API.Controllers
         {
             var result = await _vendorHelper.UpdateProfileAsync(CurrentVendorId, request);
             if (result.Contains("successfully"))
+            {
+                // ✅ NOTIFICATION: Profile updated
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Profile Updated",
+                    "Your profile information has been updated successfully.",
+                    "profile");
+                    
                 return Ok(new { success = true, message = result });
+            }
             return BadRequest(new { success = false, message = result });
         }
 
@@ -445,12 +520,19 @@ namespace API.Controllers
         {
             var result = await _vendorHelper.ChangePasswordAsync(CurrentVendorId, request.CurrentPassword, request.NewPassword);
             if (result.Contains("successfully"))
+            {
+                // ✅ NOTIFICATION: Password changed
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Password Changed",
+                    "Your password has been changed successfully.",
+                    "security");
+                    
                 return Ok(new { success = true, message = result });
+            }
             return BadRequest(new { success = false, message = result });
         }
 
         // ============ WISHLIST ============
-
         [HttpGet("wishlist")]
         public async Task<IActionResult> GetWishlist()
         {
@@ -462,10 +544,15 @@ namespace API.Controllers
         {
             var result = await _vendorHelper.AddToWishlistAsync(CurrentVendorId, productId, grade);
 
-            // ✅ Clear KPI cache (because wishlist count changed)
             if (result.Contains("Added"))
             {
                 await _redisService.RemoveUserAsync($"vendor:dashboard:kpi:{CurrentVendorId}");
+                
+                // ✅ NOTIFICATION: Added to wishlist
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Added to Wishlist",
+                    "Product has been added to your wishlist.",
+                    "wishlist");
             }
             return Ok(new { success = true, message = result });
         }
@@ -475,10 +562,15 @@ namespace API.Controllers
         {
             var result = await _vendorHelper.RemoveFromWishlistAsync(CurrentVendorId, productId, grade);
 
-            // ✅ Clear KPI cache (because wishlist count changed)
             if (result.Contains("Removed"))
             {
                 await _redisService.RemoveUserAsync($"vendor:dashboard:kpi:{CurrentVendorId}");
+                
+                // ✅ NOTIFICATION: Removed from wishlist
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Removed from Wishlist",
+                    "Product has been removed from your wishlist.",
+                    "wishlist");
             }
 
             return Ok(new { success = true, message = result });
@@ -511,43 +603,6 @@ namespace API.Controllers
             return Ok(new { success = true, data = await _vendorHelper.GetDashboardStatsAsync(CurrentVendorId) });
         }
 
-        // ============ RAZORPAY PAYMENT ============
-
-        [HttpPost("payment/create-order")]
-        public async Task<IActionResult> CreateRazorpayOrder([FromBody] CreateRazorpayOrderRequest request)
-        {
-            var result = await _vendorHelper.CreateRazorpayOrderAsync(CurrentVendorId, request.OrderId, request.Amount);
-            if (result.Success)
-                return Ok(result);
-            return BadRequest(result);
-        }
-
-        [HttpPost("payment/verify")]
-        public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPaymentVerification verification)
-        {
-            var result = await _vendorHelper.VerifyRazorpayPaymentAsync(CurrentVendorId, verification);
-            if (result.Success)
-                return Ok(result);
-            return BadRequest(result);
-        }
-
-
-        [HttpPut("addresses/update/{id}")]
-        public async Task<IActionResult> UpdateAddress(int id, [FromBody] VM_SaveAddressRequest request)
-        {
-            var result = await _vendorHelper.UpdateAddressAsync(CurrentVendorId, id, request);
-            return Ok(result);
-        }
-
-        [HttpDelete("addresses/delete/{id}")]
-        public async Task<IActionResult> DeleteAddress(int id)
-        {
-            var result = await _vendorHelper.DeleteAddressAsync(CurrentVendorId, id);
-            return Ok(result);
-        }
-
-        // ============ DASHBOARD KPI WITH CACHE ============
-
         [HttpGet("dashboard/kpi")]
         public async Task<IActionResult> GetDashboardKpi()
         {
@@ -555,39 +610,23 @@ namespace API.Controllers
 
             try
             {
-                // ✅ 1. Check cache
                 var cachedData = await _redisService.GetAsync<VM_UserKpiStats>(cacheKey);
 
                 if (cachedData != null)
                 {
-                    return Ok(new
-                    {
-                        success = true,
-                        data = cachedData,
-                        source = "cache"
-                    });
+                    return Ok(new { success = true, data = cachedData, source = "cache" });
                 }
 
-                // ❌ Not in cache → fetch from DB (existing method)
                 var kpi = await _vendorHelper.GetUserKpiStatsAsync(CurrentVendorId);
-
-                // ✅ 2. Store in cache (30 minutes)
                 await _redisService.SetAsync(cacheKey, kpi, TimeSpan.FromMinutes(30));
 
-                return Ok(new
-                {
-                    success = true,
-                    data = kpi,
-                    source = "db"
-                });
+                return Ok(new { success = true, data = kpi, source = "db" });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
-
-        // ============ DASHBOARD STATS WITH CACHE (For Graphs) ============
 
         [HttpGet("dashboard/stats-cached")]
         public async Task<IActionResult> GetDashboardStatsCached()
@@ -596,39 +635,23 @@ namespace API.Controllers
 
             try
             {
-                // ✅ 1. Check cache
                 var cachedData = await _redisService.GetAsync<VM_DashboardStats>(cacheKey);
 
                 if (cachedData != null)
                 {
-                    return Ok(new
-                    {
-                        success = true,
-                        data = cachedData,
-                        source = "cache"
-                    });
+                    return Ok(new { success = true, data = cachedData, source = "cache" });
                 }
 
-                // ❌ Not in cache → fetch from DB (existing method)
                 var stats = await _vendorHelper.GetDashboardStatsAsync(CurrentVendorId);
-
-                // ✅ 2. Store in cache (30 minutes)
                 await _redisService.SetAsync(cacheKey, stats, TimeSpan.FromMinutes(30));
 
-                return Ok(new
-                {
-                    success = true,
-                    data = stats,
-                    source = "db"
-                });
+                return Ok(new { success = true, data = stats, source = "db" });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
-
-        // ============ MONTHLY PURCHASE TRENDS (New Method) ============
 
         [HttpGet("dashboard/monthly-trends")]
         public async Task<IActionResult> GetMonthlyPurchaseTrends()
@@ -654,8 +677,6 @@ namespace API.Controllers
             }
         }
 
-        // ============ SPENDING BY CATEGORY (New Method) ============
-
         [HttpGet("dashboard/category-spending")]
         public async Task<IActionResult> GetCategorySpending()
         {
@@ -680,12 +701,10 @@ namespace API.Controllers
             }
         }
 
-
         public class CreateRazorpayOrderRequest
         {
             public int OrderId { get; set; }
             public decimal Amount { get; set; }
         }
     }
-
 }

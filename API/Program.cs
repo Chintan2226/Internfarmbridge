@@ -18,11 +18,12 @@ var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
 
 // All helper injection
+builder.Services.AddScoped<NotificationHelper>();
 builder.Services.AddScoped<AdminHelper>();
 builder.Services.AddScoped<AuthHelper>();
 builder.Services.AddScoped<FarmerHelper>();
 builder.Services.AddScoped<FieldOfficerHelper>();
-builder.Services.AddScoped<VendorHelper>();
+builder.Services.AddScoped<VendorHelper>(); 
 builder.Services.AddScoped<StaffAuthHelper>();
 builder.Services.AddScoped<GoogleAuthBal>();
 
@@ -102,6 +103,12 @@ var redisConnectionString = builder.Configuration["Redis:ConnectionString"];
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisConnectionString)
 );
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnectionString;
+    options.InstanceName = "FarmBridge_";
+});
 
 builder.Services.AddSingleton<IDatabase>(sp =>
     sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase()

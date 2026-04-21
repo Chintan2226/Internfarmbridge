@@ -5,8 +5,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using API.Models.Admin; 
-using API.Models.Farmer; 
+using API.Models.Admin;
+using API.Models.Farmer;
 using API.Models.Payment;
 using Npgsql;
 using NpgsqlTypes;
@@ -250,7 +250,6 @@ namespace API.BAL
             {
                 if (_conn.State != ConnectionState.Open) await _conn.OpenAsync();
 
-                // 1. Fetch the details of the 30% payment (Payment 1)
                 string getSql = "SELECT c_farmer_id, c_procurement_request_id, c_amount FROM t_payments_farmer WHERE c_id = @p1id";
                 using var getCmd = new NpgsqlCommand(getSql, _conn);
                 getCmd.Parameters.AddWithValue("@p1id", req.PaymentId);
@@ -267,13 +266,15 @@ namespace API.BAL
                         procReqId = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
                         advancePaid = reader.GetDecimal(2);
                     }
-                    else return false; // Payment 1 not found
+                    else return false;
                 }
 
-                // Calculate the exact 70% pending amount
                 decimal pendingAmount = Math.Round(advancePaid / 0.30m, 2) - advancePaid;
 
-                // 2. INSERT the 70% payment (Payment 2) as successfully settled!
+                // ✅ Write back so controller can use these values for RabbitMQ
+                req.FarmerId = farmerId;
+                req.Amount = pendingAmount;
+
                 string insertSql = @"
             INSERT INTO t_payments_farmer 
             (c_farmer_id, c_procurement_request_id, c_amount, c_payment_number, c_trigger_event, c_payment_mode, c_utr_reference, c_status, c_settled_at) 
