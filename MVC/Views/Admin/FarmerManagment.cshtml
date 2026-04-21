@@ -346,6 +346,7 @@
     let pendingDeactivateId = null;
     let currentPaymentFarmerId = null;
     let pendingApprovalPaymentId = null;
+    let farmerId = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         loadStats();
@@ -429,6 +430,7 @@
     }
 
     async function openPaymentModal(farmerId) {
+        console.log(farmerId)
         currentPaymentFarmerId = farmerId;
         document.getElementById('paymentModalOverlay').classList.add('open');
         const tbody = document.getElementById('pending-payments-body');
@@ -454,7 +456,7 @@
                         <td style="color:var(--amber); font-weight:800; font-size:15px;">₹${p.balancePending.toLocaleString('en-IN')}</td>
                         <td><span style="font-size:11px; color:var(--text-muted); font-style:italic;">Auto-generated on approval</span></td>
                         <td style="text-align:right;">
-                            <button class="btn-primary" style="padding:6px 12px; font-size:11px;" onclick="approvePayment(${p.paymentId})">Approve</button>
+                            <button class="btn-primary" style="padding:6px 12px; font-size:11px;" onclick="approvePayment(${p.paymentId}, ${currentPaymentFarmerId})">Approve</button>
                         </td>
                     </tr>`).join('');
             }
@@ -463,21 +465,25 @@
         }
     }
 
-    function approvePayment(paymentId) {
+    function approvePayment(paymentId,farmerId) {
         pendingApprovalPaymentId = paymentId;
+        farmerId = farmerId;
+        console.log(farmerId)
+
         document.getElementById('confirmPaymentModal').classList.add('open');
     }
 
     async function executePaymentApproval() {
         if (!pendingApprovalPaymentId) return;
         const btn = document.getElementById('confirmPayBtn');
+        console.log(farmerId)
         btn.textContent = 'Processing...';
         btn.disabled = true;
         try {
             const res = await fetch(`${FARMER_API_BASE}/approve-payment`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ PaymentId: pendingApprovalPaymentId, AdminId: ADMIN_ID })
+                body: JSON.stringify({FarmerId: pendingApprovalPaymentId, PaymentId: pendingApprovalPaymentId, AdminId: ADMIN_ID })
             });
             if (res.ok) {
                 showToast("Payment Approved & Released Successfully!");

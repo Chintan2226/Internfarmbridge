@@ -1,30 +1,37 @@
 using API.BAL;
 using API.Models.FarmerApp;
 using API.Models.Farmer;
-using API.Models.Settings; 
-using API.Services; 
+using API.Models.Settings;
+using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using API.Models.FieldOfficer; // ✅ This pulls in the correct Email Data models automatically
+using API.Models.FieldOfficer;
 
 namespace API.Controllers
 {
     [Route("api/FarmerApp")]
     [ApiController]
-    [Authorize(Roles = "farmer")]   
+    [Authorize(Roles = "farmer")]
     public class FarmerAppController : ControllerBase
     {
         private readonly FarmerAppHelper _helper;
-        private readonly EmailService _emailService; 
+        private readonly EmailService _emailService;
 
-        public FarmerAppController(IConfiguration configuration, EmailService emailService)
+        private readonly ElasticService _elasticService;
+        private readonly RabbitMqService _rabbitMqService;
+
+        public FarmerAppController(IConfiguration configuration,
+            EmailService emailService,
+            ElasticService elasticService, RabbitMqService rabbitMqService)
         {
             _helper = new FarmerAppHelper(configuration);
             _emailService = emailService;
+            _elasticService = elasticService;
+            _rabbitMqService = rabbitMqService;
         }
 
         private int GetTokenFarmerId()
@@ -46,7 +53,7 @@ namespace API.Controllers
         // public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
         // {
         //     var (farmer, isNewUser) = await _farmerHelper.GoogleLoginAsync(request);
-            
+
         //     if (farmer != null)
         //     {
         //         // ✅ TRIGGER EMAIL ONLY IF THEY ARE A NEW USER
@@ -58,11 +65,11 @@ namespace API.Controllers
         //         var token = _jwtService.GenerateJwtToken(farmer.UserId, request.Email, "farmer");
         //         return Ok(new { success = true, token = token });
         //     }
-            
+
         //     return Unauthorized(new { message = "Authentication failed" });
         // }
 
-        
+
 
         [HttpPost("slots/book")]
         public async Task<IActionResult> BookSlot([FromBody] vm_BookQcSlotRequest req)
@@ -70,25 +77,25 @@ namespace API.Controllers
             if (!FarmerOwns(req.FarmerId)) return Forbid();
 
             bool success = await _helper.BookQcSlotAsync(req);
-            
+
             if (success)
             {
-                try 
+                try
                 {
                     var profile = await _helper.GetFarmerProfileAsync(req.FarmerId);
-                    
+
                     if (profile != null && !string.IsNullOrEmpty(profile.Email))
                     {
                          var emailData = new AcceptEmailData 
                          {
                              FarmerEmail = profile.Email,
                              FarmerName = profile.FullName ?? "Farmer",
-                             ProcurementRequestId = 0, // Fallback ID
+                             ProcurementRequestId = 0,
                              CropName = "Your Listed Crop", 
                              WarehouseName = "Assigned Warehouse", 
                              QuantityDisplay = "Requested Quantity",
-                             SlotDateFormatted = DateTime.Now.ToString("MMM dd, yyyy"), // Safe Fallback
-                             TimeRange = "Standard Business Hours", // Safe fallback
+                             SlotDateFormatted = DateTime.Now.ToString("MMM dd, yyyy"),
+                             TimeRange = "Standard Business Hours",
                              AcceptedAtFormatted = DateTime.Now.ToString("MMM dd, yyyy")
                          };
                          
@@ -99,6 +106,18 @@ namespace API.Controllers
                 {
                     Console.WriteLine("Failed to send booking email: " + ex.Message);
                 }
+
+                // ✅ NOTIFICATION: QC Slot Booked
+                await _rabbitMqService.PublishToUserAsync(req.FarmerId,
+                    "QC Slot Booked",
+                    $"Your QC slot has been booked successfully on {req.SlotDate:dd MMM yyyy}.",
+                    "qc_booking");
+
+                // ✅ NOTIFICATION to Admin
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "New QC Booking Request",
+                    $"Farmer has requested a QC inspection.",
+                    "qc_booking");
 
                 return Ok(new { success = true, message = "QC Slot booked successfully! You will receive an email confirmation." });
             }
@@ -112,7 +131,7 @@ namespace API.Controllers
         // =============================================================
 
         [HttpPost("internal/send-qc-slot-accepted-notification")]
-        [Authorize(Roles="admin,fo")] 
+        [Authorize(Roles = "admin,fo")]
         public async Task<IActionResult> SendQCSlotAcceptedNotification([FromBody] InternalSubstitutionsRequest request)
         {
             try
@@ -121,7 +140,7 @@ namespace API.Controllers
                 if (profile == null || string.IsNullOrEmpty(profile.Email))
                     return BadRequest(new { success = false, message = "Farmer email not found." });
 
-                var data = new AcceptEmailData 
+                var data = new AcceptEmailData
                 {
                     FarmerEmail = profile.Email,
                     FarmerName = request.SubstitutionData.GetValueOrDefault("{{FARMER_NAME}}", "Farmer"),
@@ -135,6 +154,13 @@ namespace API.Controllers
                 };
 
                 await _emailService.SendFarmerRequestAcceptedEmailAsync(data);
+
+                // ✅ NOTIFICATION: QC Slot Accepted
+                await _rabbitMqService.PublishToUserAsync(request.FarmerId,
+                    "QC Request Accepted ✅",
+                    $"Your QC request has been accepted by Field Officer. Your slot is confirmed for {data.SlotDateFormatted}",
+                    "qc_request");
+
                 return Ok(new { success = true, message = $"Accepted email sent to {profile.Email}" });
             }
             catch (Exception ex)
@@ -144,16 +170,16 @@ namespace API.Controllers
         }
 
         [HttpPost("internal/send-slot-rescheduled-notification")]
-        [Authorize(Roles="admin")] 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> SendSlotRescheduledNotification([FromBody] InternalSubstitutionsRequest request)
         {
-             try
+            try
             {
                 var profile = await _helper.GetFarmerProfileAsync(request.FarmerId);
                 if (profile == null || string.IsNullOrEmpty(profile.Email))
                     return BadRequest(new { success = false, message = "Farmer email not found." });
 
-                var data = new RescheduleEmailData 
+                var data = new RescheduleEmailData
                 {
                     FarmerEmail = profile.Email,
                     FarmerName = request.SubstitutionData.GetValueOrDefault("{{FARMER_NAME}}", "Farmer"),
@@ -167,6 +193,13 @@ namespace API.Controllers
                 };
 
                 await _emailService.SendFarmerSlotRescheduledEmailAsync(data);
+
+                // ✅ NOTIFICATION: QC Slot Rescheduled
+                await _rabbitMqService.PublishToUserAsync(request.FarmerId,
+                    "QC Slot Rescheduled 📅",
+                    $"Your QC slot has been rescheduled to {data.NewSlotDateFormatted} at {data.NewTimeRange}.",
+                    "qc_request");
+
                 return Ok(new { success = true, message = $"Reschedule email sent to {profile.Email}" });
             }
             catch (Exception ex)
@@ -176,10 +209,10 @@ namespace API.Controllers
         }
 
         [HttpPost("internal/send-advance-payment-notification")]
-        [Authorize(Roles="admin")] 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> SendAdvancePaymentNotification([FromBody] InternalAdvancePaymentRequest request)
         {
-             try
+            try
             {
                 var profile = await _helper.GetFarmerProfileAsync(request.FarmerId);
                 if (profile == null || string.IsNullOrEmpty(profile.Email))
@@ -190,6 +223,18 @@ namespace API.Controllers
                     request.PaidAmount, request.RemainingAmount, request.UtrReference, request.PaymentId
                 );
 
+                // ✅ NOTIFICATION: Advance Payment Processed
+                await _rabbitMqService.PublishToUserAsync(request.FarmerId,
+                    "Advance Payment Processed 💰",
+                    $"Your advance payment of ₹{request.PaidAmount:N2} has been processed. UTR: {request.UtrReference}",
+                    "payment");
+
+                // ✅ NOTIFICATION to Admin
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "Advance Payment Processed",
+                    $"Advance payment of ₹{request.PaidAmount:N2} has been processed for farmer.",
+                    "payment");
+
                 return Ok(new { success = true, message = $"Payment email sent to {profile.Email}" });
             }
             catch (Exception ex)
@@ -199,16 +244,16 @@ namespace API.Controllers
         }
 
         [HttpPost("internal/send-slot-cancelled-notification")]
-        [Authorize(Roles="admin")] 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> SendSlotCancelledNotification([FromBody] InternalSubstitutionsRequest request)
         {
-             try
+            try
             {
                 var profile = await _helper.GetFarmerProfileAsync(request.FarmerId);
                 if (profile == null || string.IsNullOrEmpty(profile.Email))
                     return BadRequest(new { success = false, message = "Farmer email not found." });
 
-                var data = new CancelEmailData 
+                var data = new CancelEmailData
                 {
                     FarmerEmail = profile.Email,
                     FarmerName = request.SubstitutionData.GetValueOrDefault("{{FARMER_NAME}}", "Farmer"),
@@ -221,6 +266,19 @@ namespace API.Controllers
                 };
 
                 await _emailService.SendFarmerRequestCancelledEmailAsync(data);
+
+                // ✅ NOTIFICATION: QC Request Cancelled
+                await _rabbitMqService.PublishToUserAsync(request.FarmerId,
+                    "QC Request Cancelled ❌",
+                    $"Your QC request has been cancelled. Reason: {data.CancelReason ?? "No reason provided"}",
+                    "qc_request");
+
+                // ✅ NOTIFICATION to Admin
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "QC Request Cancelled",
+                    $"A QC request for farmer {data.FarmerName} has been cancelled.",
+                    "qc_request");
+
                 return Ok(new { success = true, message = $"Cancel email sent to {profile.Email}" });
             }
             catch (Exception ex)
@@ -248,6 +306,13 @@ namespace API.Controllers
             if (!FarmerOwns(farmerId)) return Forbid();
             var success = await _helper.DeleteCropListingAsync(farmerId, listingId);
             if (!success) return NotFound(new { success = false, message = "Crop listing not found or cannot be deleted" });
+
+            // ✅ NOTIFICATION: Crop Listing Deleted
+            await _rabbitMqService.PublishToUserAsync(farmerId,
+                "Crop Listing Deleted",
+                "Your crop listing has been deleted successfully.",
+                "crop_listing");
+
             return Ok(new { success = true, message = "Crop listing deleted successfully" });
         }
 
@@ -256,6 +321,40 @@ namespace API.Controllers
         {
             if (!FarmerOwns(req.FarmerId)) return Forbid();
             bool success = await _helper.SaveCropListingAsync(req);
+
+            if (success)
+            {
+                if (req.ListingId == null || req.ListingId == 0)
+                {
+                    // NEW LISTING
+                    if (!req.IsDraft)
+                    {
+                        // ✅ NOTIFICATION to Admin: New Crop Listed
+                        await _rabbitMqService.PublishToRoleAsync("admin",
+                            "New Crop Listed",
+                            $"Farmer has listed a new crop for sale.",
+                            "crop_listing");
+                    }
+
+                    // ✅ NOTIFICATION to Farmer
+                    await _rabbitMqService.PublishToUserAsync(req.FarmerId,
+                        req.IsDraft ? "Crop Listing Saved as Draft" : "Crop Listing Published",
+                        req.IsDraft
+                            ? "Your crop listing has been saved as draft."
+                            : "Your crop listing has been published successfully.",
+                        "crop_listing");
+                }
+                else
+                {
+                    // UPDATE LISTING
+                    // ✅ NOTIFICATION to Farmer
+                    await _rabbitMqService.PublishToUserAsync(req.FarmerId,
+                        "Crop Listing Updated",
+                        "Your crop listing has been updated successfully.",
+                        "crop_listing");
+                }
+            }
+
             if (success) return Ok(new { success = true, message = req.IsDraft ? "Draft saved successfully." : "Crop listing published." });
             return BadRequest(new { success = false, message = "Failed to save listing. Cannot edit confirmed QC slots." });
         }
@@ -331,6 +430,22 @@ namespace API.Controllers
         {
             if (!FarmerOwns(req.FarmerId)) return Forbid();
             bool success = await _helper.SubmitInquiryAsync(req);
+
+            if (success)
+            {
+                // ✅ NOTIFICATION to Admin
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                    "New Payment Inquiry",
+                    $"Farmer has submitted a {req.Department} inquiry.",
+                    "inquiry");
+
+                // ✅ NOTIFICATION to Farmer
+                await _rabbitMqService.PublishToUserAsync(req.FarmerId,
+                    "Inquiry Submitted",
+                    "Your inquiry has been submitted. Support team will respond within 24 hours.",
+                    "inquiry");
+            }
+
             if (success) return Ok(new { success = true, message = "Inquiry submitted successfully." });
             return StatusCode(500, new { success = false, message = "Failed to submit inquiry." });
         }
@@ -348,8 +463,29 @@ namespace API.Controllers
         {
             if (!FarmerOwns(req.FarmerId)) return Forbid();
             bool success = await _helper.UpdateFarmerProfileAsync(req);
+
+            if (success)
+            {
+                // ✅ NOTIFICATION: Profile Updated
+                await _rabbitMqService.PublishToUserAsync(req.FarmerId,
+                    "Profile Updated",
+                    "Your profile has been updated successfully.",
+                    "profile");
+            }
+
             if (success) return Ok(new { success = true, message = "Profile updated successfully." });
             return StatusCode(500, new { success = false, message = "Failed to update profile." });
+        }
+
+        //Elastic Search - Method (Mansi)
+
+        [HttpPost("search/my-crops")]
+        public async Task<IActionResult> SearchMyCrops([FromBody] SearchRequestModel request)
+        {
+            var farmerId = GetTokenFarmerId(); // Your existing method
+            request.FarmerId = farmerId;
+            var results = await _elasticService.SearchCropsForMVCAsync(request);
+            return Ok(results);
         }
     }
 

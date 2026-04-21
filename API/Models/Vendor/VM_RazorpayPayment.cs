@@ -24,6 +24,8 @@ namespace API.Models.Vendor
         public string RazorpayOrderId { get; set; } = "";
         public string RazorpayPaymentId { get; set; } = "";
         public string RazorpaySignature { get; set; } = "";
+        public decimal Amount { get; set; }  // ← ADD THIS LINE
+
     }
 
     public class VM_RazorpayPaymentResponse
