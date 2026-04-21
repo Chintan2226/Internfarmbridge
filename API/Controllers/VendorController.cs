@@ -10,6 +10,7 @@ using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using API.Models.Settings;
 
 namespace API.Controllers
 {
@@ -23,14 +24,22 @@ namespace API.Controllers
         private readonly IConfiguration _configuration;
         private readonly RedisService _redisService;
         private readonly EmailService _emailService;
+        private readonly ElasticService _elasticService;
 
-        public VendorController(VendorHelper vendorHelper, JwtService jwtService, IConfiguration configuration, RedisService redisService, EmailService emailService)
+        public VendorController(
+            VendorHelper vendorHelper,
+            JwtService jwtService,
+            IConfiguration configuration,
+            RedisService redisService,
+            EmailService emailService,
+            ElasticService elasticService)
         {
             _vendorHelper = vendorHelper;
             _jwtService = jwtService;
             _configuration = configuration;
             _redisService = redisService;
             _emailService = emailService;
+            _elasticService = elasticService;
         }
 
         private int CurrentVendorId
@@ -148,7 +157,7 @@ namespace API.Controllers
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
         {
             var (vendor, isNewUser) = await _vendorHelper.RegisterVendorGoogleAsync(request.Email, request.Name, request.ProviderId);
-            
+
             if (vendor != null)
             {
                 // ✅ TRIGGER EMAIL ONLY IF THEY ARE A NEW USER
@@ -161,7 +170,7 @@ namespace API.Controllers
                 var token = _jwtService.GenerateJwtToken(vendor.UserId, request.Email, "vendor");
                 return Ok(new { success = true, token = token, isGoogleUser = true, isNewUser = isNewUser });
             }
-            
+
             return Unauthorized(new { message = "Authentication failed" });
         }
 
@@ -334,7 +343,7 @@ namespace API.Controllers
                     profile?.Email,
                     profile?.BusinessName,
                     parsedOrderId, // <-- Passes the converted number!
-                    0m, 
+                    0m,
                     request.Reason
                 );
 
@@ -390,10 +399,10 @@ namespace API.Controllers
                 // ✅ TRIGGER ORDER SUCCESS EMAIL
                 var profile = await _vendorHelper.GetProfileAsync(CurrentVendorId);
                 await _emailService.SendVendorOrderSuccessEmailAsync(
-                    profile?.Email, 
-                    profile?.BusinessName, 
+                    profile?.Email,
+                    profile?.BusinessName,
                     0, // We will just pass 0 for now until you connect it to your Order ID
-                    0m, 
+                    0m,
                     "Registered Address", // Fixed compiler error
                     "Standard Delivery",  // Fixed compiler error
                     "Order Confirmed"
@@ -685,6 +694,27 @@ namespace API.Controllers
         {
             public int OrderId { get; set; }
             public decimal Amount { get; set; }
+        }
+
+
+        ////Elastic Search - Method (Mansi)
+
+        [HttpPost("search/catalog")]
+        public async Task<IActionResult> SearchCatalog([FromBody] SearchRequestModel request)
+        {
+            request.IsActive = true; // Only active products for vendors
+            var results = await _elasticService.SearchCatalogForMVCAsync(request);
+            return Ok(results);
+        }
+
+        [HttpPost("search/my-orders")]
+        public async Task<IActionResult> SearchMyOrders([FromBody] SearchRequestModel request)
+        {
+            // Get vendorId from your existing method (session/token)
+            var vendorId = CurrentVendorId; // Your existing method
+            request.VendorId = vendorId;
+            var results = await _elasticService.SearchOrdersForMVCAsync(request);
+            return Ok(results);
         }
     }
 
