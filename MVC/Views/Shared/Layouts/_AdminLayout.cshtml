@@ -89,10 +89,10 @@
                     <h1 class="adm-page-title" id="admPageTitle">@title</h1>
                 </div>
                 <div class="adm-topbar-right">
-                    <button class="adm-action-btn" id="admBellBtn" onclick="toggleAdmNotif(event)"
-                            aria-label="Notifications">
+                    <button id="admBellBtn" class="bell-button" onclick="toggleAdmNotif(event)">
                         <i class="fi fi-rr-bell"></i>
-                        <span class="adm-dot" id="admBellDot" hidden></span>
+                        <span id="admBellBadge" class="bell-badge" style="display: none;">0</span>
+                        <span id="admBellDot" class="bell-dot" hidden></span>
                     </button>
                     <div class="adm-avatar" onclick="location.href='/@role/Profile'" title="Profile">
                         @role.Substring(0, 1).ToUpper()
@@ -153,7 +153,7 @@
             window.API_BASE = `http://localhost:5020/api/@role`;
         </script>
 
-        <script src="~/js/admin_layout.js" asp-append-version="true"></script>
+        <script src="~/js/layouts/admin_layout.js" asp-append-version="true"></script>
 
         @RenderSection("Scripts", required: false)
     </body>

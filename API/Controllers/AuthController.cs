@@ -24,19 +24,26 @@ namespace API.Controllers
         private readonly EmailService _emailService;
  
         private readonly GoogleAuthBal _googleAuthBal;
+        private readonly AdminHelper _adminHelper;
+        private readonly RabbitMqService _rabbitMqService;
  
         public AuthController(
             FarmerHelper farmerHelper,
             JwtService jwtService,
             IConfiguration configuration,
             EmailService emailService,
-            GoogleAuthBal googleAuthBal)
+            GoogleAuthBal googleAuthBal,
+            AdminHelper adminHelper,
+            RabbitMqService  rabbitMqService
+            )
         {
             _farmerHelper = farmerHelper;
             _jwtService = jwtService;
             _configuration = configuration;
             _emailService = emailService;
             _googleAuthBal = googleAuthBal;
+            _adminHelper = adminHelper;
+            _rabbitMqService = rabbitMqService;
         }
  
         // ─────────────────────────────────────────────
@@ -89,7 +96,20 @@ namespace API.Controllers
                     // We don't want to fail the whole registration!
                     Console.WriteLine($"WARNING: Registration succeeded, but welcome email failed: {emailEx.Message}");
                 }
- 
+
+
+                // NOTIFY ALL ADMINS ABOUT NEW FARMER REGISTRATION
+            // NOTIFY ALL ADMINS ABOUT NEW FARMER REGISTRATION
+                await _rabbitMqService.PublishToRoleAsync(
+                role: "admin",
+                title: "New Farmer Registered",
+                message: $"Farmer {model.FullName} ({model.Email}) has registered.",
+                type: "registration",
+                refType: "Farmer",
+                refId: farmerProfile.UserId
+                );
+
+
                 return Ok(new
                 {
                     success = true,
@@ -149,7 +169,7 @@ namespace API.Controllers
                     message = "Login successful.",
                     token = token,
                     role = user.Role,
-                    farmerId = farmer.Id,
+                    farmerId = farmer.Id, 
                     userId = user.Id,
                     fullName = farmer.FullName,
                     email = user.Email,

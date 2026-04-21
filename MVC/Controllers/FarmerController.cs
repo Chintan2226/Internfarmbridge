@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MVC.Filters;
 using MVC.Services;
+using MVC.Models;      
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text.Json;          
 
 namespace MVC.Controllers
 {
@@ -18,16 +20,43 @@ namespace MVC.Controllers
          private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly AuthApiService _authApi;
+        private readonly string _apiBase;                  
+        private readonly ILogger<FarmerController> _logger;
 
  
         public FarmerController(
             IConfiguration configuration,
             IHttpClientFactory httpClientFactory,
-            AuthApiService authApi)
+            AuthApiService authApi,
+            ILogger<FarmerController> logger)
         {
             _configuration = configuration;
             _httpClient = httpClientFactory.CreateClient();
             _authApi = authApi;
+            _logger = logger;                               
+            _apiBase = (configuration["ApiBaseUrl"] ?? "http://localhost:5020").TrimEnd('/');
+        }
+
+        // ========== ELASTICSEARCH SEARCH METHODS (ADD AT THE END OF CLASS) ==========
+
+        [HttpPost]
+        public async Task<IActionResult> SearchMyCrops([FromBody] SearchRequestModel request)
+        {
+            try
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"{_apiBase}/api/FarmerApp/search/my-crops", content);
+                var result = await response.Content.ReadAsStringAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SearchMyCrops failed");
+                return Json(new { success = false, results = new List<CropSearchResult>() });
+            }
         }
  
         // ─────────────────────────────────────────

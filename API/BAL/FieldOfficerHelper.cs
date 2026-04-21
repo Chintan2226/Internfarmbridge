@@ -7,6 +7,7 @@ using API.Models;
 using API.Models.FieldOfficer;
 using API.Services;
 using Npgsql;
+using API.Models.Auth;
 
 namespace API.BAL
 {
@@ -16,6 +17,63 @@ namespace API.BAL
         public FieldOfficerHelper(NpgsqlConnection conn)
         {
             _conn = conn;
+        }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return null;
+
+            await _conn.OpenAsync();
+            try
+            {
+                // Querying t_users based on the schema 
+                var query = @"
+            SELECT 
+                c_id, 
+                c_email, 
+                c_password_hash, 
+                c_role, 
+                c_profile_image_url, 
+                c_language_preference,
+                c_is_first_login,
+                c_is_active, 
+                c_is_approved,
+                c_created_at
+            FROM t_users 
+            WHERE c_email = @email 
+            LIMIT 1";
+
+                using var cmd = new NpgsqlCommand(query, _conn);
+                cmd.Parameters.AddWithValue("@email", email);
+
+                using var reader = await cmd.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
+                {
+                    return new User
+                    {
+                        Id = reader.GetInt32(0),
+                        Email = reader.GetString(1),
+                        PasswordHash = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        Role = reader.GetString(3),
+                        ProfileImageUrl = reader.IsDBNull(4) ? null : reader.GetString(4),
+                        LanguagePreference = reader.IsDBNull(5) ? null : reader.GetString(5),
+                        IsFirstLogin = reader.GetBoolean(6),
+                        IsActive = reader.GetBoolean(7),
+                        IsApproved = reader.GetBoolean(8),
+                        CreatedAt = reader.GetDateTime(9)
+                    };
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("GetUserByEmailAsync ERROR: " + ex.Message);
+                return null;
+            }
+            finally
+            {
+                await _conn.CloseAsync();
+            }
         }
 
         // ── RESOLVE FO PROFILE ID BY USER ID ────────────────────────
@@ -89,16 +147,16 @@ namespace API.BAL
                 {
                     list.Add(new
                     {
-                        id         = reader.GetInt32(0),
+                        id = reader.GetInt32(0),
                         farmerName = reader.GetString(1),
-                        crop       = reader.GetString(2),
-                        quantity   = reader.GetDecimal(3),
-                        unit       = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                        location   = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                        slotDate   = reader.GetDateTime(6),
-                        startTime  = reader.GetTimeSpan(7).ToString(@"hh\:mm"),
-                        endTime    = reader.GetTimeSpan(8).ToString(@"hh\:mm"),
-                        status     = FormatStatus(reader.GetString(9)),
+                        crop = reader.GetString(2),
+                        quantity = reader.GetDecimal(3),
+                        unit = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                        location = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                        slotDate = reader.GetDateTime(6),
+                        startTime = reader.GetTimeSpan(7).ToString(@"hh\:mm"),
+                        endTime = reader.GetTimeSpan(8).ToString(@"hh\:mm"),
+                        status = FormatStatus(reader.GetString(9)),
                         askingPrice = reader.IsDBNull(10) ? 0 : reader.GetDecimal(10)
                     });
                 }
@@ -161,17 +219,17 @@ namespace API.BAL
                     list.Add(new vmQCRequest
                     {
                         ProcurementRequestId = reader.GetInt32(0),
-                        FarmerName           = reader.GetString(1),
-                        CropType             = reader.GetString(2),
-                        Quantity             = reader.GetDecimal(3),
-                        Unit                 = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                        Location             = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                        SlotId               = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-                        SlotDate             = reader.IsDBNull(7) ? (DateTime?)null : reader.GetDateTime(7),
-                        StartTime            = reader.IsDBNull(8) ? (TimeSpan?)null : reader.GetTimeSpan(8),
-                        EndTime              = reader.IsDBNull(9) ? (TimeSpan?)null : reader.GetTimeSpan(9),
-                        Status               = reader.GetString(10),
-                        AskingPrice          = reader.IsDBNull(11) ? 0 : reader.GetDecimal(11)
+                        FarmerName = reader.GetString(1),
+                        CropType = reader.GetString(2),
+                        Quantity = reader.GetDecimal(3),
+                        Unit = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                        Location = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                        SlotId = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+                        SlotDate = reader.IsDBNull(7) ? (DateTime?)null : reader.GetDateTime(7),
+                        StartTime = reader.IsDBNull(8) ? (TimeSpan?)null : reader.GetTimeSpan(8),
+                        EndTime = reader.IsDBNull(9) ? (TimeSpan?)null : reader.GetTimeSpan(9),
+                        Status = reader.GetString(10),
+                        AskingPrice = reader.IsDBNull(11) ? 0 : reader.GetDecimal(11)
                     });
                 }
 
@@ -226,17 +284,17 @@ namespace API.BAL
                 return new vmQCRequest
                 {
                     ProcurementRequestId = reader.GetInt32(0),
-                    FarmerName           = reader.GetString(1),
-                    CropType             = reader.GetString(2),
-                    Quantity             = reader.GetDecimal(3),
-                    Unit                 = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                    Location             = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                    SlotId               = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-                    SlotDate             = reader.IsDBNull(7) ? (DateTime?)null : reader.GetDateTime(7),
-                    StartTime            = reader.IsDBNull(8) ? (TimeSpan?)null : reader.GetTimeSpan(8),
-                    EndTime              = reader.IsDBNull(9) ? (TimeSpan?)null : reader.GetTimeSpan(9),
-                    Status               = reader.GetString(10),
-                    AskingPrice          = reader.IsDBNull(11) ? 0 : reader.GetDecimal(11)
+                    FarmerName = reader.GetString(1),
+                    CropType = reader.GetString(2),
+                    Quantity = reader.GetDecimal(3),
+                    Unit = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    Location = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                    SlotId = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+                    SlotDate = reader.IsDBNull(7) ? (DateTime?)null : reader.GetDateTime(7),
+                    StartTime = reader.IsDBNull(8) ? (TimeSpan?)null : reader.GetTimeSpan(8),
+                    EndTime = reader.IsDBNull(9) ? (TimeSpan?)null : reader.GetTimeSpan(9),
+                    Status = reader.GetString(10),
+                    AskingPrice = reader.IsDBNull(11) ? 0 : reader.GetDecimal(11)
                 };
             }
             finally
@@ -270,9 +328,9 @@ namespace API.BAL
 
                 return new FarmerNotifyInfo
                 {
-                    Email     = reader.IsDBNull(0) ? "" : reader.GetString(0),
-                    FullName  = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                    CropName  = reader.IsDBNull(2) ? "" : reader.GetString(2)
+                    Email = reader.IsDBNull(0) ? "" : reader.GetString(0),
+                    FullName = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                    CropName = reader.IsDBNull(2) ? "" : reader.GetString(2)
                 };
             }
             finally
@@ -298,9 +356,9 @@ namespace API.BAL
             try
             {
                 // STEP 1: Get required IDs + farmer's asking price
-                int farmerId         = 0;
-                int cropListingId    = 0;
-                int warehouseId      = 0;
+                int farmerId = 0;
+                int cropListingId = 0;
+                int warehouseId = 0;
                 int catalogProductId = 0;
                 decimal farmerAskingPrice = 0;
 
@@ -319,16 +377,16 @@ namespace API.BAL
 
                 using (var cmd = new NpgsqlCommand(getDetailsQuery, _conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@foId",      model.FoId);
+                    cmd.Parameters.AddWithValue("@foId", model.FoId);
                     cmd.Parameters.AddWithValue("@requestId", model.ProcurementRequestId);
 
                     using var reader = await cmd.ExecuteReaderAsync();
                     if (!await reader.ReadAsync())
                         throw new Exception("Procurement request not found");
 
-                    farmerId         = reader.GetInt32(0);
-                    cropListingId    = reader.GetInt32(1);
-                    warehouseId      = reader.GetInt32(2);
+                    farmerId = reader.GetInt32(0);
+                    cropListingId = reader.GetInt32(1);
+                    warehouseId = reader.GetInt32(2);
                     catalogProductId = reader.GetInt32(3);
                     farmerAskingPrice = reader.IsDBNull(4) ? 0 : reader.GetDecimal(4);
                 }
@@ -378,19 +436,19 @@ namespace API.BAL
                 using (var cmd = new NpgsqlCommand(insertInspectionQuery, _conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@procurementRequestId", model.ProcurementRequestId);
-                    cmd.Parameters.AddWithValue("@foId",                 model.FoId);
-                    cmd.Parameters.AddWithValue("@moisturePct",          model.MoisturePct);
-                    cmd.Parameters.AddWithValue("@foreignMatterPct",     model.ForeignMatterPct);
-                    cmd.Parameters.AddWithValue("@pestDisease",          model.PestDiseaseObserved  ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@variety",              model.Variety              ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@grade",                model.Grade               ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@weightChecked",        model.WeightCheckedKg);
-                    cmd.Parameters.AddWithValue("@acceptedQty",          model.AcceptedQuantity);
-                    cmd.Parameters.AddWithValue("@rejectedQty",          model.RejectedQuantity);
-                    cmd.Parameters.AddWithValue("@defectsNoted",         model.DefectsNoted         ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@remarks",              model.Remarks              ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@passed",               model.Passed);
-                    cmd.Parameters.AddWithValue("@foAssessedPrice",      finalPrice);  // Use fallback price
+                    cmd.Parameters.AddWithValue("@foId", model.FoId);
+                    cmd.Parameters.AddWithValue("@moisturePct", model.MoisturePct);
+                    cmd.Parameters.AddWithValue("@foreignMatterPct", model.ForeignMatterPct);
+                    cmd.Parameters.AddWithValue("@pestDisease", model.PestDiseaseObserved ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@variety", model.Variety ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@grade", model.Grade ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@weightChecked", model.WeightCheckedKg);
+                    cmd.Parameters.AddWithValue("@acceptedQty", model.AcceptedQuantity);
+                    cmd.Parameters.AddWithValue("@rejectedQty", model.RejectedQuantity);
+                    cmd.Parameters.AddWithValue("@defectsNoted", model.DefectsNoted ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@remarks", model.Remarks ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@passed", model.Passed);
+                    cmd.Parameters.AddWithValue("@foAssessedPrice", finalPrice);  // Use fallback price
 
                     inspectionId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                 }
@@ -410,7 +468,7 @@ namespace API.BAL
                 }
 
                 // STEP 4: Update farmer crop listing status
-                var listingStatus    = model.Passed ? "qc_passed" : "qc_failed";
+                var listingStatus = model.Passed ? "qc_passed" : "qc_failed";
 
                 var updateListingQuery = @"
                     UPDATE t_farmer_crop_listings
@@ -421,7 +479,7 @@ namespace API.BAL
 
                 using (var cmd = new NpgsqlCommand(updateListingQuery, _conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@status",        listingStatus);
+                    cmd.Parameters.AddWithValue("@status", listingStatus);
                     cmd.Parameters.AddWithValue("@cropListingId", cropListingId);
                     await cmd.ExecuteNonQueryAsync();
                 }
@@ -460,13 +518,13 @@ namespace API.BAL
                     ";
 
                     using var cmd = new NpgsqlCommand(insertLotQuery, _conn, transaction);
-                    cmd.Parameters.AddWithValue("@warehouseId",      warehouseId);
+                    cmd.Parameters.AddWithValue("@warehouseId", warehouseId);
                     cmd.Parameters.AddWithValue("@catalogProductId", catalogProductId);
-                    cmd.Parameters.AddWithValue("@farmerId",         farmerId);
-                    cmd.Parameters.AddWithValue("@foId",             model.FoId);
-                    cmd.Parameters.AddWithValue("@inspectionId",     inspectionId);
-                    cmd.Parameters.AddWithValue("@grade",            model.Grade ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@acceptedQty",      model.AcceptedQuantity);
+                    cmd.Parameters.AddWithValue("@farmerId", farmerId);
+                    cmd.Parameters.AddWithValue("@foId", model.FoId);
+                    cmd.Parameters.AddWithValue("@inspectionId", inspectionId);
+                    cmd.Parameters.AddWithValue("@grade", model.Grade ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@acceptedQty", model.AcceptedQuantity);
                     await cmd.ExecuteNonQueryAsync();
                 }
 
@@ -586,28 +644,28 @@ namespace API.BAL
                     if (await reader.ReadAsync())
                     {
                         var email = reader.IsDBNull(0) ? "" : reader.GetString(0);
-                        var name  = reader.IsDBNull(1) ? "Farmer" : reader.GetString(1);
-                        var crop  = reader.IsDBNull(2) ? "" : reader.GetString(2);
+                        var name = reader.IsDBNull(1) ? "Farmer" : reader.GetString(1);
+                        var crop = reader.IsDBNull(2) ? "" : reader.GetString(2);
                         var slotDate = reader.IsDBNull(3) ? (DateTime?)null : reader.GetDateTime(3);
                         var slotStart = reader.IsDBNull(4) ? (TimeSpan?)null : reader.GetTimeSpan(4);
-                        var slotEnd   = reader.IsDBNull(5) ? (TimeSpan?)null : reader.GetTimeSpan(5);
-                        var whName    = reader.IsDBNull(6) ? "—" : reader.GetString(6);
-                        var qty       = reader.IsDBNull(7) ? 0m : reader.GetDecimal(7);
-                        var unit      = reader.IsDBNull(8) ? "kg" : reader.GetString(8);
+                        var slotEnd = reader.IsDBNull(5) ? (TimeSpan?)null : reader.GetTimeSpan(5);
+                        var whName = reader.IsDBNull(6) ? "—" : reader.GetString(6);
+                        var qty = reader.IsDBNull(7) ? 0m : reader.GetDecimal(7);
+                        var unit = reader.IsDBNull(8) ? "kg" : reader.GetString(8);
 
                         data = new AcceptEmailData
                         {
                             ProcurementRequestId = requestId,
-                            FarmerEmail          = email,
-                            FarmerName           = name,
-                            CropName             = crop,
-                            WarehouseName        = whName,
-                            QuantityDisplay      = $"{qty} {unit}".Trim(),
-                            SlotDateFormatted    = slotDate?.ToString("MMM dd, yyyy") ?? "—",
-                            TimeRange            = slotStart.HasValue && slotEnd.HasValue
+                            FarmerEmail = email,
+                            FarmerName = name,
+                            CropName = crop,
+                            WarehouseName = whName,
+                            QuantityDisplay = $"{qty} {unit}".Trim(),
+                            SlotDateFormatted = slotDate?.ToString("MMM dd, yyyy") ?? "—",
+                            TimeRange = slotStart.HasValue && slotEnd.HasValue
                                 ? $"{slotStart.Value:hh\\:mm} – {slotEnd.Value:hh\\:mm}"
                                 : "—",
-                            AcceptedAtFormatted  = acceptedAt
+                            AcceptedAtFormatted = acceptedAt
                         };
                     }
                 }
@@ -634,9 +692,9 @@ namespace API.BAL
 
             try
             {
-                int? oldSlotId     = null;
-                int  farmerId      = 0;
-                int  cropListingId = 0;
+                int? oldSlotId = null;
+                int farmerId = 0;
+                int cropListingId = 0;
                 RescheduleEmailData? emailData = null;
 
                 var getQuery = @"
@@ -669,30 +727,30 @@ namespace API.BAL
                     if (!await reader.ReadAsync())
                         return null;
 
-                    oldSlotId     = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0);
-                    farmerId      = reader.GetInt32(1);
+                    oldSlotId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0);
+                    farmerId = reader.GetInt32(1);
                     cropListingId = reader.GetInt32(2);
-                    var email     = reader.IsDBNull(3) ? "" : reader.GetString(3);
-                    var name      = reader.IsDBNull(4) ? "Farmer" : reader.GetString(4);
-                    var crop      = reader.IsDBNull(5) ? "" : reader.GetString(5);
-                    var oldDate   = reader.IsDBNull(6) ? (DateTime?)null : reader.GetDateTime(6);
-                    var oldStart  = reader.IsDBNull(7) ? (TimeSpan?)null : reader.GetTimeSpan(7);
-                    var oldEnd    = reader.IsDBNull(8) ? (TimeSpan?)null : reader.GetTimeSpan(8);
-                    var whName    = reader.IsDBNull(9) ? "—" : reader.GetString(9);
+                    var email = reader.IsDBNull(3) ? "" : reader.GetString(3);
+                    var name = reader.IsDBNull(4) ? "Farmer" : reader.GetString(4);
+                    var crop = reader.IsDBNull(5) ? "" : reader.GetString(5);
+                    var oldDate = reader.IsDBNull(6) ? (DateTime?)null : reader.GetDateTime(6);
+                    var oldStart = reader.IsDBNull(7) ? (TimeSpan?)null : reader.GetTimeSpan(7);
+                    var oldEnd = reader.IsDBNull(8) ? (TimeSpan?)null : reader.GetTimeSpan(8);
+                    var whName = reader.IsDBNull(9) ? "—" : reader.GetString(9);
 
                     emailData = new RescheduleEmailData
                     {
-                        ProcurementRequestId  = requestId,
-                        FarmerEmail           = email,
-                        FarmerName            = name,
-                        CropName              = crop,
-                        WarehouseName         = whName,
-                        OldSlotDateFormatted  = oldDate?.ToString("MMM dd, yyyy") ?? "—",
-                        OldTimeRange          = oldStart.HasValue && oldEnd.HasValue
+                        ProcurementRequestId = requestId,
+                        FarmerEmail = email,
+                        FarmerName = name,
+                        CropName = crop,
+                        WarehouseName = whName,
+                        OldSlotDateFormatted = oldDate?.ToString("MMM dd, yyyy") ?? "—",
+                        OldTimeRange = oldStart.HasValue && oldEnd.HasValue
                             ? $"{oldStart.Value:hh\\:mm} – {oldEnd.Value:hh\\:mm}"
                             : "—",
-                        NewSlotDateFormatted  = date.ToString("MMM dd, yyyy"),
-                        NewTimeRange          = $"{start:hh\\:mm} – {end:hh\\:mm}"
+                        NewSlotDateFormatted = date.ToString("MMM dd, yyyy"),
+                        NewTimeRange = $"{start:hh\\:mm} – {end:hh\\:mm}"
                     };
                 }
 
@@ -709,8 +767,8 @@ namespace API.BAL
                 using (var cmd = new NpgsqlCommand(checkQuery, _conn))
                 {
                     cmd.Parameters.AddWithValue("@farmerId", farmerId);
-                    cmd.Parameters.AddWithValue("@date",     date);
-                    cmd.Parameters.AddWithValue("@start",    start);
+                    cmd.Parameters.AddWithValue("@date", date);
+                    cmd.Parameters.AddWithValue("@start", start);
 
                     var existing = await cmd.ExecuteScalarAsync();
                     if (existing != null)
@@ -732,11 +790,11 @@ namespace API.BAL
                         ";
 
                         using var insertCmd = new NpgsqlCommand(insertSlotQuery, _conn);
-                        insertCmd.Parameters.AddWithValue("@farmerId",      farmerId);
+                        insertCmd.Parameters.AddWithValue("@farmerId", farmerId);
                         insertCmd.Parameters.AddWithValue("@cropListingId", cropListingId);
-                        insertCmd.Parameters.AddWithValue("@date",          date);
-                        insertCmd.Parameters.AddWithValue("@start",         start);
-                        insertCmd.Parameters.AddWithValue("@end",           end);
+                        insertCmd.Parameters.AddWithValue("@date", date);
+                        insertCmd.Parameters.AddWithValue("@start", start);
+                        insertCmd.Parameters.AddWithValue("@end", end);
 
                         newSlotId = Convert.ToInt32(await insertCmd.ExecuteScalarAsync());
                     }
@@ -753,8 +811,8 @@ namespace API.BAL
 
                 using (var cmd = new NpgsqlCommand(updateRequestQuery, _conn))
                 {
-                    cmd.Parameters.AddWithValue("@newSlotId",  newSlotId);
-                    cmd.Parameters.AddWithValue("@requestId",  requestId);
+                    cmd.Parameters.AddWithValue("@newSlotId", newSlotId);
+                    cmd.Parameters.AddWithValue("@requestId", requestId);
                     await cmd.ExecuteNonQueryAsync();
                 }
 
@@ -935,11 +993,11 @@ namespace API.BAL
         {
             return status switch
             {
-                "pending"     => "Pending",
-                "scheduled"   => "In Progress",
+                "pending" => "Pending",
+                "scheduled" => "In Progress",
                 "in_progress" => "In Progress",
-                "completed"   => "Completed",
-                _             => status
+                "completed" => "Completed",
+                _ => status
             };
         }
 
@@ -978,16 +1036,16 @@ namespace API.BAL
 
                 return new vmProfile
                 {
-                    Id               = reader.GetInt32(0),
-                    UserId           = reader.GetInt32(1),
-                    FirstName        = reader.GetString(2),
-                    LastName         = reader.GetString(3),
-                    Email            = reader.GetString(4),
-                    Phone            = reader.IsDBNull(5) ? null : reader.GetString(5),
-                    AssignedRegion   = reader.IsDBNull(6) ? null : reader.GetString(6),
-                    ProfileImageUrl  = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    CreatedAt        = reader.GetDateTime(8),
-                    WarehouseName    = reader.GetString(9),
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    FirstName = reader.GetString(2),
+                    LastName = reader.GetString(3),
+                    Email = reader.GetString(4),
+                    Phone = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    AssignedRegion = reader.IsDBNull(6) ? null : reader.GetString(6),
+                    ProfileImageUrl = reader.IsDBNull(7) ? null : reader.GetString(7),
+                    CreatedAt = reader.GetDateTime(8),
+                    WarehouseName = reader.GetString(9),
                     WarehouseAddress = reader.GetString(10)
                 };
             }
@@ -1013,8 +1071,8 @@ namespace API.BAL
 
                 using var cmd = new NpgsqlCommand(query, _conn);
                 cmd.Parameters.AddWithValue("@FullName", model.FirstName + " " + model.LastName);
-                cmd.Parameters.AddWithValue("@Phone",    model.Phone ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("@Id",       id);
+                cmd.Parameters.AddWithValue("@Phone", model.Phone ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Id", id);
 
                 return await cmd.ExecuteNonQueryAsync() > 0;
             }
@@ -1045,7 +1103,7 @@ namespace API.BAL
 
                 using var cmd = new NpgsqlCommand(query, _conn);
                 cmd.Parameters.AddWithValue("@Url", imageUrl ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("@Id",  id);
+                cmd.Parameters.AddWithValue("@Id", id);
 
                 return await cmd.ExecuteNonQueryAsync() > 0;
             }
@@ -1075,7 +1133,7 @@ namespace API.BAL
 
                 using var cmd = new NpgsqlCommand(query, _conn);
                 cmd.Parameters.AddWithValue("@Password", hashedPassword);
-                cmd.Parameters.AddWithValue("@Email",    email);
+                cmd.Parameters.AddWithValue("@Email", email);
 
                 return await cmd.ExecuteNonQueryAsync() > 0;
             }
@@ -1122,14 +1180,14 @@ namespace API.BAL
                 {
                     list.Add(new vmWarehouseCatalog
                     {
-                        LotId       = reader.GetInt32(0),
+                        LotId = reader.GetInt32(0),
                         ProductName = reader.GetString(1),
-                        Grade       = reader.GetString(2),
-                        Variety     = reader.IsDBNull(3) ? null : reader.GetString(3),
-                        Quantity    = reader.GetDecimal(4),
-                        Unit        = reader.GetString(5),
-                        Warehouse   = reader.GetString(6),
-                        Status      = reader.GetString(7)
+                        Grade = reader.GetString(2),
+                        Variety = reader.IsDBNull(3) ? null : reader.GetString(3),
+                        Quantity = reader.GetDecimal(4),
+                        Unit = reader.GetString(5),
+                        Warehouse = reader.GetString(6),
+                        Status = reader.GetString(7)
                     });
                 }
 
@@ -1221,7 +1279,7 @@ namespace API.BAL
                     farmerDistrict = reader.IsDBNull(18) ? null : reader.GetString(18),
                     cropName = reader.GetString(19),
                     farmerId = reader.GetInt32(20),
-                    
+
                     // Calculated amounts
                     totalValue = totalValue,
                     advanceAmount = advanceAmount,
@@ -1696,12 +1754,12 @@ namespace API.BAL
                 {
                     list.Add(new
                     {
-                        id          = reader.GetInt32(0),
-                        title       = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                        message     = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                        isRead      = reader.GetBoolean(3),
+                        id = reader.GetInt32(0),
+                        title = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                        message = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        isRead = reader.GetBoolean(3),
                         redirectUrl = reader.IsDBNull(4) ? "#" : reader.GetString(4),
-                        createdAt   = reader.GetDateTime(5)
+                        createdAt = reader.GetDateTime(5)
                     });
                 }
                 return list;

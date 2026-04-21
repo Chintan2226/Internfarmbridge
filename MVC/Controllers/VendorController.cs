@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
+using MVC.Models;
+using System.Text.Json;
+using System.Text;
 
 namespace MVC.Controllers
 {
@@ -8,11 +11,18 @@ namespace MVC.Controllers
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<VendorController> _logger;
+        private readonly string _apiBase;
 
-        public VendorController(HttpClient httpClient, IConfiguration configuration)
+        public VendorController(
+            HttpClient httpClient, 
+            IConfiguration configuration,
+            ILogger<VendorController> logger)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _logger = logger;
+            _apiBase = (configuration["ApiBaseUrl"] ?? "http://localhost:5020").TrimEnd('/');
         }
 
         public IActionResult Index()
@@ -24,7 +34,6 @@ namespace MVC.Controllers
         {
             return View();
         }
-
 
         // ✅ UPDATED Login() — builds Google OAuth URL safely
         public IActionResult Login()
@@ -62,7 +71,6 @@ namespace MVC.Controllers
         }
 
         // ✅ Google OAuth Callback for Vendor
-        // ✅ Updated GoogleCallback in VendorController.cs
         public async Task<IActionResult> GoogleCallback(string code, string error)
         {
             if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
@@ -70,15 +78,15 @@ namespace MVC.Controllers
 
             using var client = new HttpClient();
 
-            // 1. Exchange code for Access Token (Existing logic)
+            // 1. Exchange code for Access Token
             var tokenResponse = await client.PostAsync("https://oauth2.googleapis.com/token",
                 new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-            { "code", code },
-            { "client_id", _configuration["GoogleOAuth:ClientId"] },
-            { "client_secret", _configuration["GoogleOAuth:ClientSecret"] },
-            { "redirect_uri", _configuration["GoogleOAuth:VendorRedirectUri"] },
-            { "grant_type", "authorization_code" }
+                    { "code", code },
+                    { "client_id", _configuration["GoogleOAuth:ClientId"] },
+                    { "client_secret", _configuration["GoogleOAuth:ClientSecret"] },
+                    { "redirect_uri", _configuration["GoogleOAuth:VendorRedirectUri"] },
+                    { "grant_type", "authorization_code" }
                 }));
 
             if (!tokenResponse.IsSuccessStatusCode) return RedirectToAction("Login");
@@ -91,7 +99,7 @@ namespace MVC.Controllers
             var userInfoJson = await client.GetStringAsync("https://www.googleapis.com/oauth2/v2/userinfo");
             var userInfo = JObject.Parse(userInfoJson);
 
-            // 3. Call API — Updated to use the "google-login" endpoint that registers new users
+            // 3. Call API
             var apiBase = _configuration["ApiBaseUrl"]?.TrimEnd('/');
             var apiPayload = new
             {
@@ -102,12 +110,10 @@ namespace MVC.Controllers
 
             var apiResponse = await _httpClient.PostAsJsonAsync($"{apiBase}/api/vendor/google-login", apiPayload);
 
-            // If registration/login worked, set cookie and redirect
             if (apiResponse.IsSuccessStatusCode)
             {
                 var apiResult = JObject.Parse(await apiResponse.Content.ReadAsStringAsync());
                 var jwtToken = apiResult["token"]?.ToString();
-
                 var isGoogleUserToken = apiResult["isGoogleUser"]?.Value<bool>() ?? false;
 
                 Response.Cookies.Append("authToken", jwtToken, new CookieOptions
@@ -116,13 +122,12 @@ namespace MVC.Controllers
                     Path = "/"
                 });
 
-                // ✅ STORE FLAG
                 Response.Cookies.Append("isGoogleUser", isGoogleUserToken.ToString().ToLower(), new CookieOptions
-                    {
-                        MaxAge = TimeSpan.FromMinutes(30),
-                        Path = "/"
-                    });
-                // If it's a brand new user, send them to Profile to finish details, otherwise Catalog
+                {
+                    MaxAge = TimeSpan.FromMinutes(30),
+                    Path = "/"
+                });
+
                 if (apiResult["isNewUser"]?.Value<bool>() == true)
                 {
                     return RedirectToAction("Profile");
@@ -178,9 +183,7 @@ namespace MVC.Controllers
         public IActionResult Profile()
         {
             var isGoogleUser = Request.Cookies["isGoogleUser"];
-
             ViewBag.IsGoogleUser = isGoogleUser == "True";
-
             return View();
         }
 
@@ -198,6 +201,48 @@ namespace MVC.Controllers
         public class ForgotPasswordRequest
         {
             public string Email { get; set; }
+        }
+
+        // ========== ELASTICSEARCH SEARCH METHODS ==========
+
+        [HttpPost]
+        public async Task<IActionResult> SearchCatalog([FromBody] SearchRequestModel request)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"{_apiBase}/api/Vendor/search/catalog", content);
+                var result = await response.Content.ReadAsStringAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SearchCatalog failed");
+                return Json(new { success = false, results = new List<CatalogSearchResult>() });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SearchMyOrders([FromBody] SearchRequestModel request)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"{_apiBase}/api/Vendor/search/my-orders", content);
+                var result = await response.Content.ReadAsStringAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SearchMyOrders failed");
+                return Json(new { success = false, results = new List<OrderSearchResult>() });
+            }
         }
     }
 }
