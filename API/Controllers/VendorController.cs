@@ -26,7 +26,6 @@ namespace API.Controllers
         private readonly EmailService _emailService;
         private readonly RabbitMqService _rabbitMqService;
 
-        public VendorController(VendorHelper vendorHelper, JwtService jwtService, IConfiguration configuration, RedisService redisService, EmailService emailService, RabbitMqService rabbitMqService)
         private readonly ElasticService _elasticService;
 
         public VendorController(
@@ -34,6 +33,7 @@ namespace API.Controllers
             JwtService jwtService,
             IConfiguration configuration,
             RedisService redisService,
+            RabbitMqService rabbitMqService,
             EmailService emailService,
             ElasticService elasticService)
         {
