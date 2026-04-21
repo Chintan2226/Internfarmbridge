@@ -6,9 +6,7 @@
 
 $(document).ready(function () {
 
-    /* ──────────────────────────────────────────────
-       AUTH HELPERS
-    ────────────────────────────────────────────── */
+    // AUTH HELPERS
 
     function getToken() {
         var match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
@@ -47,7 +45,7 @@ $(document).ready(function () {
         console.error("Failed to load:", section);
     }
 
-    /* Abort if token missing */
+    // Abort if token missing
 
     if (!getToken()) {
         redirectToLogin();
@@ -57,9 +55,7 @@ $(document).ready(function () {
     console.log("Farmer ID:", window.FARMER_ID);
 
 
-    /* ──────────────────────────────────────────────
-       1. INQUIRIES KPIs
-    ────────────────────────────────────────────── */
+    // 1. INQUIRIES KPIs
 
     $.ajax({
 
@@ -102,20 +98,22 @@ $(document).ready(function () {
     });
 
 
-    /* ──────────────────────────────────────────────
-       2. TEXTAREA WIDGET
-    ────────────────────────────────────────────── */
+    // 2. TEXTAREA WIDGET
 
     $("#messageBody").kendoTextArea({
         rows: 5
     });
 
+    $("#btnResetInquiry").on("click", function() {
+        $("#inquiryForm")[0].reset();
+    });
+
+    $("#btnSubmitInquiry").on("click", submitInquiry);
+
 });
 
 
-/* ──────────────────────────────────────────────
-   SUBMIT INQUIRY
-────────────────────────────────────────────── */
+// SUBMIT INQUIRY
 
 function submitInquiry() {
 
@@ -198,9 +196,7 @@ function submitInquiry() {
 }
 
 
-/* ──────────────────────────────────────────────
-   RELOAD KPI AFTER SUBMIT
-────────────────────────────────────────────── */
+// RELOAD KPIs AFTER SUBMIT
 
 function reloadInquiryKPIs() {
 

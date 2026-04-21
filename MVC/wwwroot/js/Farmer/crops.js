@@ -16,9 +16,7 @@
  *     & characters that break kendo.template()'s code generator.
  */
 
-/* ──────────────────────────────────────────────
-   AUTH HELPERS  (defined at module scope)
-────────────────────────────────────────────── */
+// AUTH HELPERS (module scope)
 
 function getToken() {
     var match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
@@ -43,11 +41,7 @@ function redirectToLogin() {
     window.location.href = "/Farmer/Login";
 }
 
-/* ──────────────────────────────────────────────
-   ROW MAPPER  — single source of truth
-   Maps API item → Kendo template data object.
-   ALL fields used in the template must be here.
-────────────────────────────────────────────── */
+// ROW MAPPER — maps API item to Kendo template data object
 
 function mapListingToRow(item) {
     return {
@@ -60,16 +54,14 @@ function mapListingToRow(item) {
         HarvestDate: kendo.toString(new Date(item.createdAt), "dd MMM yyyy"),
         Status: item.status || "draft",
 
-        /* ✅ FIX: these were missing and caused the ReferenceError */
+        // FIX: these were missing and caused the ReferenceError
         FarmDistrict: item.farmDistrict || item.district || "—",
         FarmState: item.farmState || item.state || "—",
         Notes: item.notes || ""
     };
 }
 
-/* ──────────────────────────────────────────────
-   STATS BAR UPDATER
-────────────────────────────────────────────── */
+// STATS BAR UPDATER
 
 function updateStatsBar(rows) {
     var counts = { active: 0, draft: 0, qc: 0, sold: 0 };
@@ -92,9 +84,7 @@ function updateStatsBar(rows) {
     }
 }
 
-/* ──────────────────────────────────────────────
-   DOCUMENT READY
-────────────────────────────────────────────── */
+// DOCUMENT READY
 
 $(document).ready(function () {
 
@@ -187,9 +177,16 @@ $(document).ready(function () {
         format: "yyyy-MM-dd",
         max: new Date()
     });
+    
+    /* Additional Premium Kendo Inputs */
+    $("#cropVariety").kendoTextBox();
+    $("#farmState").kendoTextBox();
+    $("#farmDistrict").kendoTextBox();
+    $("#farmLocation").kendoTextArea({ rows: 2, resize: "none" });
+    $("#cropNotes").kendoTextArea({ rows: 2, resize: "none" });
 
     $("#cropWindow").kendoWindow({
-        width: "620px",
+        width: "660px",
         title: "List New Crop",
         visible: false,
         modal: true
@@ -197,15 +194,13 @@ $(document).ready(function () {
 
 });
 
-/* ──────────────────────────────────────────────
-   MODAL HELPERS
-────────────────────────────────────────────── */
+// MODAL HELPERS
 
 function openCropWindow() {
     $("#editListingId").val("");
     $("#cropForm")[0].reset();
 
-    /* Reset Kendo widgets that don't reset with the form */
+    // Reset Kendo widgets that don't reset with the form
     var qtyBox = $("#cropQty").data("kendoNumericTextBox");
     if (qtyBox) qtyBox.value(null);
 
@@ -225,9 +220,7 @@ function closeCropWindow() {
     $("#cropWindow").data("kendoWindow").close();
 }
 
-/* ──────────────────────────────────────────────
-   SAVE CROP  (Create or Update)
-────────────────────────────────────────────── */
+// SAVE CROP (Create or Update)
 
 function saveCrop(statusMode) {
 
@@ -236,7 +229,7 @@ function saveCrop(statusMode) {
 
     var editId = $("#editListingId").val();
 
-    /* ✅ FIX: payload now includes FarmState, FarmDistrict, Notes */
+    // FIX: payload now includes FarmState, FarmDistrict, Notes
     var payload = {
         FarmerId: window.FARMER_ID,
         CatalogProductId: $("#cropType").val(),
@@ -292,9 +285,7 @@ function saveCrop(statusMode) {
     });
 }
 
-/* ──────────────────────────────────────────────
-   EDIT CROP  — load existing data into modal
-────────────────────────────────────────────── */
+// EDIT CROP — load existing data into modal
 
 function editCrop(id) {
 
@@ -311,7 +302,7 @@ function editCrop(id) {
 
             $("#editListingId").val(item.listingId);
 
-            /* Populate Kendo widgets */
+            // Populate Kendo widgets
             var ddCrop = $("#cropType").data("kendoDropDownList");
             if (ddCrop) ddCrop.value(item.catalogProductId);
 
@@ -347,9 +338,7 @@ function editCrop(id) {
     });
 }
 
-/* ──────────────────────────────────────────────
-   DELETE / WITHDRAW CROP
-────────────────────────────────────────────── */
+// DELETE / WITHDRAW CROP
 function deleteCrop(id) {
 
     Swal.fire({
@@ -397,17 +386,13 @@ function deleteCrop(id) {
     });
 }
 
-/* ──────────────────────────────────────────────
-   VIEW HISTORY
-────────────────────────────────────────────── */
+// VIEW HISTORY
 
 function viewHistory(id) {
     window.location.href = "/Farmer/Listings/" + id;
 }
 
-/* ──────────────────────────────────────────────
-   RELOAD LISTINGS  — refreshes grid in-place
-────────────────────────────────────────────── */
+// RELOAD LISTINGS — refreshes grid in-place
 
 function reloadListings() {
 
