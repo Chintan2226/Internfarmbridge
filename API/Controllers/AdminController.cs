@@ -173,6 +173,8 @@ namespace API.Controllers
 
             return StatusCode(500, new { success = false, message = "Failed to process payment." });
         }
+        
+        
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
@@ -952,6 +954,8 @@ namespace API.Controllers
             var isHealthy = await _elasticService.IsHealthyAsync();
             return Ok(new { healthy = isHealthy });
         }
+
+        
 
     }
 
