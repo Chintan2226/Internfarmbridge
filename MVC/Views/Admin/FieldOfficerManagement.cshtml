@@ -1,0 +1,221 @@
+﻿@{
+    ViewBag.Title = "Field Officer Management";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+
+<div class="dashboard-header mb-4 p-4 bg-white shadow-sm rounded-4 border-0">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="m-0 text-dark fw-bold tracking-tight">Field Officer Management</h4>
+            <p class="text-muted small mb-0 mt-1">Monitor performance and manage field staff access levels.</p>
+        </div>
+        <button class="btn btn-success px-4 py-2 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" onclick="openFOModal()">
+            <lord-icon src="https://cdn.lordicon.com/evwvpsbg.json" trigger="hover" colors="primary:#ffffff" style="width:20px;height:20px"></lord-icon>
+            Create FO Account
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div id="foGrid"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="foModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold text-dark">New Field Officer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="foForm" class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted">FULL NAME</label>
+                        <input type="text" id="fo_name" class="form-control rounded-3 py-2" required placeholder="Enter officer name">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted">EMAIL (USERNAME)</label>
+                        <input type="email" id="fo_email" class="form-control rounded-3 py-2" required placeholder="name@farmbridge.in">
+                        <div class="form-text x-small text-info mt-1">
+                            <i class="fa fa-info-circle me-1"></i> A secure password will be auto-generated.
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">PHONE NUMBER</label>
+                        <input type="text" id="fo_phone" class="form-control rounded-3 py-2" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">WAREHOUSE</label>
+                        <select id="fo_warehouse" class="form-select rounded-3 py-2" required></select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted">ASSIGNED REGION</label>
+                        <input type="text" id="fo_region" class="form-control rounded-3 py-2" required placeholder="e.g., Bhavnagar South">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-success rounded-3 px-4 fw-bold" onclick="saveFO()">Generate Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let foGrid;
+
+    $(document).ready(function() {
+        initGrid();
+        loadWarehouses();
+    });
+
+    function initGrid() {
+        foGrid = $("#foGrid").kendoGrid({
+            dataSource: {
+                transport: { 
+                    read: "http://localhost:5020/api/Admin/GetFieldOfficers" 
+                },
+                schema: { 
+                    data: "data",
+                    model: {
+                        id: "userId",
+                        fields: {
+                            fullName: { type: "string" },
+                            email: { type: "string" },
+                            warehouseName: { type: "string" },
+                            totalInspections: { type: "number" },
+                            isActive: { type: "boolean" }
+                        }
+                    }
+                },
+                pageSize: 10
+            },
+            columns: [
+                { 
+                    field: "fullName", 
+                    title: "OFFICER", 
+                    width: 250,
+                    template: function(d) {
+                        const name = d.fullName || d.FullName;
+                        const email = d.email || d.Email;
+                        return `<div class='d-flex align-items-center gap-3'>
+                                    <div class='avatar-circle'>${name.charAt(0)}</div>
+                                    <div><div class='fw-bold text-dark mb-0'>${name}</div><div class='x-small text-muted'>${email}</div></div>
+                                </div>`;
+                    }
+                },
+                { 
+                    field: "warehouseName", 
+                    title: "WAREHOUSE", 
+                    template: function(d) {
+                        const w = d.warehouseName || d.WarehouseName || 'N/A';
+                        return `<span class='badge bg-soft-success text-success border-0 px-3 py-2 rounded-pill font-md'>${w}</span>`;
+                    }
+                },
+                { field: "assignedRegion", title: "REGION", width: 150 },
+                { 
+                    field: "totalInspections", 
+                    title: "PERFORMANCE", 
+                    width: 150,
+                    template: function(d) {
+                        let count = d.totalInspections || d.TotalInspections || 0;
+                        return `<div class='d-flex align-items-center gap-2 text-primary fw-bold'>
+                                    <i class='fa fa-circle-check opacity-50'></i> ${count} Lots
+                                </div>`;
+                    }
+                },
+                { 
+                    field: "isActive", 
+                    title: "STATUS", 
+                    width: 120,
+                    template: function(d) {
+                        let active = d.isActive !== undefined ? d.isActive : d.IsActive;
+                        return active 
+                            ? `<span class="badge bg-success-vivid">Active</span>` 
+                            : `<span class="badge bg-danger-vivid">Inactive</span>`;
+                    }
+                },
+                { 
+                    title: "CONTROL", 
+                    width: 180,
+                    template: function(d) {
+                        let active = d.isActive !== undefined ? d.isActive : d.IsActive;
+                        let userId = d.userId || d.UserId;
+                        return `
+                        <button class="btn btn-sm ${active ? 'btn-outline-danger' : 'btn-outline-success'} rounded-pill w-100 fw-bold border-2 px-3" 
+                            onclick="toggleFOStatus(${userId}, ${active})">
+                            ${active ? 'Deactivate' : 'Activate'}
+                        </button>`;
+                    }
+                }
+            ],
+            pageable: {
+                refresh: true,
+                buttonCount: 5
+            },
+            sortable: true,
+            noRecords: { template: "<div class='p-5 text-center text-muted'>No field officers found.</div>" }
+        }).data("kendoGrid");
+    }
+
+    function loadWarehouses() {
+        $.get("http://localhost:5020/api/Admin/GetWarehousesForDropdown", (res) => {
+            let html = '<option value="" disabled selected>Select Warehouse</option>';
+            res.data.forEach(w => {
+                html += `<option value="${w.id}">${w.name}</option>`;
+            });
+            $("#fo_warehouse").html(html);
+        });
+    }
+
+    function openFOModal() {
+        $("#foForm")[0].reset();
+        $("#foModal").modal('show');
+    }
+
+    function saveFO() {
+        let payload = {
+            FullName: $("#fo_name").val(),
+            Email: $("#fo_email").val(),
+            Phone: $("#fo_phone").val(),
+            WarehouseId: parseInt($("#fo_warehouse").val()),
+            AssignedRegion: $("#fo_region").val()
+        };
+
+        if(!payload.Email || !payload.FullName || !payload.WarehouseId) { 
+            alert("Please fill all required fields."); return; 
+        }
+
+        $.ajax({
+            url: "http://localhost:5020/api/Admin/CreateFieldOfficer",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(payload),
+            success: function(res) {
+                $("#foModal").modal('hide');
+                foGrid.dataSource.read();
+                alert(res.message);
+            }
+        });
+    }
+
+    function toggleFOStatus(uid, currentStatus) {
+        const action = currentStatus ? "DEACTIVATE" : "ACTIVATE";
+        if(confirm(`Change status to ${action}?`)) {
+            $.post("http://localhost:5020/api/Admin/ToggleFOStatus", { userId: uid, status: !currentStatus }, function() {
+                foGrid.dataSource.read();
+            });
+        }
+    }
+</script>
+
+
+<link rel="stylesheet" href="~/css/pages/admin/fieldofficermanagement.css" asp-append-version="true" />
+
+}
+
+

@@ -1,0 +1,267 @@
+﻿@* @{
+    ViewData["Title"] = "Account Settings";
+    ViewData["UserRole"] = "Farmer";
+    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
+    
+<link rel="stylesheet" href="~/css/pages/farmer/profile.css" asp-append-version="true" />
+
+}
+
+<div class="db-wrap" style="gap: 20px; padding-bottom: 20px;">
+
+    <!-- Main Profile Interface -->
+    <section class="profile-layout" style="margin-top: 10px;">
+        
+        <!-- Sidebar Identicard -->
+        <div class="profile-sidebar">
+            <div class="profile-header">
+                <button class="k-button" style="position:absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border:none; color:#fff;" onclick="changeCover()"><i class="fi fi-rr-picture"></i></button>
+            </div>
+            
+            <div style="position: relative; padding-top: 50px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; text-align: center;">
+                <div class="profile-avatar-wrap" id="farmerAvatarWrap">
+                    <i class="fi fi-rr-user" style="font-size: 32px; color: #94a3b8;"></i>
+                </div>
+                
+                <h3 id="farmerNameLabel" style="font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 4px 0;"></h3>
+                <p id="farmerMetaLabel" style="font-size: 13px; color: #64748b; margin: 0 0 24px 0;"></p>
+
+                <div style="text-align: left; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+                    <div class="kpi-stat-row">
+                        <span class="kpi-stat-lbl">Active Listings</span>
+                        <span class="kpi-stat-val" id="statActiveListings">0</span>
+                    </div>
+                    <div class="kpi-stat-row" style="border-bottom: none;">
+                        <span class="kpi-stat-lbl">Quality Checks Passed</span>
+                        <span class="kpi-stat-val" id="statQCPassed">0</span>
+                    </div>
+                </div>
+
+                <button class="btn-logout" onclick="logoutUser()">
+                    <i class="fi fi-rr-exit" style="margin-right: 6px;"></i> Secure Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Settings Form Container -->
+        <div class="profile-main-card">
+            
+            <form id="profileForm">
+                
+                <!-- Section: Personal Info -->
+                <div class="section-title">
+                    <i class="fi fi-rr-user" style="color: #3b82f6;"></i> Personal & Farm Details
+                </div>
+                
+                <div class="row g-3" style="margin-bottom: 20px;">
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">FULL NAME (AS PER AADHAAR)</label>
+                        <input id="fullName" class="text-field" value="" />
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">MOBILE NUMBER</label>
+                        <input id="phoneNo" class="text-field" value="" disabled />
+                    </div>
+                </div>
+                
+                <div class="row g-3" style="margin-bottom: 32px;">
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">FARM LOCATION (STATE/REGION)</label>
+                        <select id="farmRegion" class="text-field" style="cursor: pointer;">
+                            <option value="">Select Region...</option>
+                            <option value="punjab">Punjab</option>
+                            <option value="haryana">Haryana</option>
+                            <option value="up">Uttar Pradesh</option>
+                            <option value="mp">Madhya Pradesh</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">PRIMARY CROP SPECIALTY</label>
+                        <input id="specialty" class="text-field" value="" placeholder="e.g. Wheat, Rice" />
+                    </div>
+                </div>
+
+                <!-- Section: Financial Routing -->
+                <div class="section-title" style="margin-top: 40px;">
+                    <i class="fi fi-rr-bank" style="color: #8b5cf6;"></i> Bank Account & Payouts
+                </div>
+
+                <div class="row g-3" style="margin-bottom: 20px;">
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">BANK NAME</label>
+                        <input id="bankName" class="text-field" value="" />
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">ACCOUNT HOLDER NAME</label>
+                        <input id="acctName" class="text-field" value="" />
+                    </div>
+                </div>
+
+                <div class="row g-3" style="margin-bottom: 32px;">
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">ACCOUNT NUMBER</label>
+                        <input id="acctNo" type="password" class="text-field" value="" />
+                        <div style="font-size: 11px; color:#94a3b8; margin-top:4px;">Hidden for security.</div>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">IFSC ROUTING CODE</label>
+                        <input id="ifscCode" class="text-field" value="" />
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
+                    <div style="font-size: 13px; color: #64748b; margin-right: 20px;">
+                        <i class="fi fi-rr-info" style="color: #64748b; margin-right: 4px;"></i> Required to save banking changes.
+                    </div>
+                    <button type="button" class="btn-update" onclick="saveProfile()">Update Profile Info</button>
+                </div>
+            </form>
+
+        </div>
+
+    </section>
+
+</div>
+
+<!-- Authentication Check Modal if Needed -->
+<div id="authModal" style="display: none;"></div>
+
+@section Scripts {
+    <script src="~/js/Farmer/profile.js" asp-append-version="true"></script>
+} *@
+
+
+@{
+    ViewData["Title"] = "Account Settings";
+    ViewData["UserRole"] = "Farmer";
+    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
+    
+<link rel="stylesheet" href="~/css/pages/farmer/profile.css" asp-append-version="true" />
+
+}
+
+<div class="db-wrap" style="gap: 20px; padding-bottom: 20px;">
+
+    <section class="profile-layout" style="margin-top: 10px;">
+        
+        <div class="profile-sidebar">
+            <div class="profile-header">
+                <button class="k-button" style="position:absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border:none; color:#fff;" onclick="changeCover()"><i class="fi fi-rr-picture"></i></button>
+            </div>
+            
+            <div style="position: relative; padding-top: 50px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; text-align: center;">
+                <div class="profile-avatar-wrap" id="farmerAvatarWrap">
+                    <i class="fi fi-rr-user" style="font-size: 32px; color: #94a3b8;"></i>
+                </div>
+                
+                <h3 id="farmerNameLabel" style="font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 4px 0;"></h3>
+                <p id="farmerMetaLabel" style="font-size: 13px; color: #64748b; margin: 0 0 24px 0;"></p>
+
+                <div style="text-align: left; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+                    <div class="kpi-stat-row">
+                        <span class="kpi-stat-lbl">Active Listings</span>
+                        <span class="kpi-stat-val" id="statActiveListings">0</span>
+                    </div>
+                    <div class="kpi-stat-row" style="border-bottom: none;">
+                        <span class="kpi-stat-lbl">Quality Checks Passed</span>
+                        <span class="kpi-stat-val" id="statQCPassed">0</span>
+                    </div>
+                </div>
+
+                <button class="btn-logout" onclick="logoutUser()">
+                    <i class="fi fi-rr-exit" style="margin-right: 6px;"></i> Secure Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="profile-main-card">
+            
+            <form id="profileForm">
+                
+                <div class="section-title">
+                    <i class="fi fi-rr-user" style="color: #3b82f6;"></i> Personal & Farm Details
+                </div>
+                
+                <div class="row g-3" style="margin-bottom: 20px;">
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">FULL NAME (AS PER AADHAAR)</label>
+                        <input id="fullName" class="text-field" value="" />
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">MOBILE NUMBER</label>
+                        <input id="phoneNo" class="text-field" value="" disabled />
+                    </div>
+                </div>
+                
+                <div class="row g-3" style="margin-bottom: 32px;">
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">FARM LOCATION (STATE/REGION)</label>
+                        <select id="farmRegion" class="text-field" style="cursor: pointer;">
+                            <option value="">Select Region...</option>
+                            <option value="punjab">Punjab</option>
+                            <option value="haryana">Haryana</option>
+                            <option value="up">Uttar Pradesh</option>
+                            <option value="mp">Madhya Pradesh</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">PRIMARY CROP SPECIALTY</label>
+                        <input id="specialty" class="text-field" value="" placeholder="e.g. Wheat, Rice" />
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 40px;">
+                    <i class="fi fi-rr-bank" style="color: #8b5cf6;"></i> Bank Account & Payouts
+                </div>
+
+                <div class="row g-3" style="margin-bottom: 20px;">
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">BANK NAME</label>
+                        <input id="bankName" class="text-field" value="" />
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">ACCOUNT HOLDER NAME</label>
+                        <input id="acctName" class="text-field" value="" />
+                    </div>
+                </div>
+
+                <div class="row g-3" style="margin-bottom: 32px;">
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">ACCOUNT NUMBER</label>
+                        <input id="acctNo" type="password" class="text-field" value="" />
+                        <div style="font-size: 11px; color:#94a3b8; margin-top:4px;">Hidden for security.</div>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="premium-label">IFSC ROUTING CODE</label>
+                        <input id="ifscCode" class="text-field" value="" />
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
+                    <div style="font-size: 13px; color: #64748b; margin-right: 20px;">
+                        <i class="fi fi-rr-info" style="color: #64748b; margin-right: 4px;"></i> Required to save banking changes.
+                    </div>
+                    <button type="button" class="btn-update" onclick="saveProfile()">Update Profile Info</button>
+                </div>
+            </form>
+
+        </div>
+
+    </section>
+
+</div>
+
+<div id="authModal" style="display: none;"></div>
+
+@section Scripts {
+    <script src="~/js/Farmer/profile.js" asp-append-version="true"></script>
+}
+

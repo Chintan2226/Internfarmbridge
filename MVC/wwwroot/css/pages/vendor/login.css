@@ -1,0 +1,20 @@
+﻿body { font-family: "Plus Jakarta Sans", sans-serif; }
+        
+        /* Premium Glass Card Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Beautiful Teal/Green Gradient Background */
+        .bg-mesh {
+            background-color: #8ec5b0;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(153, 50%, 75%, 1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(186, 61%, 38%, 1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(160, 52%, 40%, 1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, hsla(139, 45%, 68%, 1) 0px, transparent 50%);
+        }

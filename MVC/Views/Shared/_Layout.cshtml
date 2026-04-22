@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html class="light" lang="en" style="scroll-behavior: smooth;">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FarmBridge</title>
+    <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+    <link rel='stylesheet'
+          href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-brands/css/uicons-brands.css'>
+    <link rel="stylesheet" href="~/css/layouts/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/home/intro.css" asp-append-version="true" />
+</head>
+
+<body class="bg-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+    <!-- Top Navigation -->
+    <nav class="fixed z-50 glass-nav">
+        <div class="flex justify-between items-center w-full px-8 py-3 mx-auto">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="flex items-center gap-3 group">
+                <img id="nav-logo-target" src="~/Logo/Logo_Without_Bg.png" alt="FarmBridge Logo"
+                     class="h-10 w-auto transition-transform duration-500 group-hover:rotate-12" />
+                <span
+                class="text-2xl font-extrabold bg-gradient-to-br from-emerald-900 to-emerald-700 bg-clip-text text-transparent font-['Poppins']">FarmBridge</span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="nav-link font-['Poppins'] text-sm" href="#">Home</a>
+                <a class="nav-link font-['Poppins'] text-sm" href="#features">Features</a>
+                <a class="nav-link font-['Poppins'] text-sm" href="#solutions">Solutions</a>
+                <a class="nav-link font-['Poppins'] text-sm" href="#process">How It Works</a>
+                <a class="nav-link font-['Poppins'] text-sm" href="#impact">About</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <button
+                    class="nav-ghost-btn rounded-full border border-white/20 bg-white/10 px-5 py-2.5 font-['Poppins'] font-bold backdrop-blur-md transition-all hover:bg-white/16 hover:scale-105 active:scale-95 text-sm">Log
+                    In</button>
+                    <button
+                        class="nav-solid-btn rounded-full border border-white/45 bg-white/78 px-6 py-2.5 font-['Poppins'] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_14px_28px_rgba(24,68,108,0.14)] backdrop-blur-md hover:bg-white hover:scale-[1.02] active:scale-95 transition-all text-sm">Book
+                        a Demo</button>
+                    </div>
+                </div>
+            </nav>
+
+            <main role="main">
+                @RenderBody()
+            </main>
+
+            <!-- Footer -->
+            <footer class="w-full border-t border-outline-variant/10 bg-surface-container-low">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12 w-full px-8 py-16 max-w-7xl mx-auto">
+                    <div class="col-span-1">
+                        <div class="flex items-center gap-3 mb-6">
+                            <img src="~/Logo/Logo_Without_Bg.png" alt="FarmBridge Logo" class="h-8 w-auto opacity-80" />
+                            <span class="text-xl font-bold text-primary block">FarmBridge</span>
+                        </div>
+                        <p class="font-['Poppins'] text-sm text-on-surface-variant max-w-xs leading-relaxed">
+                            The precision platform for the modern agricultural enterprise. Transforming the supply chain from
+                            the ground up.
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <h5 class="font-bold text-primary text-sm uppercase tracking-widest">Solutions</h5>
+                        <a class="font-['Poppins'] text-sm text-on-surface-variant hover:text-primary transition-colors"
+                           href="#">Procurement</a>
+                        <a class="font-['Poppins'] text-sm text-on-surface-variant hover:text-primary transition-colors"
+                           href="#">Quality Control</a>
+                        <a class="font-['Poppins'] text-sm text-on-surface-variant hover:text-primary transition-colors"
+                           href="#">Logistics</a>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <h5 class="font-bold text-primary text-sm uppercase tracking-widest">Platform</h5>
+                        <a class="font-['Poppins'] text-sm text-on-surface-variant hover:text-primary transition-colors"
+                           href="/StaffAuth/Login">Admin Portal</a>
+                        <a class="font-['Poppins'] text-sm text-on-surface-variant hover:text-primary transition-colors"
+                           href="/StaffAuth/Login">FO Portal</a>
+                        <a class="font-['Poppins'] text-sm text-on-surface-variant hover:text-primary transition-colors"
+                           href="#">Contact Us</a>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <h5 class="font-bold text-primary text-sm uppercase tracking-widest">Connect With Us</h5>
+                        <div class="flex flex-col gap-3">
+                            <a class="font-['Poppins'] text-sm text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2"
+                                   href="tel:+911800XXXXXX">
+                                <i class="fi fi-rr-phone-call"></i>
+                                <span>+91 1800-XXX-XXXX</span>
+                            </a>
+                            <a class="font-['Poppins'] text-sm text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2"
+                                   href="mailto:farmbridge13@gmail.com">
+                                <i class="fi fi-rr-envelope"></i>
+                                <span>farmbridge13@gmail.com</span>
+                            </a>
+                        </div>
+                        <div class="flex gap-4 mt-2">
+                            <a class="text-on-surface-variant hover:text-primary transition-colors" href="#"
+                                   aria-label="Twitter">
+                                <i class="fi fi-brands-twitter-alt"></i>
+                            </a>
+                            <a class="text-on-surface-variant hover:text-primary transition-colors" href="#"
+                                   aria-label="LinkedIn">
+                                <i class="fi fi-brands-linkedin"></i>
+                            </a>
+                            <a class="text-on-surface-variant hover:text-primary transition-colors" href="#"
+                                   aria-label="WhatsApp">
+                                <i class="fi fi-brands-whatsapp"></i>
+                            </a>
+                            <a class="text-on-surface-variant hover:text-primary transition-colors" href="#"
+                                   aria-label="YouTube">
+                                <i class="fi fi-brands-youtube"></i>
+                            </a>
+                        </div>
+                        <p class="font-['Poppins'] text-xs text-outline mt-4 leading-relaxed">
+                            © 2026 FarmBridge Precision. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </footer>
+
+            <script src="~/lib/jquery/dist/jquery.min.js"></script>
+            <script src="~/js/layouts/site.js" asp-append-version="true"></script>
+
+            @await RenderSectionAsync("Scripts", required: false)
+        </body>
+
+    </html>
+

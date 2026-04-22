@@ -1,0 +1,289 @@
+@{
+    Layout = "_FieldOfficerLayout";
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-wrapper">
+
+    <!-- 🔥 CARDS -->
+    <div class="card-row">
+
+        <div class="stat-card stat-pending">
+            <div class="stat-card-head">
+                <p class="stat-card-title">Pending Requests</p>
+                <div class="icon"><i class="fa fa-clipboard-list"></i></div>
+            </div>
+            <h2 id="pendingCount">0</h2>
+            <div class="stat-card-sub">
+                <span class="dot"></span>
+                <span>Awaiting action</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-progress">
+            <div class="stat-card-head">
+                <p class="stat-card-title">In Progress</p>
+                <div class="icon"><i class="fa fa-sync-alt"></i></div>
+            </div>
+            <h2 id="inProgressCount">0</h2>
+            <div class="stat-card-sub">
+                <span class="dot"></span>
+                <span>Inspections running</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-completed">
+            <div class="stat-card-head">
+                <p class="stat-card-title">Completed</p>
+                <div class="icon"><i class="fa fa-check-circle"></i></div>
+            </div>
+            <h2 id="completedCount">0</h2>
+            <div class="stat-card-sub">
+                <span class="dot"></span>
+                <span>Successfully closed</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-total">
+            <div class="stat-card-head">
+                <p class="stat-card-title">Total Requests</p>
+                <div class="icon"><i class="fa fa-layer-group"></i></div>
+            </div>
+            <h2 id="totalCount">0</h2>
+            <div class="stat-card-sub">
+                <span class="dot"></span>
+                <span>Overall assigned</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- High-Demand Crop Alerts -->
+    <div id="highDemandAlerts" class="fo-alert-wrap" style="display:none;"></div>
+
+    <!-- 🔥 GRID -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Today's Schedules</h3>
+            <button class="k-button k-primary" onclick="goToQC()">View All</button>
+        </div>
+
+        <div id="recentGrid"></div>
+    </div>
+
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function () {
+
+        function normalizeStatus(status) {
+            return (status || "").toLowerCase();
+        }
+
+        function renderHighDemandAlerts(requests) {
+            const pendingOrScheduled = requests.filter(function (x) {
+                const status = normalizeStatus(x.status);
+                return status === "pending" || status === "scheduled";
+            });
+            const cropCounts = {};
+
+            pendingOrScheduled.forEach(function (x) {
+                const crop = (x.cropType || x.crop || "").trim();
+                if (!crop) return;
+                cropCounts[crop] = (cropCounts[crop] || 0) + 1;
+            });
+
+            const highDemand = Object.keys(cropCounts)
+                .filter(crop => cropCounts[crop] >= 2)
+                .sort((a, b) => cropCounts[b] - cropCounts[a]);
+
+            const $wrap = $("#highDemandAlerts");
+            if (highDemand.length === 0) {
+                $wrap.hide().empty();
+                return;
+            }
+
+            const html = highDemand.map(function (crop) {
+                const count = cropCounts[crop];
+                return `
+                    <div class="fo-alert-banner">
+                        <div class="fo-alert-icon"><i class="fa fa-bell"></i></div>
+                        <div class="fo-alert-text">
+                            <strong>High Demand Alert:</strong> ${crop} has ${count} pending/scheduled QC requests.
+                        </div>
+                        <button class="fo-alert-btn" onclick="goToQC()">View Requests</button>
+                    </div>
+                `;
+            }).join("");
+
+            $wrap.html(html).show();
+        }
+
+        // 🔥 1. LOAD COUNTS (ALL DATA)
+        $.ajax({
+            url: foApiUrl("/qc-requests"),
+            type: "GET",
+            success: function (data) {
+                const rows = Array.isArray(data) ? data : [];
+
+                let pending = rows.filter(x => normalizeStatus(x.status) === "pending").length;
+                let inProgress = rows.filter(x => normalizeStatus(x.status) === "scheduled").length;
+                let completed = rows.filter(x => normalizeStatus(x.status) === "completed").length;
+
+                $("#pendingCount").text(pending);
+                $("#inProgressCount").text(inProgress);
+                $("#completedCount").text(completed);
+                $("#totalCount").text(rows.length);
+                renderHighDemandAlerts(rows);
+            },
+            error: function (xhr) {
+                if (handleFoUnauthorized(xhr)) return;
+                showFoLoadFailedAlert("dashboard counts");
+            }
+        });
+
+        // 🔥 2. LOAD TODAY GRID
+        $.ajax({
+            url: foApiUrl("/today-schedules"),
+            type: "GET",
+            success: function (data) {
+                loadGrid(data);
+            },
+            error: function (xhr) {
+                if (handleFoUnauthorized(xhr)) return;
+                showFoLoadFailedAlert("today schedules");
+            }
+        });
+
+
+        function loadGrid(data) {
+
+            $("#recentGrid").kendoGrid({
+                dataSource: {
+                    data: data,
+                    pageSize: 5
+                },
+                pageable: true,
+                sortable: true,
+
+                columns: [
+                    { field: "farmerName", title: "FARMER", attributes: { "data-label": "Farmer" } },
+
+                    // ✅ FIXED FIELD NAME
+                    { field: "crop", title: "CROP", attributes: { "data-label": "Crop" } },
+
+                    {
+                        field: "quantity",
+                        title: "QTY",
+                        attributes: { "data-label": "Qty" },
+                        template: d => `${d.quantity || 0} ${d.unit || ""}`
+                    },
+
+                    {
+                        title: "ASKING PRICE",
+                        attributes: { "data-label": "Asking Price" },
+                        template: function (d) {
+                            if (!d.askingPrice) return "<span style='color:#aaa;'>-</span>";
+                            return "<span style='font-weight:600;color:#2e7d32;'>₹" 
+                                + Number(d.askingPrice).toLocaleString('en-IN') 
+                                + "/kg</span>";
+                        }
+                    },
+
+                    {
+                        field: "status",
+                        title: "STATUS",
+                        attributes: { "data-label": "Status" },
+                        template: function (d) {
+
+                            let status = normalizeStatus(d.status);
+
+                            let map = {
+                                "pending": "pill-pending",
+                                "in progress": "pill-progress",
+                                "completed": "pill-approved"
+                            };
+
+                            return `<span class="status-pill ${map[status] || ""}">${d.status}</span>`;
+                        }
+                    },
+
+                    {
+                        title: "SLOT",
+                        attributes: { "data-label": "Date & Time" },
+                        template: function (d) {
+                            if (!d.slotDate)
+                                return "<span style='color:#aaa;font-size:12px;'>Not Scheduled</span>";
+
+                            // Format time: "09:00:00" → "09:00 AM"
+                            function formatTime(t) {
+                                if (!t) return "";
+                                var parts = t.split(":");
+                                var h = parseInt(parts[0]);
+                                var m = parts[1];
+                                var ampm = h >= 12 ? "PM" : "AM";
+                                h = h % 12 || 12;
+                                return h + ":" + m + " " + ampm;
+                            }
+
+                            return `
+                                <div style="background:#f0faf2;padding:6px 10px;border-radius:8px;font-size:13px;">
+                                    <div style="font-weight:600;">${kendo.toString(new Date(d.slotDate), 'dd MMM')}</div>
+                                    <div style="color:#555;">${formatTime(d.startTime)} - ${formatTime(d.endTime)}</div>
+                                </div>
+                            `;
+                        }
+                    },
+
+                    {
+                        title: "ACTION",
+                        attributes: { "data-label": "Action" },
+                        template: function (d) {
+
+                            let status = normalizeStatus(d.status);
+
+                            // ✅ In Progress → Assess
+                            if (status === "in progress") {
+                                return `
+                                    <button class="btn-assess"
+                                        onclick="goToAssess(${d.id})">
+                                        Assess
+                                    </button>
+                                `;
+                            }
+
+                            // ✅ Completed → View Details
+                            if (status === "completed") {
+                                return `
+                                    <button class="btn-view"
+                                        onclick="viewInspectionDetail(${d.id})">
+                                        View
+                                    </button>
+                                `;
+                            }
+
+                            return "-";
+                        }
+                    }
+                ]
+            });
+        }
+
+        // 🔥 NAVIGATION
+
+        window.goToQC = function () {
+            window.location.href = "/FieldOfficer/QCRequest";
+        };
+
+        window.goToAssess = function (id) {
+            window.location.href = `/FieldOfficer/QualityForm?id=${id}`;
+        };
+
+        window.viewInspectionDetail = function (id) {
+            window.location.href = `/FieldOfficer/InspectionDetail?id=${id}`;
+        };
+
+    });
+</script>
+}

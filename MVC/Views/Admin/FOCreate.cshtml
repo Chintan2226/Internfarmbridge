@@ -1,0 +1,210 @@
+@* @model CreateFieldOfficerViewModel *@
+
+@{
+    ViewData["Title"] = "Create Field Officer";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+
+
+<link rel="stylesheet" href="~/css/pages/admin/focreate.css" asp-append-version="true" />
+
+
+<div class="fo-page">
+    <div class="fo-shell">
+
+        <div class="fo-card">
+
+            <div class="fo-card-header">
+                <div class="fo-avatar">
+                    <span class="k-icon k-i-user"></span>
+                </div>
+                <div>
+                    <h2>Create Field Officer Account</h2>
+                    <p>Fill in the details below. A temporary password will be auto-generated and emailed.</p>
+                </div>
+            </div>
+
+            <div class="fo-card-body">
+
+                <div class="fo-info-bar">
+                    <span class="k-icon k-i-information"></span>
+                    <div>
+                        <strong>Auto-generated credentials:</strong>
+                        A secure temporary password will be sent directly to the field officer's email upon account creation.
+                    </div>
+                </div>
+
+                <div class="fo-section-label">Officer Details</div>
+
+                <form id="createFOForm">
+                    <div id="kendoForm"></div>
+
+                    <div class="fo-btn-row">
+                        <button type="submit" id="btnSubmit" class="k-button fo-btn-primary">
+                            <span class="k-icon k-i-user-add"></span>
+                            Create Account &amp; Send Credentials
+                        </button>
+
+                        <a href="/Admin/FO" class="k-button fo-btn-secondary">
+                            <span class="k-icon k-i-arrow-left"></span>
+                            Back to List
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <p class="fo-footer-hint">
+            All account activity is logged. Field officer will be notified via email.
+        </p>
+
+    </div>
+</div>
+
+@section Scripts {
+
+<script>
+$(document).ready(function () {
+
+    $("#kendoForm").kendoForm({
+
+        orientation: "vertical",
+        layout: "grid",
+        grid: {
+            cols: 2,
+            gutter: 20
+        },
+
+        formData: {
+            FullName: "",
+            Phone: "",
+            Email: "",
+            WarehouseId: null,
+            AssignedRegion: ""
+        },
+
+        items: [
+            {
+                field: "FullName",
+                label: "Full Name",
+                validation: { required: true },
+                editor: "TextBox",
+                editorOptions: {
+                    placeholder: "e.g. Ravi Kumar"
+                }
+            },
+            {
+                field: "Phone",
+                label: "Phone Number",
+                validation: {
+                    required: true,
+                    pattern: {
+                        value: "^[0-9]{10}$",
+                        message: "Enter a valid 10-digit number"
+                    }
+                },
+                editor: "MaskedTextBox",
+                editorOptions: {
+                    mask: "0000000000",
+                    promptChar: "_"
+                }
+            },
+            {
+                field: "Email",
+                label: "Email Address",
+                colSpan: 2,
+                validation: {
+                    required: true,
+                    email: true
+                },
+                editor: "TextBox",
+                editorOptions: {
+                    placeholder: "officer@example.com"
+                }
+            },
+            {
+                field: "WarehouseId",
+                label: "Warehouse",
+                validation: { required: {message:"Warehouse is required"} },
+                editor: "DropDownList",
+                editorOptions: {
+                    optionLabel: "— Select Warehouse —",
+                    dataTextField: "name",
+                    dataValueField: "warehouseId",
+                    valuePrimitive: true,
+                    filter: "contains",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                url: "/Admin/GetWarehouses",
+                                dataType: "json"
+                            }
+                        },
+                        schema: {
+                            data: "data"
+                        }
+                    }
+                }
+            },
+            {
+                field: "AssignedRegion",
+                label: "Assigned Region",
+                validation: { required: true },
+                editor: "TextBox",
+                editorOptions: {
+                    placeholder: "e.g. North Gujarat"
+                }
+            }
+        ],
+
+        buttons: false
+
+    });
+
+    /* â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    $("#createFOForm").on("submit", function (e) {
+        e.preventDefault();
+
+        var form = $("#kendoForm").data("kendoForm");
+        if (!form.validate()) return;
+
+        var data = form._model.toJSON();
+
+        var $btn = $("#btnSubmit");
+        $btn.prop("disabled", true)
+            .html('<span class="k-icon k-i-loading"></span> Creating...');
+
+        $.ajax({
+            url: "/Admin/Create",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+
+            success: function (res) {
+                $btn.prop("disabled", false)
+                    .html('<span class="k-icon k-i-user-add"></span> Create Account &amp; Send Credentials');
+
+                if (res.success) {
+                    kendo.alert(res.message).bind("close", function () {
+                        @* window.location.href = "/Admin/FO"; *@
+                    });
+                } else {
+                    kendo.alert(res.message);
+                }
+            },
+
+            error: function () {
+                $btn.prop("disabled", false)
+                    .html('<span class="k-icon k-i-user-add"></span> Create Account &amp; Send Credentials');
+                kendo.alert("Something went wrong. Please try again.");
+            }
+        });
+    });
+
+});
+</script>
+
+}
+
+

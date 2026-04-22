@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "Notifications";
+    ViewData["UserRole"] = "Farmer";
+    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
+}
+
+
+<link rel="stylesheet" href="~/css/pages/farmer/notifications.css" asp-append-version="true" />
+
+
+<div class="notif-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <h2 style="font-size: 18px; font-weight: 600; margin: 0;">All Notifications</h2>
+        <button class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onclick="markAllRead()"><i class="fi fi-rr-check-double"></i> Mark All as Read</button>
+    </div>
+
+    <!-- Kendo ListView Container -->
+    <div id="listView"></div>
+</div>
+
+<script type="text/x-kendo-template" id="template">
+    <div class="notif-item #:IsRead ? '' : 'unread'#">
+        <div class="notif-icon #:Type == 'QC' ? 'icon-qc' : (Type == 'Payment' ? 'icon-pay' : 'icon-sys')#">
+            <i class="fi #:Icon#"></i>
+        </div>
+        <div class="notif-content">
+            <h4>#:Title#</h4>
+            <p>#:Message#</p>
+        </div>
+        <div class="notif-time">
+            #:Time#
+        </div>
+    </div>
+</script>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        // url: window.API_BASE + "/notifications",
+                    }
+                },
+                data: [] // Empty Array initially
+            });
+
+            $("#listView").kendoListView({
+                dataSource: dataSource,
+                autoBind: false,
+                template: kendo.template($("#template").html())
+            });
+            
+            // Temporary message till data comes
+            if(dataSource.data().length === 0) {
+                $("#listView").html("<div class='text-muted' style='text-align:center; padding: 20px;'>No new notifications.</div>");
+            }
+        });
+
+        function markAllRead() {
+            var list = $("#listView").data("kendoListView");
+            var data = list.dataSource.data();
+            for(var i=0; i<data.length; i++){
+                data[i].set("IsRead", true);
+            }
+        }
+    </script>
+}
+

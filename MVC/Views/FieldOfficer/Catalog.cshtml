@@ -1,0 +1,208 @@
+﻿@{
+    Layout = "_FieldOfficerLayout";
+    ViewData["Title"] = "Catalog";
+}
+
+<div class="cat-wrapper">
+
+    <!-- Header -->
+    <div class="cat-header">
+        <div>
+            <h2 class="cat-title">Product Catalog</h2>
+            <p class="cat-sub">All registered crops and commodities</p>
+        </div>
+        <div class="cat-search-box">
+            <i class="fa fa-search cat-search-icon"></i>
+            <input type="text" id="catalogSearch"
+                   class="cat-search-input"
+                   placeholder="Search crop, category..." />
+        </div>
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="cat-filters" id="categoryFilters">
+        <button class="cat-filter-pill active" onclick="filterCategory('all', this)">All</button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="cat-loading" id="catLoading">
+        <i class="fa fa-spinner fa-spin"></i> Loading catalog...
+    </div>
+
+    <!-- Grid -->
+    <div class="cat-grid" id="catalogGrid" style="display:none;"></div>
+
+    <!-- Empty State -->
+    <div class="cat-empty" id="catEmpty" style="display:none;">
+        <i class="fa fa-box-open"></i>
+        <p>No products found</p>
+        <small>Try a different search or category</small>
+    </div>
+
+</div>
+
+@section Scripts {
+<script>
+
+var allProducts = [];
+
+$(document).ready(function () {
+
+    $.ajax({
+        url: foApiUrl("/warehouse-catalog"),
+        type: "GET",
+        success: function (data) {
+
+            allProducts = data;
+
+            buildCategoryFilters(data);
+            applyFilters();
+
+            $("#catLoading").hide();
+            $("#catalogGrid").show();
+        },
+        error: function (xhr) {
+            if (handleFoUnauthorized(xhr)) return;
+            Swal.fire({
+                icon: 'error',
+                title: 'Load Failed',
+                text: 'Failed to load catalog. Please try again.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+        }
+    });
+
+    // ðŸ”¥ SEARCH FIX
+    $('#catalogSearch').on('input', function () {
+        applyFilters();
+    });
+
+});
+
+
+/* ================= FUNCTIONS (GLOBAL) ================= */
+
+function buildCategoryFilters(data) {
+
+    var categories = [...new Set(data.map(p => p.grade).filter(Boolean))];
+
+    var container = $('#categoryFilters');
+    container.find("button:not(:first)").remove(); // ðŸ”¥ FIX duplicate
+
+    categories.forEach(function (cat) {
+        container.append(
+            `<button class="cat-filter-pill" onclick="filterCategory('${cat}', this)">${cat}</button>`
+        );
+    });
+}
+
+
+function filterCategory(cat, btn) {
+    $('.cat-filter-pill').removeClass('active');
+    $(btn).addClass('active');
+    applyFilters();
+}
+
+
+function applyFilters() {
+
+    var activeCat = $('.cat-filter-pill.active').text().trim();
+    var searchTerm = $('#catalogSearch').val().toLowerCase().trim();
+
+    var filtered = allProducts.filter(function (p) {
+
+        var matchCategory = (activeCat === 'All') || (p.grade === activeCat);
+
+        var matchSearch =
+            !searchTerm ||
+            (p.productName || '').toLowerCase().includes(searchTerm) ||
+            (p.grade || '').toLowerCase().includes(searchTerm) ||
+            (p.variety || '').toLowerCase().includes(searchTerm);
+
+        return matchCategory && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+        $('#catalogGrid').hide();
+        $('#catEmpty').show();
+    } else {
+        $('#catEmpty').hide();
+        renderGrid(filtered);
+        $('#catalogGrid').show();
+    }
+}
+
+
+function renderGrid(products) {
+
+    var grid = $('#catalogGrid');
+    grid.empty();
+
+    products.forEach(function (p) {
+
+        grid.append(`
+            <div class="cat-card" onclick="showDetail(${p.lotId})">
+                <div class="cat-card-icon">ðŸŒ¾</div>
+
+                <div class="cat-card-body">
+                    <div class="cat-card-top">
+                        <span class="cat-card-name">${p.productName}</span>
+                        <span class="cat-card-badge badge-grain">${p.grade}</span>
+                    </div>
+
+                    <p class="cat-card-desc">
+                        Variety: ${p.variety ?? '-'}
+                    </p>
+
+                    <div class="cat-card-meta">
+                        <span><i class="fa fa-weight-hanging"></i> ${p.quantity} ${p.unit}</span>
+                        <span><i class="fa fa-warehouse"></i> ${p.warehouse}</span>
+                    </div>
+                </div>
+            </div>
+        `);
+    });
+}
+
+
+function showDetail(id) {
+
+    var product = allProducts.find(p => p.lotId === id);
+    if (!product) return;
+
+    var html = `
+        <div style="padding:16px;">
+            <div style="font-size:48px;text-align:center;margin-bottom:16px;">ðŸŒ¾</div>
+
+            <table style="width:100%;">
+                <tr><td><b>Product</b></td><td>${product.productName}</td></tr>
+                <tr><td><b>Grade</b></td><td>${product.grade}</td></tr>
+                <tr><td><b>Variety</b></td><td>${product.variety ?? '-'}</td></tr>
+                <tr><td><b>Quantity</b></td><td>${product.quantity} ${product.unit}</td></tr>
+                <tr><td><b>Warehouse</b></td><td>${product.warehouse}</td></tr>
+            </table>
+        </div>
+    `;
+
+    var win = $('<div></div>').appendTo('body').kendoWindow({
+        title: product.productName,
+        width: '360px',
+        modal: true,
+        visible: false,
+        close: function () { this.destroy(); }
+    }).data('kendoWindow');
+
+    // ðŸ”¥ IMPORTANT FIX
+    win.content(html);
+
+    win.center().open();
+}
+</script>
+}
+
+
+<link rel="stylesheet" href="~/css/pages/fieldofficer/catalog.css" asp-append-version="true" />
+
+
+

@@ -1,0 +1,382 @@
+@{
+    Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
+    ViewData["Title"] = "Catalog";
+}
+
+
+<link rel="stylesheet" href="~/css/pages/vendor/catalog.css" asp-append-version="true" />
+
+
+<div class="catalog-page-header">
+    <div>
+        <h1 class="catalog-page-title">
+            <i class="fi fi-rr-shop"></i>
+            Our Catalog
+        </h1>
+    </div>
+    <div class="header-buttons">
+        <button class="wishlist-top-btn" onclick="location.href='/Vendor/Wishlist'">
+            <i class="fi fi-rr-heart"></i>
+            My Wishlist
+            <span class="wishlist-count" id="wishlistCount">0</span>
+        </button>
+        <button class="cart-redirect-btn" onclick="location.href='/Vendor/Checkout'">
+            <i class="fi fi-rr-shopping-cart"></i>
+            Cart
+            <span class="cart-badge" id="headerCartCount">0</span>
+        </button>
+    </div>
+</div>
+
+<div class="catalog-filters">
+    <input type="text" class="filter-input" id="searchInput" placeholder="Search by crop name...">
+    <select class="filter-select" id="categoryFilter">
+        <option value="all">All Categories</option>
+        <option value="Grain">🌾 Grains</option>
+        <option value="Oilseed">🌿 Oilseeds</option>
+    </select>
+    <select class="filter-select" id="sortFilter">
+        <option value="default">Default</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="name_asc">Name: A to Z</option>
+    </select>
+</div>
+
+<div id="catalogGrid">
+    <div class="catalog-loading">
+        <i class="fi fi-rr-spinner"></i>
+        <h3>Loading Catalog</h3>
+        <p>Fetching fresh products from our suppliers...</p>
+    </div>
+</div>
+
+<div id="quantityWindow" style="display: none; width: 400px; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <div class="product-icon" id="popupProductIcon" style="font-size: 48px; color: #2d8a45;"></div>
+        <h3 id="popupProductName" style="color: #1a5c2a; margin: 10px 0;">Product Name</h3>
+        <div class="stock-info" id="popupStockInfo" style="color: #64748b; font-size: 13px;">Available: 0 kg</div>
+        <div class="min-info" style="color: #e65100; font-size: 12px; margin-top: 5px;">⚠️ Minimum order: 20kg</div>
+    </div>
+
+    <div class="quantity-selector"
+         style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0;">
+        <button id="qtyMinus" class="k-button k-button-md k-rounded-md"
+                style="background: #f1f5f0; border: none; width: 40px; height: 40px; font-size: 20px;">
+            <i class="fas fa-minus"></i>
+        </button>
+        <input type="number" id="popupQuantity" value="20" min="20" step="5"
+               style="width: 100px; text-align: center; font-size: 24px; font-weight: 700; border: 2px solid #e0ece3; border-radius: 10px; padding: 10px;">
+        <button id="qtyPlus" class="k-button k-button-md k-rounded-md"
+                style="background: #f1f5f0; border: none; width: 40px; height: 40px; font-size: 20px;">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <div class="price-display" style="text-align: center; margin-bottom: 20px;">
+        <span style="color: #64748b;">Total Price: </span>
+        <span id="popupTotalPrice" style="font-size: 24px; font-weight: 700; color: #2d8a45;">₹0</span>
+    </div>
+
+    <div class="popup-actions" style="display: flex; gap: 12px; margin-top: 20px;">
+        <button id="cancelQtyBtn" class="k-button k-button-md"
+                style="flex: 1; background: #f1f5f0; color: #64748b; border: none;">
+            Cancel
+        </button>
+        <button id="confirmQtyBtn" class="k-button k-button-md"
+                style="flex: 1; background: linear-gradient(135deg, #2d8a45, #1a5c2a); color: white; border: none;">
+            <i class="fas fa-cart-plus"></i> Add to Cart
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5020/api/Vendor';
+        let allProducts = [];
+        let wishlistIds = [];
+
+        // --- HELPER FUNCTIONS ---
+        function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+        }
+
+        async function authorizedFetch(url, options = {}) {
+        const token = getCookie("authToken");
+        options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+        };
+
+        const response = await fetch(url, options);
+        if (response.status === 401) {
+        window.location.href = "/Vendor/Login";
+        return null;
+        }
+        return response;
+        }
+
+        // UPDATED: Syncs local Catalog page AND global Layout navbar
+        function updateHeaderCartCount() {
+        let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+
+        // Update local catalog page badge
+        const headerCartSpan = document.getElementById('headerCartCount');
+        if (headerCartSpan) headerCartSpan.innerText = cart.length;
+
+        // SYNC GLOBAL LAYOUT BADGE
+        if (typeof syncGlobalBadges === 'function') {
+        syncGlobalBadges();
+        }
+        }
+
+        // UPDATED: Syncs local Catalog page AND global Layout navbar
+        function updateWishlistCount() {
+        // Update local catalog page badge
+        const el = document.getElementById('wishlistCount');
+        if (el) el.innerText = wishlistIds.length;
+
+        // SYNC GLOBAL LAYOUT BADGE
+        if (typeof syncGlobalBadges === 'function') {
+        syncGlobalBadges();
+        }
+        }
+
+        // --- CORE LOGIC ---
+        async function loadCatalog() {
+        const category = document.getElementById('categoryFilter').value;
+        const search = document.getElementById('searchInput').value;
+
+        try {
+        let url = `${API_URL}/catalog?category=${encodeURIComponent(category)}&search=${encodeURIComponent(search)}`;
+        const response = await authorizedFetch(url);
+        if (!response) return;
+
+        const result = await response.json();
+        if (result.success && result.data) {
+        allProducts = result.data;
+        await loadWishlistIds();
+        applySortAndDisplay();
+        } else {
+        document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products found</p></div>';
+        }
+        } catch (error) {
+        document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><p class="text-danger">Error loading products</p></div>';
+        }
+        }
+
+        async function loadWishlistIds() {
+        try {
+        const response = await authorizedFetch(`${API_URL}/wishlist`);
+        if (!response) return;
+        const result = await response.json();
+        if (result.success && result.data) {
+        // Store grade-aware keys to keep items separate by grade
+        wishlistIds = result.data.map(item => `${item.productId}_${item.grade || 'nograde'}`);
+        updateWishlistCount();
+        }
+        } catch (error) { wishlistIds = []; }
+        }
+
+        function applySortAndDisplay() {
+        const sortBy = document.getElementById('sortFilter').value;
+        let sortedProducts = [...allProducts];
+
+        switch (sortBy) {
+        case 'price_asc': sortedProducts.sort((a, b) => a.unitPrice - b.unitPrice); break;
+        case 'price_desc': sortedProducts.sort((a, b) => b.unitPrice - a.unitPrice); break;
+        case 'name_asc': sortedProducts.sort((a, b) => a.name.localeCompare(b.name)); break;
+        default: sortedProducts.sort((a, b) => a.id - b.id);
+        }
+        displayProducts(sortedProducts);
+        }
+
+        function displayProducts(products) {
+        if (!products || products.length === 0) {
+        document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products found</p></div>';
+        return;
+        }
+
+        let html = '<div class="products-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px;">';
+        products.forEach(p => {
+        // Grade-aware wishlist key: productId_grade
+        const wishlistKey = `${p.id}_${p.grade || 'nograde'}`;
+        let isInWishlist = wishlistIds.includes(wishlistKey);
+        let heartIconClass = isInWishlist ? 'fas' : 'far';
+        let price = p.unitPrice || 0;
+        let displayImg = p.imageUrl || null;
+        // Display name with grade if grade exists
+        let displayName = p.grade ? `${p.name} (Grade ${p.grade})` : p.name;
+
+        let mediaContent = displayImg
+        ? `<img src="${displayImg}" alt="${escapeHtml(displayName)}" style="width: 100%; height: 100%; object-fit: cover;">`
+        : `<i class="fas ${getProductIcon(p.name)} fa-3x text-success"></i>`;
+
+        html += `
+        <div class="catalog-product-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
+        <div class="catalog-product-img">
+        ${mediaContent}
+        ${p.grade ? `<div class="catalog-product-badge" style="position: absolute; top: 10px; left: 10px; background: #f4a621; color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">Grade ${p.grade}</div>` : ''}
+        ${p.discountPercentage > 0 ? `<div class="catalog-product-badge" style="position: absolute; top: 10px; right: 10px; background: #e53e3e; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">${p.discountPercentage}% OFF</div>` : ''}
+        </div>
+        <div class="catalog-product-body" style="padding: 16px;">
+        <div class="catalog-product-name" style="font-weight: 700; color: #1a5c2a; margin-bottom: 4px;">${escapeHtml(displayName)}</div>
+        <div class="catalog-product-farmer" style="font-size: 12px; color: #64748b; margin-bottom: 8px;"><i class="fas fa-user-check"></i> ${escapeHtml(p.farmerName || 'Verified Farmer')}</div>
+                        
+        <div class="catalog-product-price" style="font-size: 18px; font-weight: 800; color: #2d8a45;">
+        ₹${price.toLocaleString('en-IN')}<small>/${p.unit || 'kg'}</small>
+        </div>
+                        
+        <div class="catalog-product-stock" style="font-size: 12px; color: #64748b; margin-top: 4px;">
+        <i class="fas fa-box"></i> ${p.quantityAvailable} ${p.unit || 'kg'} available
+        </div>
+        <div class="catalog-product-actions">
+        <button class="btn-catalog-add-cart" onclick="addToCart(${p.id}, '${escapeHtml(p.name)}', ${price}, ${p.quantityAvailable}, '${displayImg || ''}', '${p.grade || ''}')">
+        <i class="fas fa-cart-plus"></i> Add to Cart
+        </button>
+        <button class="btn-wishlist-heart ${isInWishlist ? 'active' : ''}" onclick="toggleWishlistItem(${p.id}, '${escapeHtml(p.name)}', ${price}, '${p.grade || ''}', event)">
+        <i class="${heartIconClass} fa-heart"></i>
+        </button>
+        </div>
+        </div>
+        </div>`;
+        });
+        html += '</div>';
+        document.getElementById('catalogGrid').innerHTML = html;
+        updateHeaderCartCount();
+        }
+
+        // --- ACTIONS ---
+        async function toggleWishlistItem(productId, productName, price, grade, event) {
+        event.stopPropagation();
+        const btn = event.currentTarget;
+        const isActive = btn.classList.contains('active');
+        const wishlistKey = `${productId}_${grade || 'nograde'}`;
+
+        try {
+        // Pass grade as query parameter to API
+        let url = isActive
+        ? `${API_URL}/wishlist/remove/${productId}?grade=${encodeURIComponent(grade || '')}`
+        : `${API_URL}/wishlist/add/${productId}?grade=${encodeURIComponent(grade || '')}`;
+        const response = await authorizedFetch(url, { method: isActive ? 'DELETE' : 'POST' });
+        if (!response) return;
+
+        const result = await response.json();
+        if (result.success) {
+        btn.classList.toggle('active');
+        btn.querySelector('i').className = btn.classList.contains('active') ? 'fas fa-heart' : 'far fa-heart';
+        // Update grade-aware wishlist array
+        if (isActive) wishlistIds = wishlistIds.filter(key => key !== wishlistKey);
+        else wishlistIds.push(wishlistKey);
+        updateWishlistCount();
+        }
+        } catch (error) { console.error('Wishlist error:', error); }
+        }
+
+        async function addToCartAPI(productId, productName, price, quantity, grade) {
+        try {
+        const response = await authorizedFetch(`${API_URL}/cart/add`, {
+        method: 'POST',
+        body: JSON.stringify({ cropId: productId, quantity: quantity })
+        });
+        const result = await response.json();
+        if (result.success) {
+        let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+        // Create unique key with grade to keep items separate
+        const cartKey = `${productId}_${grade || 'nograde'}`;
+        let existing = cart.find(item => `${item.id}_${item.grade || 'nograde'}` === cartKey);
+        const displayName = grade ? `${productName} (Grade ${grade})` : productName;
+
+        if (existing) {
+        existing.quantity += quantity;
+        existing.total = existing.quantity * price;
+        } else {
+        cart.push({ id: productId, name: displayName, price: price, quantity: quantity, total: price * quantity, grade: grade || '' });
+        }
+        localStorage.setItem('vendor_cart', JSON.stringify(cart));
+        updateHeaderCartCount();
+        closeQuantityWindow();
+        }
+        } catch (error) { console.error('Cart error:', error); }
+        }
+        // --- POPUP LOGIC --- 
+        let currentProduct = null;
+        function addToCart(id, name, price, max, img, grade) {
+        currentProduct = { id, name, price, max, grade };
+        // Display name with grade if it exists
+        const displayName = grade ? `${name} (Grade ${grade})` : name;
+        document.getElementById('popupProductName').innerText = displayName;
+        document.getElementById('popupStockInfo').innerText = `Available: ${max} kg`;
+
+        const iconDiv = document.getElementById('popupProductIcon');
+        iconDiv.innerHTML = img
+        ? `<img src="${img}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`
+        : (name.toLowerCase().includes('rice') || name.toLowerCase().includes('wheat') ? '🌾' : '📦');
+
+        document.getElementById('popupQuantity').value = 20;
+        updateTotalPrice();
+        openQuantityWindow();
+        }
+
+        function updateTotalPrice() {
+        const qty = parseFloat(document.getElementById('popupQuantity').value) || 0;
+        document.getElementById('popupTotalPrice').innerText = `₹${(qty * currentProduct.price).toLocaleString('en-IN')}`;
+        }
+
+        function openQuantityWindow() {
+        if (!$("#quantityWindow").data("kendoWindow")) {
+        $("#quantityWindow").kendoWindow({ title: "Select Quantity", modal: true, visible: false, width: 420 });
+        }
+        $("#quantityWindow").data("kendoWindow").center().open();
+        }
+
+        function closeQuantityWindow() { $("#quantityWindow").data("kendoWindow")?.close(); }
+
+        function getProductIcon(name) {
+        name = name.toLowerCase();
+        return (name.includes('rice') || name.includes('wheat')) ? 'fa-seedling' : 'fa-box';
+        }
+
+        function escapeHtml(text) {
+        return text ? text.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])) : '';
+        }
+
+        // --- EVENT LISTENERS ---
+        $(document).ready(() => {
+        loadCatalog();
+        $('#categoryFilter, #sortFilter').on('change', applySortAndDisplay);
+        $('#searchInput').on('input', _.debounce(loadCatalog, 500));
+
+        $('#qtyPlus').on('click', () => {
+        let input = $('#popupQuantity');
+        input.val(Math.min(currentProduct.max, parseInt(input.val()) + 5));
+        updateTotalPrice();
+        });
+        $('#qtyMinus').on('click', () => {
+        let input = $('#popupQuantity');
+        input.val(Math.max(20, parseInt(input.val()) - 5));
+        updateTotalPrice();
+        });
+        $('#popupQuantity').on('input', updateTotalPrice);
+        $('#cancelQtyBtn').on('click', closeQuantityWindow);
+
+        $('#confirmQtyBtn').on('click', () => {
+        // UPDATED: Passing grade from the currentProduct object
+        addToCartAPI(
+        currentProduct.id,
+        currentProduct.name,
+        currentProduct.price,
+        parseInt($('#popupQuantity').val()),
+        currentProduct.grade
+        );
+        });
+
+        });
+    </script>
+}
+

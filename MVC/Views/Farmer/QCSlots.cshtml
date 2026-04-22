@@ -1,0 +1,143 @@
+@{
+    ViewData["Title"] = "QC Slot Booking";
+    ViewData["UserRole"] = "Farmer";
+    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
+    <link href="~/css/Farmer/crops.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/Farmer/qclots.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="db-wrap qc-db-wrap">
+
+    <div class="f-action-row qc-header-row qc-hdr">
+        <h2 class="qc-header-title">QC Appointments</h2>
+        <button id="btnOpenQCWindow" class="qc-req-btn"><i class="fi fi-rr-calendar-plus qc-btn-icon"></i> Request New QC Appointment</button>
+    </div>
+
+    <section>
+        <div class="kpi-grid qc-kpi-grid">
+            <div class="kpi-card qc-kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Upcoming Appts</div>
+                    <div class="kpi-icon qc-icon-up"><i class="fi fi-rr-calendar text-white qc-lg-icon"></i></div>
+                </div>
+                <div class="kpi-val" id="kpiUpcoming">0</div>
+                <div class="watermark"><i class="fi fi-rr-calendar"></i></div>
+            </div>
+            
+            <div class="kpi-card qc-kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Awaiting Results</div>
+                    <div class="kpi-icon qc-icon-wait"><i class="fi fi-rr-hourglass-end text-white qc-lg-icon"></i></div>
+                </div>
+                <div class="kpi-val" id="kpiAwaiting">0</div>
+                <div class="watermark"><i class="fi fi-rr-hourglass-end"></i></div>
+            </div>
+ 
+            <div class="kpi-card qc-kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Total QC Passed</div>
+                    <div class="kpi-icon qc-icon-pass"><i class="fi fi-rr-badge-check text-white qc-lg-icon"></i></div>
+                </div>
+                <div class="kpi-val" id="kpiTotalPassed">0</div>
+                <div class="watermark"><i class="fi fi-rr-badge-check"></i></div>
+            </div>
+ 
+            <div class="kpi-card qc-kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Premium Grade Rate</div>
+                    <div class="kpi-icon qc-icon-grade"><i class="fi fi-rr-star text-white qc-lg-icon"></i></div>
+                </div>
+                <div class="kpi-val" id="kpiGradeRate">0%</div>
+                <div class="watermark"><i class="fi fi-rr-star"></i></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="grid-card qc-grid-wrap">
+            <div class="grid-head qc-grid-head">
+                <div class="grid-title">Recent & Future Appointments</div>
+            </div>
+            <div class="kendo-widget-container">
+                <div id="historyGrid" class="borderless-grid"></div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<div id="qcBookWindow" class="qc-book-win">
+    <form id="qcBookForm" autocomplete="off" class="premium-form-container">
+        
+        <div class="premium-form-body">
+            
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-building"></i></div>
+                    <h4>Facility Selection</h4>
+                </div>
+                <div class="premium-row">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Select Warehouse Facility <span class="req">*</span></label>
+                        <select id="warehouseLocation">
+                            <option value="">Select Nearest Warehouse...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-seedling"></i></div>
+                    <h4>Crop Details</h4>
+                </div>
+                <div class="premium-row">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Select Active Crop Listing <span class="req">*</span></label>
+                        <select id="cropListing">
+                            <option value="">Select Crop for Inspection...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-calendar"></i></div>
+                    <h4>Appointment Schedule</h4>
+                </div>
+                <div class="premium-row">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Select Inspection Date <span class="req">*</span></label>
+                        <input id="slotDate" />
+                    </div>
+                </div>
+                <div id="slotsContainer" class="premium-row mt-3 qc-hide-start">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Available Inspection Slots <span class="req">*</span></label>
+                        <div id="timeSlotGrid" class="slot-grid-layout"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="premium-modal-footer">
+            <button type="button" id="btnCloseQCWindow" class="premium-btn-cancel">Cancel</button>
+            <div class="premium-actions">
+                <button type="button" id="confirmBookingBtn" class="premium-btn-publish" disabled>
+                    <i class="fi fi-rr-check"></i> Confirm Booking
+                </button>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/Farmer/qcslots.js" asp-append-version="true"></script>
+}

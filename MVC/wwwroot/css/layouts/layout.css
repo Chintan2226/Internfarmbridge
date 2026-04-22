@@ -1,0 +1,358 @@
+/* FarmBridge — Global Layout Styles (layout.css) */
+
+:root {
+    /* Core Colors */
+    --green-50: #f0fdf4;
+    --green-100: #dcfce7;
+    --green-500: #22c55e;
+    --green-600: #16a34a;
+    --green-700: #15803d;
+    --green-800: #166534;
+    --green-900: #14532d;
+
+    --blue-400: #60a5fa;
+    --blue-600: #2563eb;
+
+    --saffron: #ff9933;
+    --gold: #d4af37;
+
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-muted: #4b5563;
+    --text-light: #6b7280;
+
+    --bg-base: #f8faf8;
+
+    /* Fonts */
+    --font-display: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Radii */
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-full: 9999px;
+}
+
+/* Base Resets */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    margin-bottom: 60px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-display);
+}
+
+/* Global Navigation Styles */
+.glass-nav {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.34)), rgba(168, 205, 235, 0.24);
+    backdrop-filter: blur(26px) saturate(190%);
+    -webkit-backdrop-filter: blur(26px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.48);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.08), 0 20px 48px rgba(26, 70, 109, 0.14);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slideDownFade 1s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-top: 1.5rem;
+    border-radius: var(--radius-full);
+    width: calc(100% - 3rem);
+    max-width: 1280px;
+    left: 50%;
+    transform: translateX(-50%);
+    position: fixed;
+    z-index: 50;
+}
+
+.glass-nav>div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1280px;
+    padding: 0.75rem 2rem;
+    margin: 0 auto;
+}
+
+.navbar-scrolled {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.4)), rgba(187, 221, 245, 0.24);
+    margin-top: 0.75rem;
+    width: calc(100% - 2rem);
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08), 0 18px 42px rgba(26, 70, 109, 0.18);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes slideDownFade {
+    from {
+        transform: translate(-50%, -100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+.nav-link {
+    position: relative;
+    transition: all 0.3s ease;
+    opacity: 1;
+    border-radius: var(--radius-full);
+    padding: 0.6rem 1rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.nav-ghost-btn {
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.12);
+    padding: 0.6rem 1.25rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .2s ease, background-color .2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-ghost-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: scale(1.03);
+}
+
+.nav-ghost-btn:active {
+    transform: scale(0.97);
+}
+
+.nav-solid-btn {
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.78);
+    padding: 0.6rem 1.5rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 14px 28px rgba(24, 68, 108, 0.14);
+}
+
+.nav-solid-btn:hover {
+    background: #fff;
+    transform: scale(1.02);
+}
+
+.nav-solid-btn:active {
+    transform: scale(0.97);
+}
+
+#nav-logo-target {
+    transition: transform .5s ease;
+}
+
+.group:hover #nav-logo-target {
+    transform: rotate(12deg);
+}
+
+/* Additional Utilities for Layout */
+.bg-surface {
+    background-color: var(--bg-base);
+}
+
+.bg-surface-container-low {
+    background-color: #f1f5f1;
+}
+
+.text-primary {
+    color: var(--text-primary);
+}
+
+.text-on-surface-variant {
+    color: var(--text-muted);
+}
+
+.text-outline {
+    color: var(--text-light);
+}
+
+.border-outline-variant\/10 {
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+.tracking-widest {
+    letter-spacing: 0.1em;
+}
+
+.leading-relaxed {
+    line-height: 1.625;
+}
+
+/* Minimal utility equivalents (non-Tailwind) */
+.fixed {
+    position: fixed;
+}
+
+.z-50 {
+    z-index: 50;
+}
+
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.gap-3 {
+    gap: 0.75rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.gap-8 {
+    gap: 2rem;
+}
+
+.h-10 {
+    height: 2.5rem;
+}
+
+.w-auto {
+    width: auto;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (min-width: 768px) {
+    .md\:flex {
+        display: flex !important;
+    }
+
+    .md\:grid-cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.grid {
+    display: grid;
+}
+
+.grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.gap-12 {
+    gap: 3rem;
+}
+
+.py-16 {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+}
+
+.opacity-80 {
+    opacity: .8;
+}
+
+.max-w-7xl {
+    max-width: 80rem;
+}
+
+/* Shared Keyframes */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}

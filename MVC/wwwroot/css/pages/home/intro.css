@@ -1,0 +1,58 @@
+/* FarmBridge — Intro Animation Styles (intro.css) */
+
+#intro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff; /* Surface bright */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#intro-logo {
+    width: 300px;
+    height: 300px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 1.7s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10000;
+    will-change: top, left, width, height, transform;
+}
+
+#intro-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Initially hide the main content to avoid flicker */
+body.intro-active main,
+body.intro-active nav,
+body.intro-active footer {
+    opacity: 0;
+}
+
+body.intro-complete main,
+body.intro-complete nav,
+body.intro-complete footer {
+    opacity: 1;
+    transition: opacity 0.8s ease-in-out;
+}
+
+/* Navbar logo should be invisible while the intro logo is transitioning to it */
+#nav-logo-target {
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
+
+#nav-logo-target.visible {
+    opacity: 1;
+    visibility: visible;
+}

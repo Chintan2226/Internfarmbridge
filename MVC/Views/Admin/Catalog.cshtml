@@ -1,0 +1,460 @@
+@{
+    ViewData["Title"] = "Crop Type Catalog";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/pages/admin/catalog.css" asp-append-version="true" />
+
+<!-- PAGE HEADER -->
+<div class="pg-header">
+    <div class="pg-header-left">
+        <div class="pg-icon">🌾</div>
+        <div>
+            <div class="pg-title">Crop Type Catalog</div>
+            <div class="pg-subtitle">Manage crop types for Farmers &amp; Vendors</div>
+        </div>
+    </div>
+    <div class="pg-header-actions">
+        <button class="btn btn-primary" onclick="openAddModal()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add Crop Type
+        </button>
+        <a href="/Admin/CatalogProduct/Logs" class="btn btn-ghost-white">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M4 4.5h5M4 6.5h5M4 8.5h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            Logs
+        </a>
+    </div>
+</div>
+
+<!-- FILTER BAR (Kendo DropDownLists + TextBox) -->
+<div class="filter-bar">
+    <div class="filter-group">
+        <span class="filter-label">Search Crop</span>
+        <input id="filterSearch" type="text" class="filter-input" placeholder="Search by name..." style="min-width:175px" />
+    </div>
+    <div class="filter-group">
+        <span class="filter-label">Category</span>
+        <select id="filterCategory"></select>
+    </div>
+    <div class="filter-group">
+        <span class="filter-label">Status</span>
+        <select id="filterStatus"></select>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+        <button class="btn btn-primary" onclick="applyFilters()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M9 9l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Search
+        </button>
+        <button class="btn btn-light" onclick="clearFilters()">Clear</button>
+    </div>
+</div>
+
+<!-- KENDO LISTVIEW (Card Grid) -->
+<div id="catalogListView"></div>
+
+<!-- KENDO PAGER -->
+<div id="catalogPager"></div>
+
+<!-- CARD ITEM TEMPLATE -->
+<script id="cardTemplate" type="text/x-kendo-template">
+    <div class="crop-card">
+        # if (imageUrl) { #
+            <img class="crop-card-img" src="#: imageUrl #" alt="#: name #" onerror="imgFallback(this)" />
+        # } else { #
+            <div class="crop-card-img-placeholder">🌾</div>
+        # } #
+        <div class="crop-card-body">
+            <div class="crop-card-top">
+                <div class="crop-card-name">#: name #</div>
+                # if (isActive) { #
+                    <span class="badge badge-active"><span class="badge-dot"></span>Active</span>
+                # } else { #
+                    <span class="badge badge-inactive"><span class="badge-dot"></span>Inactive</span>
+                # } #
+            </div>
+            <div class="crop-card-cat">#: category || "Uncategorized" #</div>
+            <div class="crop-card-meta">
+                <div class="crop-meta-row">
+                    <span class="crop-meta-label">Unit</span>
+                    <span class="crop-meta-val">#: unitOfMeasure #</span>
+                </div>
+                <div class="crop-meta-row">
+                    <span class="crop-meta-label">Created By</span>
+                    <span class="crop-meta-val" style="font-weight:500;font-size:.77rem">#: createdByName || "—" #</span>
+                </div>
+            </div>
+            <div class="crop-card-actions">
+                <button class="btn-xs btn-xs-edit" onclick="openEditModal(#: id #)">✏️ Edit</button>
+                <button class="btn-xs btn-xs-del"  onclick="confirmDelete(#: id #)">🗑️ Delete</button>
+                # if (isActive) { #
+                    <button class="btn-xs btn-xs-deact" onclick="toggleStatus(#: id #, false)">⏸ Deactivate</button>
+                # } else { #
+                    <button class="btn-xs btn-xs-act"   onclick="toggleStatus(#: id #, true)">▶ Activate</button>
+                # } #
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- EMPTY TEMPLATE -->
+<script id="emptyTemplate" type="text/x-kendo-template">
+    <div class="empty-state">
+        <span class="empty-state-icon">🌾</span>
+        No crop types found. Try adjusting your filters or add a new crop type.
+    </div>
+</script>
+
+<!-- DIALOG FORM TEMPLATE -->
+<script id="productDialogTemplate" type="text/x-kendo-template">
+<div>
+    <div id="depWarning" class="warning-box"></div>
+    <input type="hidden" id="fId" />
+    <input type="hidden" id="fExistingImageUrl" />
+
+    <div class="form-row">
+        <label class="form-label">Product Name <span class="req">*</span></label>
+        <input id="fName" class="field" maxlength="200" placeholder="e.g. Basmati Rice" />
+    </div>
+    <div class="form-cols">
+        <div class="form-row">
+            <label class="form-label">Category</label>
+            <input id="fCategory" class="field" maxlength="100" placeholder="e.g. Grain, Vegetable" />
+        </div>
+        <div class="form-row">
+            <label class="form-label">Unit of Measure <span class="req">*</span></label>
+            <input id="fUnit" class="field" maxlength="20" placeholder="e.g. kg, MT" />
+        </div>
+    </div>
+    <div class="form-row">
+        <label class="form-label">Description</label>
+        <textarea id="fDescription" class="field" maxlength="1000" placeholder="Optional description..."></textarea>
+    </div>
+    <div class="form-row">
+        <label class="form-label">
+            Product Image
+            <span class="hint"> — Cloudinary · jpg / png / webp · max 5 MB</span>
+        </label>
+        <div class="img-zone" id="imgZone" onclick="document.getElementById('fImageFile').click()">
+            <input type="file" id="fImageFile" accept="image/jpeg,image/png,image/webp" onchange="previewImage(this)" />
+            <span class="img-zone-icon">🖼️</span>
+            <div class="img-zone-label" id="imgPlaceholder"><strong>Click to upload</strong> or drag &amp; drop</div>
+            <img id="imgPreview" alt="Preview" />
+        </div>
+        <button id="imgRemoveBtn" onclick="removeImage(event)">✕ Remove</button>
+    </div>
+
+    <hr class="form-divider" />
+
+    <div class="form-row">
+        <label class="form-label">Quality Parameters <span class="hint">(auto-generated)</span></label>
+        <div class="qp-grid">
+            <div class="qp-row">
+                <label>Grade</label>
+                <select id="qpGrade" class="field">
+                    <option value="">Select</option>
+                    <option>A</option><option>B</option><option>Premium</option>
+                </select>
+            </div>
+            <div class="qp-row">
+                <label>Size</label>
+                <select id="qpSize" class="field">
+                    <option value="">Select</option>
+                    <option>Small</option><option>Medium</option><option>Large</option>
+                </select>
+            </div>
+            <div class="qp-row">
+                <label>Moisture %</label>
+                <input id="qpMoisture" class="field" placeholder="e.g. 14" />
+            </div>
+            <div class="qp-row">
+                <label>Purity %</label>
+                <input id="qpPurity" class="field" placeholder="e.g. 98" />
+            </div>
+            <div class="qp-row">
+                <label>Color</label>
+                <input id="qpColor" class="field" placeholder="e.g. Green" />
+            </div>
+            <div class="qp-row">
+                <label>Variety</label>
+                <input id="qpVariety" class="field" placeholder="e.g. Hybrid" />
+            </div>
+        </div>
+    </div>
+
+    <hr class="form-divider" />
+
+    <label class="toggle-row" for="fIsActive">
+        <input type="checkbox" id="fIsActive" style="width:16px;height:16px;accent-color:var(--g500);cursor:pointer;flex-shrink:0;" />
+        <div class="toggle-label">
+            Active
+            <small>Visible to Farmers &amp; Vendors</small>
+        </div>
+    </label>
+</div>
+</script>
+
+@section Scripts {
+<script>
+    let listView, dataSource;
+    let editMode = false;
+
+    $(function () {
+
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: { url: "/Admin/GetAll", dataType: "json" }
+            },
+            schema: {
+                model: {
+                    fields: {
+                        id:            { type: "number"  },
+                        name:          { type: "string"  },
+                        category:      { type: "string"  },
+                        unitOfMeasure: { type: "string"  },
+                        imageUrl:      { type: "string"  },
+                        isActive:      { type: "boolean" },
+                        createdByName: { type: "string"  },
+                        createdAt:     { type: "date"    }
+                    }
+                }
+            },
+            pageSize: 12,
+            serverPaging: false,
+            serverFiltering: false,
+            serverSorting: false
+        });
+
+        listView = $("#catalogListView").kendoListView({
+            dataSource: dataSource,
+            template:      kendo.template($("#cardTemplate").html()),
+            altTemplate:   kendo.template($("#cardTemplate").html()),
+            noRecords:     { template: kendo.template($("#emptyTemplate").html()) }
+        }).data("kendoListView");
+
+        $("#catalogPager").kendoPager({
+            dataSource: dataSource,
+            input: true,
+            numeric: true,
+            previousNext: true,
+            info: true,
+            messages: { display: "Showing {0}-{1} of {2} crops", empty: "No crops to display" }
+        });
+
+        $("#filterCategory").kendoDropDownList({
+            dataSource: ["", "Grains", "Vegetables", "Fruits", "Pulses", "Spices", "Oilseeds"],
+            optionLabel: "All Categories",
+            change: applyFilters
+        });
+        $("#filterStatus").kendoDropDownList({
+            dataSource: [
+                { text: "All Status", value: "" },
+                { text: "Active",     value: "active"   },
+                { text: "Inactive",   value: "inactive" }
+            ],
+            dataTextField:  "text",
+            dataValueField: "value",
+            change: applyFilters
+        });
+
+        $("#filterSearch").on("keyup", applyFilters);
+    });
+
+    function applyFilters() {
+        const search = ($("#filterSearch").val() || "").toLowerCase();
+        const cat    = $("#filterCategory").data("kendoDropDownList").value();
+        const status = $("#filterStatus").data("kendoDropDownList").value();
+
+        const filters = [];
+
+        if (search) {
+            filters.push({
+                logic: "or",
+                filters: [
+                    { field: "name",     operator: "contains", value: search },
+                    { field: "category", operator: "contains", value: search }
+                ]
+            });
+        }
+        if (cat)    filters.push({ field: "category", operator: "eq", value: cat });
+        if (status === "active")   filters.push({ field: "isActive", operator: "eq", value: true  });
+        if (status === "inactive") filters.push({ field: "isActive", operator: "eq", value: false });
+
+        dataSource.filter(filters.length ? { logic: "and", filters } : {});
+    }
+
+    function clearFilters() {
+        $("#filterSearch").val("");
+        $("#filterCategory").data("kendoDropDownList").value("");
+        $("#filterStatus").data("kendoDropDownList").value("");
+        dataSource.filter({});
+    }
+
+    function previewImage(input) {
+        if (!input.files?.[0]) return;
+        if (input.files[0].size > 5 * 1024 * 1024) { alert("Image must be under 5 MB."); input.value = ""; return; }
+        const r = new FileReader();
+        r.onload = e => { $("#imgPreview").attr("src", e.target.result).show(); $("#imgPlaceholder").hide(); $("#imgRemoveBtn").show(); };
+        r.readAsDataURL(input.files[0]);
+    }
+    function removeImage(e) {
+        e.stopPropagation();
+        $("#fImageFile").val("");
+        $("#imgPreview").attr("src", "").hide();
+        $("#imgPlaceholder").show();
+        $("#imgRemoveBtn").hide();
+        $("#fExistingImageUrl").val("");
+    }
+
+    function openAddModal()  { editMode = false; resetForm(); openDialog("Add Crop Type"); }
+
+    function openEditModal(id) {
+        editMode = true; resetForm();
+        $.getJSON(`/Admin/CheckDependencies/${id}`, dep => {
+            if (dep.activeListingsCount > 0 || dep.openOrdersCount > 0)
+                $("#depWarning").html(`⚠️ <strong>Warning:</strong> ${dep.activeListingsCount} active listing(s) and ${dep.openOrdersCount} open order(s) reference this product.`).show();
+        });
+        $.getJSON(`/Admin/GetById/${id}`, p => {
+            $("#fId").val(p.id);
+            $("#fName").val(p.name);
+            $("#fCategory").val(p.category || "");
+            $("#fUnit").val(p.unitOfMeasure);
+            $("#fDescription").val(p.description || "");
+            $("#fIsActive").prop("checked", p.isActive);
+            $("#fExistingImageUrl").val(p.imageUrl || "");
+            if (p.imageUrl) {
+                $("#imgPreview").attr("src", p.imageUrl).show();
+                $("#imgPlaceholder").hide();
+                $("#imgRemoveBtn").show();
+            }
+            if (p.qualityParameters) {
+                let qp = p.qualityParameters;
+                if (typeof qp === "string") { try { qp = JSON.parse(qp); } catch { qp = {}; } }
+                $("#qpGrade").val(qp.grade || "");
+                $("#qpSize").val(qp.size || "");
+                $("#qpMoisture").val(qp.moisture || "");
+                $("#qpPurity").val(qp.purity || "");
+                $("#qpColor").val(qp.color || "");
+                $("#qpVariety").val(qp.variety || "");
+            }
+        });
+        openDialog("Edit Crop Type");
+    }
+
+    function openDialog(title) {
+        const prev = $("#productDialog").data("kendoDialog");
+        if (prev) { prev.destroy(); $("#productDialog").remove(); }
+
+        $("body").append(`<div id="productDialog">${$("#productDialogTemplate").html()}</div>`);
+
+        $("#productDialog").kendoDialog({
+            width:    "600px",
+            height:   "auto",
+            maxHeight: "88vh",
+            title,
+            modal: true,
+            closable: true,
+            actions: [
+                { text: "Cancel" },
+                {
+                    text:    editMode ? "💾 Save Changes" : "✅ Add Crop Type",
+                    primary: true,
+                    action() { saveProduct(); return false; }
+                }
+            ],
+            open() {
+                $(".k-dialog-content").css({ "max-height": "62vh", "overflow-y": "auto" });
+            }
+        }).data("kendoDialog").open();
+    }
+
+    function resetForm() {
+        $("#fId,#fName,#fCategory,#fUnit,#fDescription,#fExistingImageUrl").val("");
+        $("#fIsActive").prop("checked", true);
+        $("#fImageFile").val("");
+        $("#imgPreview").attr("src", "").hide();
+        $("#imgPlaceholder").show();
+        $("#imgRemoveBtn").hide();
+        $("#depWarning").hide();
+        $("#qpGrade,#qpSize,#qpMoisture,#qpPurity,#qpColor,#qpVariety").val("");
+    }
+
+    function saveProduct() {
+        const name = $("#fName").val().trim();
+        const unit = $("#fUnit").val().trim();
+        if (!name) { alert("Product name is required."); return; }
+        if (!unit) { alert("Unit of measure is required."); return; }
+
+        let qpObj = {
+            grade: $("#qpGrade").val(), size: $("#qpSize").val(),
+            moisture: $("#qpMoisture").val(), purity: $("#qpPurity").val(),
+            color: $("#qpColor").val(), variety: $("#qpVariety").val()
+        };
+        Object.keys(qpObj).forEach(k => { if (!qpObj[k]) delete qpObj[k]; });
+
+        const fd = new FormData();
+        fd.append("Id",               $("#fId").val() || "0");
+        fd.append("Name",             name);
+        fd.append("Category",         $("#fCategory").val().trim());
+        fd.append("UnitOfMeasure",    unit);
+        fd.append("Description",      $("#fDescription").val().trim());
+        fd.append("QualityParameters", JSON.stringify(qpObj));
+        fd.append("IsActive",         $("#fIsActive").prop("checked").toString());
+        fd.append("ExistingImageUrl", $("#fExistingImageUrl").val());
+        const img = $("#fImageFile")[0].files[0];
+        if (img) fd.append("ImageFile", img);
+
+        $.ajax({
+            url: editMode ? "/Admin/Edit" : "/Admin/Add",
+            type: "POST", data: fd, processData: false, contentType: false,
+            success(res) {
+                if (res.success) {
+                    $("#productDialog").data("kendoDialog")?.close();
+                    dataSource.read();
+                    alert(res.message);
+                } else {
+                    alert(res.message || "Operation failed.");
+                }
+            },
+            error(xhr) { alert("Server error."); }
+        });
+    }
+
+    function imgFallback(el) {
+        el.parentElement.innerHTML = '<div class="crop-card-img-placeholder">🌾</div>';
+    }
+
+    function confirmDelete(id) {
+        const item = dataSource.data().find(function(d) { return d.id === id; });
+        const name = item ? item.name : "this crop";
+        $("<div>")
+            .html("<p>Delete <strong>" + kendo.htmlEncode(name) + "</strong>?</p>")
+            .kendoDialog({
+                title: "Confirm Delete", modal: true, width: "390px", closable: true,
+                actions: [
+                    { text: "Cancel" },
+                    { text: "🗑️ Delete", primary: true, action: function() { deleteProduct(id); return true; } }
+                ]
+            }).data("kendoDialog").open();
+    }
+
+    function deleteProduct(id) {
+        $.ajax({
+            url: `/Admin/Delete/${id}`, type: "POST",
+            success(res) {
+                if (res.success) { dataSource.read(); alert(res.message); }
+                else              { alert(res.message); }
+            },
+            error(xhr) { alert("Delete failed."); }
+        });
+    }
+
+</script>
+}

@@ -1,0 +1,546 @@
+@{
+    ViewBag.Title = "Admin Dashboard";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/pages/admin/dashboard.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/lib/kendo/kendo.common.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/lib/kendo/kendo.default-v2.min.css" rel="stylesheet" />
+
+<div class="db-wrap">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="search-container">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius: 50px 0 0 50px; border:1px solid var(--border);">
+                        <i class="fas fa-search" style="color: var(--g600);"></i>
+                    </span>
+                    <input type="text" id="globalSearchInput" class="form-control" 
+                           placeholder="🔍 Search across farmers, vendors, orders, crops, QC records..." 
+                           autocomplete="off"
+                           style="border-left: none; border-right: none; border:1px solid var(--border); font-family: var(--mono);">
+                    <button class="btn" id="globalSearchBtn" type="button"
+                            style="background: linear-gradient(135deg, var(--g600), var(--g700)); color: white; border-radius: 0 50px 50px 0; border: none; padding: 0 25px;">
+                        <i class="fas fa-arrow-right"></i> Search
+                    </button>
+                </div>
+            </div>
+            <div id="globalSearchResults" class="mt-4" style="display: none;">
+                <div class="card" style="border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden;">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center" style="border-bottom: 1px solid var(--border);">
+                        <h6 class="mb-0" style="font-family: var(--mono); font-size: 11px; letter-spacing: 1px;">
+                            <i class="fas fa-search text-success me-2"></i> SEARCH RESULTS
+                        </h6>
+                        <button type="button" id="closeSearchResults" class="btn-close" style="font-size: 10px;"></button>
+                    </div>
+                    <div class="card-body p-0" id="searchResultsList">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-success" style="width: 30px; height: 30px;"></div>
+                            <p class="mt-2 text-muted" style="font-family: var(--mono); font-size: 12px;">Searching...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="section-label">Key Metrics</div>
+        <div class="kpi-strip">
+            <div class="kpi-card kpi-accent">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Total Revenue</div>
+                    <div class="kpi-icon">💰</div>
+                </div>
+                <div class="kpi-val" id="kpiRevenue">₹0</div>
+                <div class="kpi-sub">Today's earnings</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Farmers</div>
+                    <div class="kpi-icon">🌾</div>
+                </div>
+                <div class="kpi-val" id="kpiFarmers">0</div>
+                <div class="kpi-sub">Registered</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Vendors</div>
+                    <div class="kpi-icon">🏪</div>
+                </div>
+                <div class="kpi-val" id="kpiVendors">0</div>
+                <div class="kpi-sub">Active</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Field Officers</div>
+                    <div class="kpi-icon">👷</div>
+                </div>
+                <div class="kpi-val" id="kpiFOs">0</div>
+                <div class="kpi-sub">On ground</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="kpi-lbl">Today's Orders</div>
+                    <div class="kpi-icon">📦</div>
+                </div>
+                <div class="kpi-val" id="kpiOrders">0</div>
+                <div class="kpi-sub">New today</div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="section-label">Revenue & Analytics 📈</div>
+        <div class="chart-row">
+            <div class="chart-card">
+                <div class="chart-head">
+                    <div>
+                        <div class="chart-title"><span style="font-size: 1.2em;">💰</span> Revenue Analytics</div>
+                        <div class="chart-sub">Earnings trajectory & financial highlights</div>
+                    </div>
+                    <div class="period-toggle" id="revSwitcher">
+                        <button class="btn-pd active" onclick="changeRevPeriod('weekly',this)">Week</button>
+                        <button class="btn-pd" onclick="changeRevPeriod('monthly',this)">Month</button>
+                        <button class="btn-pd" onclick="changeRevPeriod('yearly',this)">Year</button>
+                    </div>
+                </div>
+                <div id="revenueChart"></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-head">
+                    <div>
+                        <div class="chart-title"><span style="font-size: 1.2em;">📦</span> Order Volume</div>
+                        <div class="chart-sub">Units dispatched and demand trends</div>
+                    </div>
+                    <div class="period-toggle" id="orderSwitcher">
+                        <button class="btn-pd active" onclick="changeOrderPeriod('weekly',this)">Week</button>
+                        <button class="btn-pd" onclick="changeOrderPeriod('monthly',this)">Month</button>
+                        <button class="btn-pd" onclick="changeOrderPeriod('yearly',this)">Year</button>
+                    </div>
+                </div>
+                <div id="orderVolumeChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="section-label">Catalog Management</div>
+        <div class="bottom-row">
+            <div class="grid-card" style="grid-column: 1 / -1;">
+                <div class="grid-head">
+                    <div class="grid-title"><span style="font-size: 1.2em;">🌾</span> Active Crops Catalog</div>
+                </div>
+                <div id="activeCatalogGrid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $.ajaxSetup({ cache: false });
+
+    const API_URLS = {
+        kpi:     '/Admin/GetDashboardKpi',
+        revenue: '/Admin/GetRevenueChart',
+        orders:  '/Admin/GetOrderVolumeChart',
+        catalog: 'http://localhost:5020/api/Admin/GetCropsCatalog' 
+    };
+
+    let dashboardState = {
+        revPeriod:   'weekly',
+        orderPeriod: 'weekly',
+        refreshRate: 10000,
+        revChartInit:   false,
+        orderChartInit: false,
+        catalogGridInit:   false 
+    };
+
+    $(window).on("load", startDashboard);
+
+    function startDashboard() {
+        refreshAllData();
+        setInterval(refreshAllData, dashboardState.refreshRate);
+    }
+
+    async function refreshAllData() {
+        const ts = Date.now();
+        try {
+            await Promise.all([
+                loadKPIs(ts),
+                loadRevenueChart(ts),
+                loadOrderChart(ts),
+                loadCatalogGrid(ts) 
+            ]);
+        } catch(e) {
+            console.error("Dashboard refresh error:", e);
+        }
+    }
+
+    /* -- KPIs -- */
+    function loadKPIs(ts) {
+        return $.getJSON(`${API_URLS.kpi}?_=${ts}`, res => {
+            if (!res.success) return;
+            animateValue("kpiRevenue", "₹ " + Number(res.data.todayRevenue).toLocaleString('en-IN'));
+            animateValue("kpiFarmers", res.data.totalFarmers);
+            animateValue("kpiVendors", res.data.totalVendors);
+            animateValue("kpiFOs",     res.data.activeFOs);
+            animateValue("kpiOrders",  res.data.todayNewOrders);
+        });
+    }
+
+    function animateValue(id, newVal) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.opacity = "0";
+        el.style.transform = "translateY(6px)";
+        setTimeout(() => {
+            el.textContent = newVal;
+            el.style.transition = "opacity .3s, transform .3s";
+            el.style.opacity = "1";
+            el.style.transform = "translateY(0)";
+        }, 120);
+    }
+
+    /* -- Revenue Chart -- */
+    function loadRevenueChart(ts) {
+        return $.getJSON(`${API_URLS.revenue}?period=${dashboardState.revPeriod}&_=${ts}`, res => {
+            if (!res.success) return;
+            if (dashboardState.revChartInit) {
+                const chart = $("#revenueChart").data("kendoChart");
+                if (chart) { chart.setDataSource(new kendo.data.DataSource({ data: res.data })); }
+            } else {
+                dashboardState.revChartInit = true;
+                $("#revenueChart").kendoChart({
+                    dataSource: { data: res.data },
+                    series: [{
+                        type: "area",
+                        field: "value",
+                        categoryField: "label",
+                        color: "#d4af37", 
+                        opacity: 0.25,
+                        line: { color: "#d4af37", width: 3.5 },
+                        markers: { visible: true, size: 7, background: "#d4af37", border: { color: "#fff", width: 2.5 } }
+                    }],
+                    categoryAxis: {
+                        labels: { font: "11px Inter, monospace", color: "#64748b" },
+                        majorGridLines: { visible: false },
+                        line: { visible: false }
+                    },
+                    valueAxis: {
+                        labels: { format: "₹{0}", font: "11px Inter, monospace", color: "#64748b" },
+                        majorGridLines: { color: "rgba(212,175,55,.15)", dashType: "dash" },
+                        line: { visible: false }
+                    },
+                    tooltip: {
+                        visible: true,
+                        background: "#060a07",
+                        color: "#ffffff",
+                        font: "12.5px Inter, monospace",
+                        template: "₹ #= kendo.toString(value,'n0') #",
+                        border: { width: 0 },
+                        padding: { top: 8, bottom: 8, left: 14, right: 14 }
+                    },
+                    chartArea: { height: 260, background: "transparent" },
+                    plotArea: { margin: { top: 15, bottom: 0, left: 0, right: 0 } },
+                    legend: { visible: false },
+                    transitions: true
+                });
+            }
+        });
+    }
+
+    /* -- Order Chart -- */
+    function loadOrderChart(ts) {
+        return $.getJSON(`${API_URLS.orders}?period=${dashboardState.orderPeriod}&_=${ts}`, res => {
+            if (!res.success) return;
+            if (dashboardState.orderChartInit) {
+                const chart = $("#orderVolumeChart").data("kendoChart");
+                if (chart) { chart.setDataSource(new kendo.data.DataSource({ data: res.data })); }
+            } else {
+                dashboardState.orderChartInit = true;
+                $("#orderVolumeChart").kendoChart({
+                    dataSource: { data: res.data },
+                    series: [{
+                        type: "column",
+                        field: "value",
+                        categoryField: "label",
+                        color: "#16a34a",
+                        border: { width: 0, radius: 8 },
+                        gap: 0.5
+                    }],
+                    categoryAxis: {
+                        labels: { font: "11px Inter, monospace", color: "#64748b" },
+                        majorGridLines: { visible: false },
+                        line: { visible: false }
+                    },
+                    valueAxis: {
+                        labels: { font: "11px Inter, monospace", color: "#64748b" },
+                        majorGridLines: { color: "rgba(22,163,74,.1)", dashType: "dash" },
+                        line: { visible: false }
+                    },
+                    tooltip: {
+                        visible: true,
+                        background: "#060a07",
+                        color: "#ffffff",
+                        font: "12.5px Inter, monospace",
+                        template: "#= value # orders",
+                        border: { width: 0 },
+                        padding: { top: 8, bottom: 8, left: 14, right: 14 }
+                    },
+                    chartArea: { height: 260, background: "transparent" },
+                    plotArea: { margin: { top: 15, bottom: 0, left: 0, right: 0 } },
+                    legend: { visible: false },
+                    transitions: true
+                });
+            }
+        });
+    }
+
+    /* -- Period Switches -- */
+    function changeRevPeriod(p, btn) {
+        dashboardState.revPeriod = p;
+        dashboardState.revChartInit = false;
+        $("#revSwitcher .btn-pd").removeClass("active");
+        $(btn).addClass("active");
+        $("#revenueChart").empty();
+        loadRevenueChart(Date.now());
+    }
+
+    function changeOrderPeriod(p, btn) {
+        dashboardState.orderPeriod = p;
+        dashboardState.orderChartInit = false;
+        $("#orderSwitcher .btn-pd").removeClass("active");
+        $(btn).addClass("active");
+        $("#orderVolumeChart").empty();
+        loadOrderChart(Date.now());
+    }
+
+    /* -- Catalog Grid (AI Intelligence) -- */
+    function loadCatalogGrid(ts) {
+        return $.getJSON(`${API_URLS.catalog}?_=${ts}`, res => {
+            if (!res.success && !res.data) return;
+            
+            if (dashboardState.catalogGridInit) {
+                const grid = $("#activeCatalogGrid").data("kendoGrid");
+                if (grid) { grid.dataSource.data(res.data); return; }
+            }
+            
+            dashboardState.catalogGridInit = true;
+            $("#activeCatalogGrid").kendoGrid({
+                dataSource: { 
+                    data: res.data, 
+                    pageSize: 5,
+                    schema: {
+                        model: {
+                            fields: {
+                                createdAt: { type: "date" },
+                                askingPrice: { type: "number" },
+                                quantityAvailable: { type: "number" }
+                            }
+                        }
+                    }
+                },
+                scrollable: false, 
+                sortable: true,
+                pageable: { buttonCount: 3, info: false, input: false, previousNext: true },
+                columns: [
+                    { 
+                        title: "Product", 
+                        width: "22%",
+                        template: "<div style='display:flex; align-items:center;'>" +
+                                  "<div style='width:36px; height:36px; border-radius:8px; background:\\#EAF5EC; color:\\#1B7A3E; display:flex; align-items:center; justify-content:center; font-size:18px; margin-right:12px;'>🌾</div>" +
+                                  "<div>" +
+                                  "<div style='font-weight:800; color:\\#14532D;'>#: productName #</div>" +
+                                  "<div style='font-size:11px; color:\\#6B7280; font-weight:600;'>Grade #: grade #</div>" +
+                                  "</div>" +
+                                  "</div>"
+                    },
+                    { 
+                        title: "Storage", 
+                        width: "14%",
+                        template: "<span style='font-weight:600;'>#: storageTemp #°C</span><br>" +
+                                  "<span style='font-size:11px; color:\\#6B7280;'>#: humidity #% RH</span>"
+                    },
+                    { 
+                        title: "AI Prediction", 
+                        width: "20%",
+                        template: "<span style='font-weight:800; color:\\#14532D;'>#: predictedDaysLeft # Days Left</span><br>" +
+                                  "<span style='font-size:11px; color:\\#6B7280;'>Stored for #: daysInStorage # days</span>"
+                    },
+                    { 
+                        title: "Status", 
+                        width: "12%",
+                        template: "# if (status === 'Optimal') { #" +
+                                  "<span style='background:\\#EAF5EC; color:\\#1B7A3E; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:800; display:inline-block;'>#: status #</span>" +
+                                  "# } else if (status === 'Low Stock' || status === 'Discount Now') { #" +
+                                  "<span style='background:\\#FEF2F2; color:\\#991B1B; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:800; display:inline-block;'>#: status #</span>" +
+                                  "# } else { #" +
+                                  "<span style='background:\\#F3F4F6; color:\\#4B5563; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:800; display:inline-block;'>#: status #</span>" +
+                                  "# } #"
+                    },
+                    { 
+                        title: "Listed", 
+                        width: "12%",
+                        template: "<span style='color:\\#6B7280; font-weight:500;'>#= kendo.toString(kendo.parseDate(createdAt), 'dd MMM yy') #</span>"
+                    },
+                    {
+                        title: "Action",
+                        width: "20%",
+                        template: "# if (status === 'Discount Now' || status === 'Low Stock') { #" +
+                                  "<button style='background:\\#991B1B; color:white; padding:6px 16px; border-radius:6px; border:none; font-weight:bold; font-size: 11px; cursor:pointer; min-width: 110px; transition: 0.2s;' onclick='applyDiscount(\"#: productName #\")'>Apply Discount</button>" +
+                                  "# } else { #" +
+                                  "<button style='background:\\#F3F4F6; color:\\#4B5563; padding:6px 16px; border-radius:6px; border:1px solid \\#E5E7EB; font-weight:bold; font-size: 11px; cursor:pointer; min-width: 110px; transition: 0.2s;' onclick='manageCrop(\"#: productName #\")'>Manage</button>" +
+                                  "# } #"
+                    }
+                ]
+            });
+        });
+    }
+
+    // ==========================================
+    // Button Click Handlers (SweetAlert2)
+    // ==========================================
+    function applyDiscount(cropName) {
+        Swal.fire({
+            title: 'Apply Discount?',
+            text: `Initiate automated discount protocol for ${cropName}? This will instantly notify all active vendors.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#991B1B', 
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Yes, apply discount!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Discount Applied!',
+                    text: `Vendors have been notified about the ${cropName} discount.`,
+                    icon: 'success',
+                    confirmButtonColor: '#1B7A3E' 
+                });
+            }
+        });
+    }
+
+    function manageCrop(cropName) {
+        Swal.fire({
+            title: 'Manage Inventory',
+            text: `Opening management settings for ${cropName}.`,
+            icon: 'info',
+            confirmButtonColor: '#14532D',
+            confirmButtonText: 'Open Settings'
+        });
+    }
+
+    // ========== ELASTICSEARCH GLOBAL SEARCH ==========
+    var searchTimeout;
+    var currentQuery = '';
+    
+    function performGlobalSearch() {
+        var query = $('#globalSearchInput').val().trim();
+        if (query.length < 2) {
+            $('#globalSearchResults').hide();
+            return;
+        }
+        
+        currentQuery = query;
+        $('#globalSearchResults').show();
+        $('#searchResultsList').html('<div class="text-center py-5"><div class="spinner-border text-success"></div><p class="mt-2 text-muted">Searching...</p></div>');
+        
+        $.ajax({
+            url: '/Admin/UniversalSearch',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                query: query,
+                searchType: 'all',
+                page: 1,
+                pageSize: 30
+            }),
+            success: function(response) {
+                if (response.success && response.data && response.data.length > 0) {
+                    var html = '<div class="list-group list-group-flush">';
+                    $.each(response.data, function(i, item) {
+                        var badgeClass = '';
+                        switch(item.type) {
+                            case 'catalog': badgeClass = 'catalog'; break;
+                            case 'crop': badgeClass = 'crop'; break;
+                            case 'order': badgeClass = 'order'; break;
+                            case 'user': badgeClass = 'user'; break;
+                            case 'qc': badgeClass = 'qc'; break;
+                            default: badgeClass = 'catalog';
+                        }
+                        
+                        var statusHtml = '';
+                        if (item.status) {
+                            var statusColor = (item.status === 'Active' || item.status === 'Passed' || item.status === 'delivered') ? '#16a34a' : '#dc2626';
+                            statusHtml = '<span class="ms-2" style="font-size: 10px; background: ' + statusColor + '20; color: ' + statusColor + '; padding: 2px 6px; border-radius: 20px;">' + item.status + '</span>';
+                        }
+                        
+                        html += '<a href="' + item.url + '" class="list-group-item list-group-item-action search-result-item">';
+                        html += '<div class="d-flex justify-content-between align-items-center">';
+                        html += '<div class="d-flex align-items-center gap-2">';
+                        html += '<span class="result-badge ' + badgeClass + '">' + item.type.toUpperCase() + '</span>';
+                        html += '<strong style="font-size: 14px;">' + escapeHtml(item.title) + '</strong>';
+                        html += statusHtml;
+                        html += '</div>';
+                        html += '<i class="fas fa-chevron-right text-muted" style="font-size: 12px;"></i>';
+                        html += '</div>';
+                        if (item.subtitle) {
+                            html += '<div class="text-muted mt-1" style="font-size: 11px; font-family: monospace;">' + escapeHtml(item.subtitle) + '</div>';
+                        }
+                        if (item.description) {
+                            html += '<div class="text-muted mt-1" style="font-size: 10.5px;">' + escapeHtml(item.description.substring(0, 80)) + (item.description.length > 80 ? '...' : '') + '</div>';
+                        }
+                        html += '</a>';
+                    });
+                    html += '</div>';
+                    html += '<div class="p-3 bg-light text-center" style="font-size: 11px; font-family: monospace;">';
+                    html += 'Found ' + response.data.length + ' results for "' + escapeHtml(currentQuery) + '"';
+                    html += '</div>';
+                    $('#searchResultsList').html(html);
+                } else {
+                    $('#searchResultsList').html('<div class="text-center py-5"><i class="fas fa-search fa-2x text-muted mb-2"></i><p class="text-muted">No results found for "<strong>' + escapeHtml(currentQuery) + '</strong>"</p></div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Search error:", error);
+                $('#searchResultsList').html('<div class="text-center py-5"><i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i><p class="text-danger">Search failed. Please try again.</p></div>');
+            }
+        });
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&';
+            if (m === '<') return '<';
+            if (m === '>') return '>';
+            return m;
+        });
+    }
+    
+    // Bind search events
+    $(document).ready(function() {
+        $('#globalSearchInput').on('keyup', function(e) {
+            clearTimeout(searchTimeout);
+            if (e.key === 'Enter') {
+                performGlobalSearch();
+            } else {
+                searchTimeout = setTimeout(performGlobalSearch, 500);
+            }
+        });
+        
+        $('#globalSearchBtn').on('click', performGlobalSearch);
+        
+        $('#closeSearchResults').on('click', function() {
+            $('#globalSearchResults').hide();
+            $('#globalSearchInput').val('');
+        });
+    });
+</script>
+}

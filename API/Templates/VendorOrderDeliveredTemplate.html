@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Order Delivered – FarmBridge</title></head>
+<body style="margin:0;padding:0;background:#EAF5EC;font-family:Poppins,Segoe UI,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr><td align="center" style="padding:32px 16px">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1.5px solid #B9F5C8">
+      <tr><td style="background:#34C759;height:5px"></td></tr>
+      <tr>
+        <td align="center" style="background:#ffffff;padding:30px 32px">
+          <img src="https://res.cloudinary.com/dkcxw0pcz/image/upload/q_auto/f_auto/v1775734592/Logo_Without_Bg_is5p9a.png"
+               alt="FarmBridge"
+               style="height:100px;width:auto;display:block;margin:0 auto 12px auto;object-fit:contain" />
+          <p style="margin:0;font-size:12px;color:#5DB87A;letter-spacing:1.5px;text-transform:uppercase;font-weight:600">
+            Connecting Farmers &amp; Markets
+          </p>
+        </td>
+      </tr>
+      <tr><td style="background:#BBF7D0;height:1.5px"></td></tr>
+      <tr>
+        <td align="center" style="padding:28px 32px 20px;background:#ffffff">
+          <div style="font-size:48px;line-height:1;margin:0 auto 16px;text-align:center">📦</div>
+          <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a1a1a">Order Delivered!</h1>
+          <p style="margin:0;font-size:14px;color:#555">Your order has been successfully delivered.</p>
+        </td>
+      </tr>
+      <tr><td style="padding:0 32px 24px">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#F6FFF8;border-radius:12px;border:1px solid #C8F5D5">
+          <tr><td style="padding:20px">
+            <p style="margin:0 0 10px;font-size:13px;color:#777;text-transform:uppercase;letter-spacing:.5px">Delivery Summary</p>
+            <table width="100%" cellpadding="4" cellspacing="0">
+              <tr><td style="font-size:14px;color:#555;width:48%">Order ID</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">#{{ORDER_ID}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Vendor Name</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">{{VENDOR_NAME}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Total Amount</td><td style="font-size:14px;color:#34C759;font-weight:700">₹{{TOTAL_AMOUNT}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Delivered On</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">{{DELIVERED_AT}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Logistics Partner</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">{{LOGISTICS_PARTNER}}</td></tr>
+              <tr><td style="font-size:14px;color:#555">Tracking Number</td><td style="font-size:14px;color:#1a1a1a;font-weight:600">{{TRACKING_NUMBER}}</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:0 32px 28px;text-align:center">
+        <p style="margin:0 0 16px;font-size:14px;color:#555">Thank you for trusting FarmBridge. We hope you're satisfied with your order!</p>
+        <a href="{{PORTAL_URL}}/vendor/orders/{{ORDER_ID}}" style="background:#34C759;color:#fff;text-decoration:none;padding:12px 28px;border-radius:24px;font-size:14px;font-weight:600;display:inline-block">View Order Details</a>
+      </td></tr>
+      <tr><td style="background:#F6FFF8;padding:16px 32px;text-align:center;border-top:1px solid #e8f5eb">
+        <p style="margin:0;font-size:12px;color:#aaa">© 2026 FarmBridge · <a href="#" style="color:#34C759;text-decoration:none">Unsubscribe</a></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,426 @@
+@{
+    Layout = "_FieldOfficerLayout";
+    ViewData["Title"] = "QC Requests";
+}
+
+<div class="qc-wrapper">
+    <div class="card">
+        <div class="card-header">
+            <h3>Farmer Request List</h3>
+            <div class="badge-group">
+                <span class="hdr-badge hdr-pending" id="pendingCount">0 Pending</span>
+                <span class="hdr-badge hdr-complete" id="inProgressCount">0 In Progress</span>
+            </div>
+        </div>
+        <div id="qcGrid"></div>
+        <div id="rescheduleWindow" style="display:none;">
+            <div class="reschedule-modal-body">
+                <input type="hidden" id="slotId" />
+                <input type="hidden" id="rescheduleId" />
+
+                <div class="reschedule-field">
+                    <label class="reschedule-label">Select Date</label>
+                    <input id="rescheduleDate" class="reschedule-input" />
+                </div>
+
+                <div class="reschedule-field">
+                    <label class="reschedule-label">Start Time</label>
+                    <input id="startTime" class="reschedule-input" />
+                </div>
+
+                <div class="reschedule-field">
+                    <label class="reschedule-label">End Time</label>
+                    <input id="endTime" class="reschedule-input" />
+                </div>
+
+                <div class="reschedule-actions">
+                    <button class="k-button" onclick="closeReschedule()">Cancel</button>
+                    <button class="k-button k-primary" onclick="submitReschedule()">Submit</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function () {
+    function refreshQCGrid() {
+        $("#qcGrid").data("kendoGrid").dataSource.read();
+    }
+    function normalizeStatus(status) {
+        return (status || "").toLowerCase();
+    }
+    window.downloadReport = function (id) {
+        if (!id) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Invalid inspection ID',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+            return;
+        }
+        foOpenAuthorizedWindow(`/inspection-report/${id}`);
+    };
+    function statusPill(status) {
+        const s = normalizeStatus(status);
+
+        var map = {
+            "pending": "pill-pending",
+            "scheduled": "pill-progress",
+            "completed": "pill-completed"
+        };
+
+        let text =
+            s === "pending" ? "Pending" :
+            s === "scheduled" ? "In Progress" :
+            s === "completed" ? "Completed" :
+            status;
+
+        return "<span class='status-pill " + (map[s] || "") + "'>" + text + "</span>";
+    }
+
+
+
+    // 🪟 Window
+    var rescheduleWindow = $("#rescheduleWindow").kendoWindow({
+        title: "Reschedule Slot",
+        modal: true,
+        visible: false,
+        width: "350px"
+    }).data("kendoWindow");
+
+    // 📅 Date Picker
+    $("#rescheduleDate").kendoDatePicker({
+        format: "yyyy-MM-dd",
+        min: new Date()
+    });
+
+    // ⏰ Time Pickers
+    $("#startTime").kendoTimePicker({
+        format: "HH:mm",
+        min: new Date(0, 0, 0, 10, 0),
+        max: new Date(0, 0, 0, 18, 0),
+        interval: 30
+    });
+
+    $("#endTime").kendoTimePicker({
+        format: "HH:mm",
+        min: new Date(0, 0, 0, 10, 0),
+        max: new Date(0, 0, 0, 18, 0),
+        interval: 30
+    });
+
+    // ✅ MAKE ENTIRE KENDO PICKER CLICKABLE (not just the icon)
+    // Attach to dynamically created pickers after they're initialized
+    setTimeout(function() {
+        // Date picker - click anywhere to open
+        $("#rescheduleDate").closest('.k-datepicker').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#rescheduleDate").data("kendoDatePicker").open();
+        });
+
+        // Start time picker - click anywhere to open
+        $("#startTime").closest('.k-timepicker').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#startTime").data("kendoTimePicker").open();
+        });
+
+        // End time picker - click anywhere to open
+        $("#endTime").closest('.k-timepicker').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#endTime").data("kendoTimePicker").open();
+        });
+    }, 100);
+
+    // ✅ Change cursor to pointer on hover for entire picker wrapper
+    $(document).on('mouseenter', '#rescheduleDate, #startTime, #endTime', function() {
+        $(this).closest('.k-datepicker, .k-timepicker').css('cursor', 'pointer');
+    });
+
+    $(document).on('mouseleave', '#rescheduleDate, #startTime, #endTime', function() {
+        $(this).closest('.k-datepicker, .k-timepicker').css('cursor', 'auto');
+    });
+
+    // ✅ ACCEPT
+    window.acceptRequest = function (id) {
+        $.ajax({
+            url: foApiUrl('/accept-request'),
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({requestId: id}),
+            success: function (res) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: res.message || 'Request accepted successfully',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
+                refreshQCGrid();
+            },
+            error: function (err) {
+                if (handleFoUnauthorized(err)) return;
+                let msg =
+                    err.responseJSON?.title ||
+                    err.responseJSON?.message ||
+                    err.responseText ||
+                    "Something went wrong";
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: msg,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
+            }
+        });
+    };
+
+    // 🟡 OPEN RESCHEDULE
+    window.openReschedule = function (requestId) {
+        $("#rescheduleId").val(requestId);
+
+        $("#rescheduleDate").data("kendoDatePicker").value(null);
+        $("#startTime").data("kendoTimePicker").value(null);
+        $("#endTime").data("kendoTimePicker").value(null);
+
+        rescheduleWindow.center().open();
+    };
+
+    // 🔥 SUBMIT RESCHEDULE
+    window.submitReschedule = function () {
+        var requestId = parseInt($("#rescheduleId").val());
+        var date = $("#rescheduleDate").data("kendoDatePicker").value();
+        var start = $("#startTime").data("kendoTimePicker").value();
+        var end = $("#endTime").data("kendoTimePicker").value();
+
+        if (!date || !start || !end) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Required Fields',
+                text: 'All fields are required',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+            return;
+        }
+
+        if (end <= start) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Time',
+                text: 'End time must be greater than start time',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+            return;
+        }
+
+        $.ajax({
+            url: foApiUrl('/reschedule-request'),
+            type: 'POST',
+            data: {
+                requestId: requestId,
+                slotDate: kendo.toString(date, "yyyy-MM-dd"),
+                startTime: kendo.toString(start, "HH:mm:ss"),
+                endTime: kendo.toString(end, "HH:mm:ss")
+            },
+            success: function (res) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: res.message || 'Rescheduled successfully',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
+                rescheduleWindow.close();
+                $("#qcGrid").data("kendoGrid").dataSource.read();
+            },
+            error: function (err) {
+                if (handleFoUnauthorized(err)) return;
+                let msg =
+                    err.responseJSON?.title ||
+                    err.responseJSON?.message ||
+                    err.responseText ||
+                    "Something went wrong";
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: msg,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
+            }
+        });
+    };
+
+    window.closeReschedule = function () {
+        rescheduleWindow.close();
+    };
+
+    window.cancelRequest = function (id) {
+        Swal.fire({
+            title: 'Cancel request?',
+            text: 'The farmer will be notified by email.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, cancel',
+            cancelButtonText: 'No',
+            confirmButtonColor: '#6c757d'
+        }).then(function (r) {
+            if (!r.isConfirmed) return;
+            $.ajax({
+                url: foApiUrl('/cancel-request'),
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({requestId: id}),
+                success: function (res) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cancelled',
+                        text: res.message || 'Request cancelled',
+                        confirmButtonColor: '#28a745'
+                    });
+                    refreshQCGrid();
+                },
+                error: function (err) {
+                    if (handleFoUnauthorized(err)) return;
+                    var msg = err.responseJSON?.message || err.responseText || 'Cancel failed';
+                    Swal.fire({ icon: 'error', title: 'Error', text: msg, confirmButtonColor: '#28a745' });
+                }
+            });
+        });
+    };
+
+    // 🔥 VIEW INSPECTION DETAILS
+    window.viewInspectionDetails = function (procurementRequestId) {
+        window.location.href = `/FieldOfficer/InspectionDetail?id=${procurementRequestId}`;
+    };
+
+    // 📊 GRID
+    $("#qcGrid").kendoGrid({
+        dataSource: {
+            transport: {
+                read: {
+                    url: foApiUrl("/qc-requests"),
+                    type: "GET",
+                    dataType: "json"
+                }
+            },
+            error: function (xhr) {
+                if (handleFoUnauthorized(xhr)) return;
+                showFoLoadFailedAlert("QC requests");
+            },
+            schema: {
+                parse: function (response) {
+                    var rows = Array.isArray(response) ? response : [];
+                    return rows.filter(function (item) {
+                        var s = normalizeStatus(item.status);
+                        return s === "pending" || s === "scheduled";
+                    });
+                }
+            },
+            pageSize: 5
+        },
+
+        pageable: true,
+
+        dataBound: function () {
+            var data = this.dataSource.data();
+
+            let pending = data.filter(i => normalizeStatus(i.status) === "pending").length;
+            let inProgress = data.filter(i => normalizeStatus(i.status) === "scheduled").length;
+
+            $("#pendingCount").text(pending + " Pending");
+            $("#inProgressCount").text(inProgress + " In Progress");
+        },
+
+        columns: [
+            { field: "farmerName", title: "FARMER", attributes: { "data-label": "Farmer" } },
+            { field: "cropType", title: "CROP", attributes: { "data-label": "Crop" } },
+            { field: "quantity", title: "QTY", attributes: { "data-label": "Qty" } },
+            { field: "location", title: "LOCATION", attributes: { "data-label": "Location" } },
+
+            {
+                title: "SLOT",
+                attributes: { "data-label": "Date & Time" },
+                template: function (d) {
+                    if (!d.slotDate) return "<span>Not Scheduled</span>";
+
+                    return `
+                        <div style="background:#f0faf2;padding:8px;border-radius:8px;">
+                            <div>${kendo.toString(new Date(d.slotDate), 'dd MMM')}</div>
+                            <div style="font-size:12px;">
+                                ${d.startTime} - ${d.endTime}
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+
+            {
+                field: "status",
+                title: "STATUS",
+                attributes: { "data-label": "Status" },
+                template: d => statusPill(d.status)
+            },
+
+            {
+                title: "ACTION",
+                attributes: { "data-label": "Action" },
+                template: function (d) {
+
+                    const status = normalizeStatus(d.status);
+
+                    // ✅ Pending → Accept & Reschedule buttons
+                    if (status === "pending") {
+                        return `
+                            <button class="btn-assess" onclick="acceptRequest(${d.procurementRequestId})">
+                                Accept
+                            </button>
+
+                            <button class="btn-view" onclick="openReschedule(${d.procurementRequestId})">
+                                Reschedule
+                            </button>
+                            <button class="btn-view" style="background:#6c757d;color:#fff;border-color:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">
+                                Cancel
+                            </button>
+                        `;
+                    }
+
+                    if (status === "scheduled") {
+                        return `
+                            <button class="btn-view" style="background:#6c757d;color:#fff;border-color:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">
+                                Cancel
+                            </button>
+                        `;
+                    }
+
+                    // ✅ Completed → View Details button
+                    if (status === "completed") {
+                        return `
+                            <button class="btn-view" onclick="viewInspectionDetails(${d.procurementRequestId})">
+                                View Details
+                            </button>
+                            <button class="btn-view" onclick="downloadReport(${d.procurementRequestId})">Download Report</button>
+                        `;
+                    }
+
+                    return "<span style='color:gray;'>-</span>";
+                }
+            }
+        ]
+    });
+
+});
+</script>
+}

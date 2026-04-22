@@ -1,0 +1,606 @@
+@{
+    Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
+    ViewData["Title"] = "Checkout";
+}
+
+
+<link rel="stylesheet" href="~/css/pages/vendor/checkout.css" asp-append-version="true" />
+
+
+<div class="stepper">
+    <div class="step active" data-step="1" onclick="goToStep(1)">
+        <div class="step-circle">1</div>
+        <div class="step-label">Shopping Cart</div>
+    </div>
+    <div class="step" data-step="2" onclick="goToStep(2)">
+        <div class="step-circle">2</div>
+        <div class="step-label">Delivery Address</div>
+    </div>
+    <div class="step" data-step="3" onclick="goToStep(3)">
+        <div class="step-circle">3</div>
+        <div class="step-label">Payment Method</div>
+    </div>
+    <div class="step" data-step="4" onclick="goToStep(4)">
+        <div class="step-circle">4</div>
+        <div class="step-label">Place Order</div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div id="step1Content" class="checkout-card">
+            <h6>Shopping Cart</h6>
+            <div id="cartContainer"></div>
+            <button class="btn-next" onclick="goToStep(2)">Continue to Delivery →</button>
+        </div>
+
+        <div id="step2Content" class="checkout-card" style="display: none;">
+            <h6>Select Delivery Address</h6>
+            <div id="addressList"></div>
+            <button class="btn-back" onclick="goToStep(1)">← Back to Cart</button>
+            <button class="btn-next" onclick="goToStep(3)">Continue to Payment →</button>
+        </div>
+
+        <div id="step3Content" class="checkout-card" style="display: none;">
+            <h6>Select Payment Method</h6>
+            <div id="paymentMethodsList"></div>
+            <button class="btn-back" onclick="goToStep(2)">← Back to Address</button>
+            <button class="btn-next" onclick="goToStep(4)">Review Order →</button>
+        </div>
+
+        <div id="step4Content" class="checkout-card" style="display: none;">
+            <h6>Review Your Order</h6>
+            <div id="reviewOrderContainer"></div>
+            <button class="btn-back" onclick="goToStep(3)">← Back to Payment</button>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="checkout-card">
+            <h6>Order Summary</h6>
+            <div class="summary-row"><span>Subtotal</span><strong id="subtotal">₹0</strong></div>
+            <div class="summary-row"><span>Delivery Fee</span><span id="deliveryFee">₹100</span></div>
+            <div class="summary-row"><span>Tax (GST 5%)</span><strong id="tax">₹0</strong></div>
+            <div class="summary-total"><span>Total</span><strong class="text-success" id="total">₹0</strong></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        const MIN_QTY = 20;
+        
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        async function authorizedFetch(url, options = {}) {
+            const token = getCookie("authToken");
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            const response = await fetch(url, options);
+            if (response.status === 401) {
+                window.location.href = "/Vendor/Login";
+                return null;
+            }
+            return response;
+        }
+
+        const API_URL = 'http://localhost:5020/api/Vendor';
+        let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+        let currentStep = 1;
+        let addresses = [];
+        let selectedAddress = null;
+        let selectedPayment = null;
+
+        // Payment methods
+        let paymentMethods = [
+            { id: 'upi', name: 'UPI / Google Pay', icon: 'fa-mobile-alt', description: 'Pay using Google Pay, PhonePe, Paytm' },
+            { id: 'card', name: 'Credit / Debit Card', icon: 'fa-credit-card', description: 'Visa, Mastercard, RuPay' },
+            { id: 'netbanking', name: 'Net Banking', icon: 'fa-university', description: 'All major banks supported' }
+        ];
+
+        // ✅ FIX: renderAddresses function - THIS WAS MISSING!
+        function renderAddresses() {
+            const container = document.getElementById('addressList');
+            if (!container) return;
+            
+            if (!addresses || addresses.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marker-alt fa-2x text-muted mb-2"></i>
+                        <p>No delivery addresses found</p>
+                        <a href="/Vendor/Profile" class="btn btn-sm btn-outline-success">Add Address in Profile</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            addresses.forEach(addr => {
+                html += `
+                    <div class="address-card ${selectedAddress?.id === addr.id ? 'selected' : ''}" onclick="selectAddress(${addr.id})">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="address" value="${addr.id}" ${selectedAddress?.id === addr.id ? 'checked' : ''}>
+                            <label class="form-check-label">
+                                <strong>${escapeHtml(addr.name)}</strong><br>
+                                ${escapeHtml(addr.address)}<br>
+                                ${escapeHtml(addr.city)}, ${escapeHtml(addr.state)} - ${addr.pincode}
+                                ${addr.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
+                            </label>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // API se addresses load karo
+        async function loadAddressesFromAPI() {
+            try {
+                const response = await authorizedFetch(`${API_URL}/addresses`);
+                if (!response) return;
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    addresses = result.data.map(addr => ({
+                        id: addr.id,
+                        name: addr.fullName || addr.addressLine1?.split(',')[0] || 'Delivery Location',
+                        address: addr.addressLine1 || addr.address || '',
+                        city: addr.city || '',
+                        state: addr.state || '',
+                        pincode: addr.zipCode || addr.pincode || '',
+                        isDefault: addr.isDefault || false
+                    }));
+                } else {
+                    addresses = [];
+                }
+
+                // Select default address
+                if (addresses.length > 0) {
+                    selectedAddress = addresses.find(a => a.isDefault) || addresses[0];
+                } else {
+                    selectedAddress = null;
+                }
+
+                renderAddresses();
+            } catch (error) {
+                console.error('Error loading addresses:', error);
+                addresses = [];
+                renderAddresses();
+            }
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartContainer');
+
+            if (!cart || cart.length === 0) {
+                container.innerHTML = '<div class="text-center py-5"><i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i><p>Your cart is empty</p><a href="/Vendor/Catalog" class="btn btn-primary">Browse Products</a></div>';
+                updateTotals();
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="cart-table"><thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr></thead><tbody>';
+
+            cart.forEach((item, idx) => {
+                const itemPrice = item.price || 0;
+                const itemQty = item.quantity || 0;
+                const itemTotal = itemPrice * itemQty;
+                const isMin = itemQty <= MIN_QTY;
+
+                html += `<tr>
+                    <td><strong>${escapeHtml(item.name)}</strong> ${item.grade ? `<small>(${item.grade})</small>` : ''}</td>
+                    <td>₹${itemPrice.toLocaleString('en-IN')}</td>
+                    <td>
+                        <button class="qty-btn" onclick="updateQuantity(${idx}, -1)" ${isMin ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>-</button>
+                        <input class="qty-input" type="text" value="${itemQty}" readonly>
+                        <button class="qty-btn" onclick="updateQuantity(${idx}, 1)">+</button>
+                    </td>
+                    <td><strong>₹${itemTotal.toLocaleString('en-IN')}</strong></td>
+                    <td><button class="remove-btn" onclick="removeItem(${idx})"><i class="fas fa-trash-alt"></i></button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+            updateTotals();
+        }
+
+        function renderPaymentMethods() {
+            const container = document.getElementById('paymentMethodsList');
+            if (!container) return;
+
+            let html = '';
+            paymentMethods.forEach(pm => {
+                html += `
+                    <div class="payment-method-card ${selectedPayment === pm.id ? 'selected' : ''}" onclick="selectPaymentMethod('${pm.id}')">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod" value="${pm.id}" ${selectedPayment === pm.id ? 'checked' : ''}>
+                            <label class="form-check-label">
+                                <i class="fas ${pm.icon}"></i> <strong>${pm.name}</strong>
+                            </label>
+                            <div class="text-muted small mt-1">${pm.description}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateReviewOrder() {
+            const container = document.getElementById('reviewOrderContainer');
+            if (!container) return;
+
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="text-center py-5">Your cart is empty</div>';
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="cart-table"><thead><tr><th>Product</th><th>Quantity</th><th>Price</th><th>Total</th></tr></thead><tbody>';
+
+            cart.forEach(item => {
+                html += `<tr>
+                    <td>${escapeHtml(item.name)}</td>
+                    <td>${item.quantity}</td>
+                    <td>₹${item.price.toLocaleString('en-IN')}</td>
+                    <td><strong>₹${(item.price * item.quantity).toLocaleString('en-IN')}</strong></td>
+                </tr>`;
+            });
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const delivery = subtotal > 5000 ? 0 : 100;
+            const tax = Math.round(subtotal * 0.05);
+            const total = subtotal + delivery + tax;
+
+            html += '</tbody></table></div>';
+            html += `<div class="mt-3 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between"><span>Subtotal:</span><strong>₹${subtotal.toLocaleString('en-IN')}</strong></div>
+                        <div class="d-flex justify-content-between"><span>Delivery Fee:</span><strong>${delivery === 0 ? 'FREE' : '₹' + delivery}</strong></div>
+                        <div class="d-flex justify-content-between"><span>Tax (GST 5%):</span><strong>₹${tax.toLocaleString('en-IN')}</strong></div>
+                        <hr>
+                        <div class="d-flex justify-content-between"><strong>Total:</strong><strong class="text-success fs-5">₹${total.toLocaleString('en-IN')}</strong></div>
+                    </div>`;
+
+            let displayPaymentMethod = 'Not selected';
+            if (selectedPayment === 'upi') displayPaymentMethod = '📱 UPI / Google Pay';
+            else if (selectedPayment === 'card') displayPaymentMethod = '💳 Credit / Debit Card';
+            else if (selectedPayment === 'netbanking') displayPaymentMethod = '🏦 Net Banking';
+
+            html += `<div class="mt-3">
+                        <div class="alert alert-info">
+                            <strong>📍 Delivery Address:</strong><br>
+                            ${selectedAddress ? `${escapeHtml(selectedAddress.name)}<br>${escapeHtml(selectedAddress.address)}, ${escapeHtml(selectedAddress.city)} - ${selectedAddress.pincode}` : 'Not selected'}
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>💳 Payment Method:</strong><br>
+                            ${displayPaymentMethod}
+                        </div>
+                    </div>`;
+
+            html += `<button class="btn-place" onclick="placeOrder()">💰 Place Order</button>`;
+            container.innerHTML = html;
+        }
+
+        function selectAddress(id) {
+            selectedAddress = addresses.find(a => a.id === id);
+            renderAddresses();
+            updateReviewOrder();
+        }
+
+        function selectPaymentMethod(id) {
+            selectedPayment = id;
+            renderPaymentMethods();
+            updateReviewOrder();
+        }
+
+        function updateQuantity(idx, change) {
+            let newQty = cart[idx].quantity + change;
+            if (newQty < MIN_QTY) {
+                showToast(`Minimum quantity is ${MIN_QTY}`, 'warning');
+                return;
+            }
+            cart[idx].quantity = newQty;
+            localStorage.setItem('vendor_cart', JSON.stringify(cart));
+            renderCart();
+            updateCartCount();
+            updateTotals();
+            updateReviewOrder();
+        }
+
+        function removeItem(idx) {
+            cart.splice(idx, 1);
+            localStorage.setItem('vendor_cart', JSON.stringify(cart));
+            renderCart();
+            updateCartCount();
+            updateTotals();
+            updateReviewOrder();
+        }
+
+        function updateCartCount() {
+            let count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.querySelectorAll('.cart-count').forEach(el => el.textContent = count);
+        }
+
+        function updateTotals() {
+            let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let delivery = subtotal > 5000 ? 0 : 100;
+            let tax = Math.round(subtotal * 0.05);
+            let total = subtotal + delivery + tax;
+
+            document.getElementById('subtotal').innerText = '₹' + subtotal.toLocaleString('en-IN');
+            document.getElementById('deliveryFee').innerText = delivery === 0 ? 'FREE' : '₹' + delivery;
+            document.getElementById('tax').innerText = '₹' + tax.toLocaleString('en-IN');
+            document.getElementById('total').innerText = '₹' + total.toLocaleString('en-IN');
+        }
+
+        function hasInvalidQty() {
+            return cart.some(item => item.quantity < MIN_QTY);
+        }
+
+        function goToStep(step) {
+            if (step === 2) {
+                if (cart.length === 0) {
+                    showToast('Your cart is empty!', 'warning');
+                    return;
+                }
+                if (hasInvalidQty()) {
+                    showToast(`Each item must have at least ${MIN_QTY} quantity`, 'warning');
+                    return;
+                }
+            }
+
+            if (step === 3 && !selectedAddress) {
+                showToast('Please select a delivery address', 'warning');
+                return;
+            }
+
+            if (step === 4 && !selectedPayment) {
+                showToast('Please select a payment method', 'warning');
+                return;
+            }
+
+            currentStep = step;
+
+            document.querySelectorAll('.step').forEach((el, idx) => {
+                const stepNum = idx + 1;
+                el.classList.remove('active', 'completed');
+                if (stepNum < currentStep) el.classList.add('completed');
+                else if (stepNum === currentStep) el.classList.add('active');
+            });
+
+            document.getElementById('step1Content').style.display = step === 1 ? 'block' : 'none';
+            document.getElementById('step2Content').style.display = step === 2 ? 'block' : 'none';
+            document.getElementById('step3Content').style.display = step === 3 ? 'block' : 'none';
+            document.getElementById('step4Content').style.display = step === 4 ? 'block' : 'none';
+
+            if (step === 2) renderAddresses();
+            if (step === 3) renderPaymentMethods();
+            if (step === 4) updateReviewOrder();
+        }
+
+        function getMappedPaymentMethod(paymentId) {
+            switch (paymentId) {
+                case 'upi': return 'upi';
+                case 'card':
+                case 'netbanking': return 'online_banking';
+                default: return 'online_banking';
+            }
+        }
+
+        async function initiateRazorpayPayment(orderId, amount) {
+            try {
+                showToast('Creating payment order...', 'info');
+                const response = await fetch(`${API_URL}/payment/create-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getCookie('authToken')}`
+                    },
+                    body: JSON.stringify({ orderId: orderId, amount: amount })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.message, 'error');
+                    const btn = document.querySelector('.btn-place');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '💰 Place Order'; }
+                    return;
+                }
+                const options = {
+                    key: data.keyId,
+                    amount: data.amount * 100,
+                    currency: data.currency,
+                    name: 'FarmBridge',
+                    description: `Order #${data.orderId}`,
+                    order_id: data.razorpayOrderId,
+                    handler: function (response) { verifyPayment(orderId, response); },
+                    prefill: { name: 'Vendor', email: 'vendor@farmbridge.com', contact: '9999999999' },
+                    theme: { color: '#2d8a45' },
+                    modal: {
+                        ondismiss: function () {
+                            showToast('Payment cancelled', 'warning');
+                            const btn = document.querySelector('.btn-place');
+                            if (btn) { btn.disabled = false; btn.innerHTML = '💰 Place Order'; }
+                        }
+                    }
+                };
+                const razorpay = new Razorpay(options);
+                razorpay.open();
+            } catch (error) {
+                console.error('Razorpay error:', error);
+                showToast('Payment initiation failed', 'error');
+                const btn = document.querySelector('.btn-place');
+                if (btn) { btn.disabled = false; btn.innerHTML = '💰 Place Order'; }
+            }
+        }
+
+        async function verifyPayment(orderId, razorpayResponse) {
+            try {
+                showToast('Verifying payment...', 'info');
+                const response = await fetch(`${API_URL}/payment/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getCookie('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        razorpayOrderId: razorpayResponse.razorpay_order_id,
+                        razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+                        razorpaySignature: razorpayResponse.razorpay_signature
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    cart = [];
+                    localStorage.setItem('vendor_cart', JSON.stringify(cart));
+                    updateCartCount();
+                    showToast(result.message, 'success');
+                    setTimeout(() => { window.location.href = '/Vendor/Orders'; }, 2000);
+                } else {
+                    showToast(result.message, 'error');
+                    const btn = document.querySelector('.btn-place');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '💰 Place Order'; }
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                showToast('Payment verification failed', 'error');
+                const btn = document.querySelector('.btn-place');
+                if (btn) { btn.disabled = false; btn.innerHTML = '💰 Place Order'; }
+            }
+        }
+
+        async function placeOrder() {
+            if (cart.some(item => item.quantity < MIN_QTY)) {
+                showToast(`Minimum ${MIN_QTY} quantity required for each item`, 'warning');
+                goToStep(1);
+                return;
+            }
+            if (cart.length === 0) {
+                showToast('Your cart is empty!', 'warning');
+                return;
+            }
+            if (!selectedAddress) {
+                showToast('Please select a delivery address', 'warning');
+                goToStep(2);
+                return;
+            }
+            if (!selectedPayment) {
+                showToast('Please select a payment method', 'warning');
+                goToStep(3);
+                return;
+            }
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const delivery = subtotal > 5000 ? 0 : 100;
+            const tax = Math.round(subtotal * 0.05);
+            const total = subtotal + delivery + tax;
+            const mappedPayment = getMappedPaymentMethod(selectedPayment);
+
+            const orderData = {
+                addressId: selectedAddress.id,
+                paymentMethod: mappedPayment,
+                totalAmount: total,
+                items: cart.map(item => ({
+                    productId: item.id,
+                    productName: item.name,
+                    price: item.price,
+                    quantity: item.quantity
+                }))
+            };
+
+            const btn = document.querySelector('.btn-place');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; }
+
+            try {
+                const response = await fetch(`${API_URL}/checkout/place-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getCookie('authToken')}`
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    showToast('Order failed: ' + result.message, 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '💰 Place Order'; }
+                    return;
+                }
+                const orderId = result.orderId;
+                const numericOrderId = parseInt(orderId.replace('FB-ORD-', ''));
+                await initiateRazorpayPayment(numericOrderId, total);
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Network error. Please try again.', 'error');
+                if (btn) { btn.disabled = false; btn.innerHTML = '💰 Place Order'; }
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function showToast(message, type) {
+            let container = document.getElementById('fbToastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'fbToastContainer';
+                container.className = 'fb-toast-container';
+                document.body.appendChild(container);
+            }
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
+            const title = type === 'success' ? 'Success!' : type === 'error' ? 'Error!' : 'Warning!';
+            const toast = document.createElement('div');
+            toast.className = `fb-toast ${type}`;
+            toast.innerHTML = `
+                <div class="fb-toast-icon">${icon}</div>
+                <div class="fb-toast-content">
+                    <div class="fb-toast-title">${title}</div>
+                    <div class="fb-toast-message">${message}</div>
+                </div>
+                <button class="fb-toast-close" onclick="this.closest('.fb-toast').remove()">✕</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize
+        async function initCheckout() {
+            renderCart();
+            updateCartCount();
+            await loadAddressesFromAPI();
+            selectedPayment = 'upi';
+            renderPaymentMethods();
+        }
+
+        initCheckout();
+
+        // Expose functions globally
+        window.updateQuantity = updateQuantity;
+        window.removeItem = removeItem;
+        window.goToStep = goToStep;
+        window.selectAddress = selectAddress;
+        window.selectPaymentMethod = selectPaymentMethod;
+        window.placeOrder = placeOrder;
+    </script>
+}
+

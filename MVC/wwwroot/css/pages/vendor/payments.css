@@ -1,0 +1,479 @@
+﻿/* ========== PAYMENTS PAGE ENHANCED STYLING ========== */
+    
+    .payments-header {
+        margin-bottom: 28px;
+    }
+
+    .payments-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: #0a2108;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .fb-pay-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .fb-pay-stat {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07), 0 1px 4px rgba(21, 66, 18, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .fb-pay-stat::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #2d7a27 0%, #52b34a 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .fb-pay-stat:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 60px rgba(21, 66, 18, 0.14), 0 10px 30px rgba(21, 66, 18, 0.1);
+    }
+
+    .fb-pay-stat:hover::before {
+        opacity: 1;
+    }
+
+    .pay-stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .fb-pay-stat:hover .pay-stat-icon {
+        transform: scale(1.1);
+    }
+
+    .fb-pay-stat-value {
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        font-weight: 800;
+        color: #1b5e19;
+        margin-bottom: 8px;
+    }
+
+    .fb-pay-stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #5a7257;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .fb-pay-table-wrap {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07), 0 1px 4px rgba(21, 66, 18, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .payments-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .fb-pay-table-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #1b5e19;
+        margin: 0;
+    }
+
+    .payment-filters {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .payment-filters select {
+        padding: 10px 14px;
+        border: 1.5px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        background: white;
+        color: #1b5e19;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .payment-filters select:focus {
+        outline: none;
+        border-color: #2d7a27;
+        box-shadow: 0 0 0 3px rgba(45, 122, 39, 0.1);
+    }
+
+    .fb-pay-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .fb-pay-table th {
+        padding: 14px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        color: #1b5e19;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+        background: var(--green-50, #eaf7e8);
+        white-space: nowrap;
+    }
+
+    .fb-pay-table td {
+        padding: 14px;
+        border-bottom: 1px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+        font-size: 13px;
+        color: #5a7257;
+    }
+
+    .fb-pay-table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .fb-pay-table tbody tr:hover td {
+        background: var(--green-50, #eaf7e8);
+    }
+
+    .fb-pay-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .pay-status {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid;
+    }
+
+    .pay-status-success {
+        background: var(--green-50, #eaf7e8);
+        color: #1b5e19;
+        border-color: #d4f0d0;
+    }
+
+    .pay-status-pending {
+        background: var(--saffron-light, #FDF0E3);
+        color: #9e4a00;
+        border-color: #f5d5b5;
+    }
+
+    .pay-status-failed {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    .pay-status-processing {
+        background: var(--blue-50, #e8f5fa);
+        color: #2d6a7a;
+        border-color: #cce8f2;
+    }
+
+    .pay-status-refunded {
+        background: #f3e5f5;
+        color: #6a1b9a;
+        border-color: #e8d5f2;
+    }
+
+    .pay-status-initiated {
+        background: var(--blue-50, #e8f5fa);
+        color: #2d6a7a;
+        border-color: #cce8f2;
+    }
+
+    .pay-method {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--green-50, #eaf7e8);
+        border: 1.5px solid var(--border-soft, rgba(45, 122, 39, 0.12));
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #1b5e19;
+    }
+
+    .receipt-btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        color: #2d7a27;
+        border: 1.5px solid #2d7a27;
+        padding: 6px 14px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .receipt-btn-outline:hover {
+        background: #2d7a27;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(45, 122, 39, 0.2);
+    }
+
+    /* Empty State */
+    .payments-empty {
+        text-align: center;
+        padding: 80px 40px;
+        background: rgba(255, 255, 255, 0.82);
+        border-radius: 20px;
+        box-shadow: 0 4px 24px rgba(21, 66, 18, 0.07);
+    }
+
+    .payments-empty i {
+        font-size: 64px;
+        color: var(--green-300, #84d17c);
+        margin-bottom: 20px;
+    }
+
+    .payments-empty h3 {
+        color: #1b5e19;
+        margin-bottom: 10px;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .payments-empty p {
+        color: #5a7257;
+    }
+
+    /* Toast Styles */
+    .fb-toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .fb-toast {
+        background: white;
+        border-radius: 12px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideInRight 0.3s ease;
+        min-width: 280px;
+        border-left: 4px solid;
+    }
+
+    .fb-toast.success {
+        border-left-color: #1b5e19;
+    }
+
+    .fb-toast.error {
+        border-left-color: #dc2626;
+    }
+
+    .fb-toast.info {
+        border-left-color: #2d6a7a;
+    }
+
+    .fb-toast-icon {
+        font-size: 20px;
+    }
+
+    .fb-toast-content {
+        flex: 1;
+    }
+
+    .fb-toast-title {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .fb-toast-message {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .fb-toast-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        color: #999;
+        padding: 0 4px;
+    }
+
+    .fade-out {
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    @@keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @@media (max-width: 768px) {
+        .payments-title {
+            font-size: 24px;
+        }
+
+        .fb-pay-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .payments-controls {
+            flex-direction: column;
+        }
+
+        .payment-filters {
+            width: 100%;
+        }
+
+        .payment-filters select {
+            flex: 1;
+        }
+
+        .fb-pay-table {
+            font-size: 12px;
+        }
+
+        .fb-pay-table th, .fb-pay-table td {
+            padding: 10px;
+        }
+    }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: 'Segoe UI', Arial, sans-serif;
+                        background: #f0faf2;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        padding: 20px;
+                    }
+                    .receipt {
+                        max-width: 550px;
+                        width: 100%;
+                        background: white;
+                        border-radius: 20px;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                        overflow: hidden;
+                    }
+                    .receipt-header {
+                        background: linear-gradient(135deg, #1a5c2a, #2d8a45);
+                        color: white;
+                        text-align: center;
+                        padding: 30px 20px;
+                    }
+                    .receipt-header .logo { font-size: 50px; margin-bottom: 10px; }
+                    .receipt-header h1 { font-size: 24px; margin-bottom: 5px; }
+                    .receipt-header p { font-size: 12px; opacity: 0.8; }
+                    .receipt-body { padding: 25px; }
+                    .info-row {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 12px 0;
+                        border-bottom: 1px dashed #e2e8f0;
+                    }
+                    .info-label { font-weight: 600; color: #4a5e50; }
+                    .info-value { color: #1a5c2a; font-weight: 500; }
+                    .amount-box {
+                        background: #e8f5ec;
+                        border-radius: 12px;
+                        padding: 20px;
+                        text-align: center;
+                        margin: 20px 0;
+                    }
+                    .amount-label { font-size: 13px; color: #64748b; margin-bottom: 5px; }
+                    .amount-value { font-size: 36px; font-weight: 700; color: #1a5c2a; }
+                    .status-badge {
+                        display: inline-block;
+                        padding: 5px 15px;
+                        border-radius: 20px;
+                        font-size: 12px;
+                        font-weight: 600;
+                    }
+                    .status-success { background: #e8f5ec; color: #1a5c2a; }
+                    .status-completed { background: #e8f5ec; color: #1a5c2a; }
+                    .status-initiated { background: #e3f2fd; color: #1565c0; }
+                    .status-pending { background: #fff8e1; color: #e65100; }
+                    .status-failed { background: #ffebee; color: #c62828; }
+                    .receipt-footer {
+                        background: #f8faf7;
+                        padding: 15px 25px;
+                        text-align: center;
+                        font-size: 11px;
+                        color: #94a3b8;
+                        border-top: 1px solid #e2e8f0;
+                    }
+                    @@media print {
+                        body { background: white; padding: 0; }
+                        .receipt { box-shadow: none; }
+                        .receipt-btn-print { display: none; }
+                    }
+                    .receipt-btn-print {
+                        background: #1a5c2a;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        margin: 20px;
+                        font-size: 14px;
+                    }
+                    .receipt-btn-print:hover { background: #2d8a45; }

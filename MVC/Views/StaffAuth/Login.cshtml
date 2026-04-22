@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "Staff Login - FarmBridge";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    
+    <link rel="stylesheet" href="~/css/pages/staff-auth/staff-auth.css" asp-append-version="true" />
+</head>
+<body>
+
+<div id="notificationArea" class="sa-notification"></div>
+
+<div class="sa-shell">
+    
+    <!-- Left Split -->
+    <div class="sa-banner">
+        <div class="sa-banner-bg" style="background-image: url('/images/sliders/hero_5.png');"></div>
+        <div class="sa-banner-overlay"></div>
+        
+        <!-- Elegant Wavy Separator -->
+        <svg class="sa-wave-separator" viewBox="0 0 100 1000" preserveAspectRatio="none">
+            <!-- Perfectly smooth organic S-curve -->
+            <path d="M100,0 L0,0 C60,333 60,666 0,1000 L100,1000 Z" fill="#f5f9f4" />
+        </svg>
+        
+        <a href="/" class="sa-logo">
+            <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge Logo" />
+            <span>FarmBridge</span>
+        </a>
+        
+        <div class="sa-banner-content">
+            <div class="sa-badge">
+                <i class="fi fi-rr-shield-check"></i> STAFF & ADMIN PORTAL
+            </div>
+            <h1>Centralized<br/><span>Management.</span></h1>
+            <p>Access the administrative layer of FarmBridge. Oversee platform operations securely from the centralized portal.</p>
+        </div>
+    </div>
+
+    <!-- Right Split -->
+    <div class="sa-panel">
+        <div class="sa-card">
+            <h2>Staff Login</h2>
+            <p>Sign in with your official FarmBridge credentials.</p>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="sa-field">
+                    <label for="email">Email Address <span class="req">*</span></label>
+                    <div class="sa-input-wrap">
+                        <i class="fi fi-rr-envelope input-icon"></i>
+                        <input type="email" id="email" name="email" placeholder="name@farmbridge.in" required autocomplete="email" />
+                    </div>
+                </div>
+
+                <div class="sa-field">
+                    <a href="/StaffAuth/ForgotPassword" class="forgot-link" id="forgotPasswordLink">Forgot Password?</a>
+                    <label for="password">Password <span class="req">*</span></label>
+                    <div class="sa-input-wrap">
+                        <i class="fi fi-rr-lock input-icon"></i>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password" />
+                        <button type="button" class="sa-eye-btn" onclick="togglePassword()" aria-label="Toggle password visibility">
+                            <i id="eyeIcon" class="fi fi-rr-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="sa-btn-submit" id="submitBtn">
+                    Login Securely <i class="fi fi-rr-arrow-right"></i>
+                </button>
+            </form>
+            
+            <div class="card-footer">
+                Issues accessing your account? <a href="mailto:farmbridge13@gmail.com">Contact Support</a>
+                <br/>
+                <a href="/" class="back-home"><i class="fi fi-rr-arrow-left"></i> Return Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/pages/staff-auth/login.js" asp-append-version="true"></script>
+
+</body>
+</html>

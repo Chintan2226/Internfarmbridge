@@ -1,0 +1,441 @@
+﻿@{
+    Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
+    ViewData["Title"] = "Payments";
+}
+
+
+<link rel="stylesheet" href="~/css/pages/vendor/payments.css" asp-append-version="true" />
+
+
+<div class="payments-header">
+    <h1 class="payments-title">
+        <i class="fi fi-rr-credit-card"></i>
+        Payment History
+    </h1>
+</div>
+
+<div class="fb-pay-stats">
+    <div class="fb-pay-stat">
+        <div class="pay-stat-icon" style="background: linear-gradient(135deg, rgba(45, 122, 39, 0.1) 0%, rgba(212, 240, 208, 0.2) 100%); color: #2d7a27;">
+            <i class="fi fi-rr-check-circle"></i>
+        </div>
+        <div class="fb-pay-stat-value" id="payTotalReceived">â‚¹0</div>
+        <div class="fb-pay-stat-label">Total Paid</div>
+    </div>
+
+    <div class="fb-pay-stat">
+        <div class="pay-stat-icon" style="background: linear-gradient(135deg, rgba(232, 114, 12, 0.1) 0%, rgba(253, 240, 227, 0.2) 100%); color: #E8720C;">
+            <i class="fi fi-rr-clock"></i>
+        </div>
+        <div class="fb-pay-stat-value" id="payPending">â‚¹0</div>
+        <div class="fb-pay-stat-label">Pending</div>
+    </div>
+
+    <div class="fb-pay-stat">
+        <div class="pay-stat-icon" style="background: linear-gradient(135deg, rgba(45, 122, 122, 0.1) 0%, rgba(200, 232, 242, 0.2) 100%); color: #2d7a7a;">
+            <i class="fi fi-rr-receipt"></i>
+        </div>
+        <div class="fb-pay-stat-value" id="payTxnCount">0</div>
+        <div class="fb-pay-stat-label">Transactions</div>
+    </div>
+</div>
+
+<div class="fb-pay-table-wrap">
+    <div class="payments-controls">
+        <h2 class="fb-pay-table-title"><i class="fi fi-rr-list"></i> Transactions</h2>
+        <div class="payment-filters">
+            <select id="payStatusFilter">
+                <option value="all">All Status</option>
+                <option value="success">âœ“ Success</option>
+                <option value="pending">â± Pending</option>
+                <option value="initiated">â†’ Initiated</option>
+                <option value="failed">âœ• Failed</option>
+            </select>
+            <select id="payMethodFilter">
+                <option value="all">All Methods</option>
+                <option value="upi">ðŸ“± UPI</option>
+                <option value="neft">ðŸ’³ NEFT / IMPS / RTGS</option>
+                <option value="online_banking">ðŸ’° Card / Net Banking</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="fb-pay-table">
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Order ID</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="paymentsTableBody">
+                <tr>
+                    <td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Loading
+                        payments......</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            const API_URL = 'http://localhost:5020/api/Vendor';
+            let allPayments = [];
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return null;
+            }
+
+            // --- JWT HELPER FUNCTIONS ---
+            function getAuthToken() {
+                return getCookie('authToken'); // Adjust key name if yours is 'jwt' or 'authToken'
+            }
+
+            function handleUnauthorized() {
+                showToast('Session expired. Redirecting to login...', 'error');
+                setTimeout(() => {
+                    window.location.href = '/Vendor/Login'; // Adjust to your login path
+                }, 2000);
+            }
+
+            // Helper function to get user-friendly payment method display name
+            function getDisplayMethod(method) {
+                const methodLower = (method || '').toLowerCase();
+                switch (methodLower) {
+                    case 'upi': return 'UPI';
+                    case 'neft': return 'NEFT / IMPS';
+                    case 'online_banking': return 'Card / Net Banking';
+                    default: return method || 'N/A';
+                }
+            }
+
+            async function loadPayments() {
+                const statusFilter = document.getElementById('payStatusFilter').value;
+                const methodFilter = document.getElementById('payMethodFilter').value;
+
+                const token = getAuthToken();
+                if (!token) {
+                    handleUnauthorized();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_URL}/payments`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.status === 401 || response.status === 403) {
+                        handleUnauthorized();
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    let payments = [];
+                    if (result.success && result.data) {
+                        payments = result.data;
+                    } else if (Array.isArray(result)) {
+                        payments = result;
+                    } else if (result.payments) {
+                        payments = result.payments;
+                    } else {
+                        payments = [];
+                    }
+
+                    allPayments = payments;
+
+                    if (payments.length > 0) {
+                        let totalReceived = 0;
+                        let totalPending = 0;
+
+                        payments.forEach(p => {
+                            const amount = p.amount || 0;
+                            if (p.status === 'success' || p.status === 'completed') {
+                                totalReceived += amount;
+                            } else if (p.status === 'pending' || p.status === 'initiated' || p.status === 'processing') {
+                                totalPending += amount;
+                            }
+                        });
+
+                        document.getElementById('payTotalReceived').innerText = 'â‚¹' + totalReceived.toLocaleString('en-IN');
+                        document.getElementById('payPending').innerText = 'â‚¹' + totalPending.toLocaleString('en-IN');
+                        document.getElementById('payTxnCount').innerText = payments.length;
+
+                        let filtered = [...payments];
+                        if (statusFilter !== 'all') {
+                            filtered = filtered.filter(p => p.status === statusFilter);
+                        }
+                        if (methodFilter !== 'all') {
+                            filtered = filtered.filter(p => {
+                                const paymentMethod = (p.paymentMethod || p.method || '').toLowerCase();
+                                return paymentMethod === methodFilter;
+                            });
+                        }
+
+                        renderTable(filtered);
+                    } else {
+                        renderEmptyState();
+                    }
+                } catch (error) {
+                    console.error('Error loading payments:', error);
+                    showToast('Failed to load payments: ' + error.message, 'error');
+                    renderEmptyState();
+                }
+            }
+
+            function renderTable(payments) {
+                const tbody = document.getElementById('paymentsTableBody');
+
+                if (!payments || payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">No transactions found</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                payments.forEach(p => {
+                    const statusClass = getStatusClass(p.status);
+                    const statusLabel = getStatusLabel(p.status);
+                    const methodIcon = getMethodIcon(p.paymentMethod || p.method);
+                    const rawMethod = p.paymentMethod || p.method || 'N/A';
+                    const displayMethod = getDisplayMethod(rawMethod);
+                    const amount = p.amount || 0;
+                    const transactionId = p.transactionId || p.id || 'N/A';
+                    const orderId = p.orderId || p.order_id || 'N/A';
+                    const paymentDate = p.paymentDate || p.date || p.createdAt || new Date().toISOString();
+
+                    html += `<tr>
+                                <td><strong>${escapeHtml(transactionId)}</strong></td>
+                                <td>${escapeHtml(orderId)}</td>
+                                <td><strong>â‚¹${amount.toLocaleString('en-IN')}</strong></td>
+                                <td><span class="pay-method"><i class="fas ${methodIcon}"></i> ${escapeHtml(displayMethod)}</span></td>
+                                <td><span class="pay-status ${statusClass}">${statusLabel}</span></td>
+                                <td>${new Date(paymentDate).toLocaleDateString()}</td>
+                                <td><button class="receipt-btn-outline" onclick="viewReceipt('${escapeHtml(transactionId)}', '${escapeHtml(orderId)}', ${amount}, '${p.status}', '${escapeHtml(rawMethod)}')">
+                                    <i class="fas fa-download"></i> Receipt
+                                </button></td>
+                            </tr>`;
+                });
+                tbody.innerHTML = html;
+            }
+
+            function renderEmptyState() {
+                document.getElementById('paymentsTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-4">No payment records found</td></tr>';
+                document.getElementById('payTotalReceived').innerText = 'â‚¹0';
+                document.getElementById('payPending').innerText = 'â‚¹0';
+                document.getElementById('payTxnCount').innerText = '0';
+            }
+
+            function getStatusClass(status) {
+                const s = (status || '').toLowerCase();
+                switch (s) {
+                    case 'success':
+                    case 'completed':
+                        return 'pay-status-success';
+                    case 'pending':
+                        return 'pay-status-pending';
+                    case 'failed':
+                        return 'pay-status-failed';
+                    case 'processing':
+                        return 'pay-status-processing';
+                    case 'initiated':
+                        return 'pay-status-initiated';
+                    default:
+                        return 'pay-status-pending';
+                }
+            }
+
+            function getStatusLabel(status) {
+                const s = (status || '').toLowerCase();
+                switch (s) {
+                    case 'success':
+                    case 'completed':
+                        return 'âœ“ Success';
+                    case 'pending':
+                        return 'â³ Pending';
+                    case 'failed':
+                        return 'âœ• Failed';
+                    case 'processing':
+                        return 'âŸ³ Processing';
+                    case 'initiated':
+                        return 'ðŸš€ Initiated';
+                    default:
+                        return status || 'Unknown';
+                }
+            }
+
+            function getMethodIcon(method) {
+                const methodLower = (method || '').toLowerCase();
+                const icons = {
+                    'upi': 'fa-mobile-alt',
+                    'neft': 'fa-university',
+                    'online_banking': 'fa-laptop',
+                    'imps': 'fa-exchange-alt',
+                    'card': 'fa-credit-card',
+                    'credit card': 'fa-credit-card',
+                    'paypal': 'fa-paypal',
+                    'bank': 'fa-university'
+                };
+                return icons[methodLower] || 'fa-credit-card';
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str.toString()
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function viewReceipt(transactionId, orderId, amount, status, paymentMethod) {
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-IN');
+                const timeStr = now.toLocaleTimeString();
+                const displayMethod = getDisplayMethod(paymentMethod);
+
+                // Get status class for badge
+                let statusClass = '';
+                let statusDisplay = (status || '').toUpperCase();
+                switch ((status || '').toLowerCase()) {
+                    case 'success':
+                    case 'completed':
+                        statusClass = 'status-success';
+                        break;
+                    case 'initiated':
+                        statusClass = 'status-initiated';
+                        break;
+                    case 'pending':
+                        statusClass = 'status-pending';
+                        break;
+                    case 'failed':
+                        statusClass = 'status-failed';
+                        break;
+                    default:
+                        statusClass = 'status-pending';
+                }
+
+                const receiptHtml = `<!DOCTYPE html>
+            <html>
+            <head>
+                <title>FarmBridge Receipt - ${transactionId}</title>
+                <meta charset="UTF-8">
+                
+<link rel="stylesheet" href="~/css/pages/vendor/payments.css" asp-append-version="true" />
+
+            </head>
+            <body>
+                <div class="receipt">
+                    <div class="receipt-header">
+                        <div class="logo">ðŸŒ¾</div>
+                        <h1>FarmBridge</h1>
+                        <p>Payment Receipt</p>
+                    </div>
+                    <div class="receipt-body">
+                        <div class="info-row">
+                            <span class="info-label">Transaction ID</span>
+                            <span class="info-value">${escapeHtml(transactionId)}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Order ID</span>
+                            <span class="info-value">${escapeHtml(orderId)}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Date & Time</span>
+                            <span class="info-value">${dateStr} at ${timeStr}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Payment Method</span>
+                            <span class="info-value">${escapeHtml(displayMethod)}</span>
+                        </div>
+                        <div class="amount-box">
+                            <div class="amount-label">Total Amount</div>
+                            <div class="amount-value">â‚¹${amount.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Payment Status</span>
+                            <span class="status-badge ${statusClass}">${statusDisplay}</span>
+                        </div>
+                    </div>
+                    <div class="receipt-footer">
+                        <button class="receipt-btn-print" onclick="window.print()">ðŸ–¨ï¸ Print Receipt</button>
+                        <p style="margin-top: 15px;">Thank you for shopping with FarmBridge!</p>
+                        <p>support@farmbridge.com | www.farmbridge.com</p>
+                    </div>
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                    };
+                <\/script>
+            </body>
+            </html>`;
+
+                const receiptWindow = window.open('', '_blank');
+                if (receiptWindow) {
+                    receiptWindow.document.write(receiptHtml);
+                    receiptWindow.document.close();
+                    showToast(`Opening receipt for ${transactionId}...`, 'success');
+                } else {
+                    showToast('Please allow pop-ups to view receipt', 'error');
+                }
+            }
+
+            function showToast(message, type) {
+                let container = document.getElementById('fbToastContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'fbToastContainer';
+                    container.className = 'fb-toast-container';
+                    document.body.appendChild(container);
+                }
+
+                const icons = { success: 'âœ…', error: 'âŒ', info: 'â„¹ï¸' };
+                const titles = { success: 'Success!', error: 'Error!', info: 'Info' };
+
+                const toast = document.createElement('div');
+                toast.className = `fb-toast ${type}`;
+                toast.innerHTML = `
+                            <div class="fb-toast-icon">${icons[type] || icons.info}</div>
+                            <div class="fb-toast-content">
+                                <div class="fb-toast-title">${titles[type] || titles.info}</div>
+                                <div class="fb-toast-message">${escapeHtml(message)}</div>
+                            </div>
+                            <button class="fb-toast-close" onclick="this.closest('.fb-toast').remove()">âœ•</button>
+                        `;
+
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    if (toast && toast.parentNode) {
+                        toast.classList.add('fade-out');
+                        setTimeout(() => {
+                            if (toast && toast.parentNode) toast.remove();
+                        }, 300);
+                    }
+                }, 3000);
+            }
+
+            document.getElementById('payStatusFilter').addEventListener('change', loadPayments);
+            document.getElementById('payMethodFilter').addEventListener('change', loadPayments);
+
+            loadPayments();
+        </script>
+    }
+

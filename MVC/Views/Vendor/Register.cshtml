@@ -1,0 +1,282 @@
+@{
+    Layout = null; 
+    ViewData["Title"] = "Vendor Registration - FarmBridge";
+}
+
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"]</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#00450d",
+                        "primary-container": "#065f18",
+                        "on-surface": "#1a1c1a",
+                        "on-surface-variant": "#41493e",
+                    },
+                    fontFamily: {
+                        headline: ["Plus Jakarta Sans"],
+                        body: ["Plus Jakarta Sans"],
+                    }
+                }
+            }
+        }
+    </script>
+    
+<link rel="stylesheet" href="~/css/pages/vendor/register.css" asp-append-version="true" />
+
+</head>
+<body class="bg-[#faf9f5] text-[#1a1c1a] min-h-screen relative m-0 p-0 overflow-x-hidden">
+
+    <div id="notificationArea" class="fixed top-4 right-4 z-[9999] w-full max-w-sm flex flex-col gap-2 pointer-events-none"></div>
+
+    <a href="/" class="fixed top-4 left-4 sm:top-6 sm:left-6 z-[100] flex items-center gap-2 text-white/90 hover:text-white bg-white/15 hover:bg-white/25 px-4 py-2 rounded-full backdrop-blur-md border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 group text-decoration-none">
+        <span class="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+        <span class="text-sm font-bold tracking-wide">Home</span>
+    </a>
+
+    <div class="fixed top-4 right-4 sm:top-6 sm:right-6 z-[100]">
+        <button onclick="document.getElementById('langMenu').classList.toggle('hidden')" class="flex items-center gap-2 text-primary hover:text-white bg-white/70 hover:bg-primary/90 px-4 py-2 sm:py-2.5 rounded-full backdrop-blur-md border border-primary/20 shadow-lg transition-all duration-300 hover:scale-105">
+            <span class="material-symbols-outlined text-[18px]">language</span>
+            <span class="text-sm font-bold tracking-wide">Language</span>
+        </button>
+        <div id="langMenu" class="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-black/5 flex flex-col hidden overflow-hidden transition-all duration-300">
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('en')">🇺🇸 English</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('hi')">🇮🇳 हिन्दी</button>
+            <button class="text-left px-4 py-2 hover:bg-gray-100 text-sm font-semibold transition-colors text-on-surface" onclick="changeLanguage('gu')">🇮🇳 ગુજરાતી</button>
+        </div>
+    </div>
+
+    <div class="fixed inset-0 z-0">
+        <img alt="Agricultural Landscape" class="w-full h-full object-cover" 
+             src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGuojvyu-oeyMgGglh4NWSycQm2aRpks8yk2xMCp3uxu6cL9MXK1d5ge58JsPPS9VocAgDbHKBTSd032lujmkLoyxtW6CvOXMH7nlWznORbCo2NVbMzW9ujJgUyXflGJOCqr9cU6KIsHQGsO7QidVQHxLyydbbY-roHNcbHnFzhTJMMBNpuAbTQQLj3GhPZqVhux8bY1LG4FKaIR0X3nekDpNqPlqgwnjLmjFN8eHBaSiveKQmAbof87W0kjqPMEQEwZYXc0A_9U8" />
+        <div class="absolute inset-0 bg-gradient-to-tr from-primary/30 to-black/20 backdrop-blur-[2px]"></div>
+    </div>
+
+    <main class="relative z-10 flex items-center justify-center min-h-screen w-full px-4 py-4 sm:px-6">
+        
+        <div class="glass-card w-full max-w-[600px] p-6 sm:p-8 rounded-[2rem] shadow-2xl">
+            
+            <div class="mb-5 text-center flex flex-col items-center">
+                <div class="inline-flex items-center justify-center w-12 h-12 mb-2 rounded-full bg-primary shadow-lg">
+                    <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary mb-1">Vendor Portal</h1>
+                <p class="text-on-surface-variant font-medium text-xs sm:text-sm">Join our network of sustainable agricultural partners</p>
+            </div>
+
+            <form id="vendorRegisterForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4" onsubmit="event.preventDefault(); handleVendorRegister(); return false;" novalidate>
+                
+                <div class="col-span-1 sm:col-span-2 space-y-1">
+                    <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Business Name <span class="text-red-600">*</span></label>
+                    <input id="businessName" type="text" required
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                           placeholder="Organic Farms Ltd." />
+                </div>
+
+                <div class="col-span-1 space-y-1">
+                    <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Contact Person <span class="text-red-600">*</span></label>
+                    <input id="contactPerson" type="text" required
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                           placeholder="John Doe" />
+                </div>
+
+                <div class="col-span-1 space-y-1">
+                    <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Mobile Number <span class="text-red-600">*</span></label>
+                    <input id="phone" type="tel" required
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                           placeholder="+91 9876543210" />
+                </div>
+
+                <div class="col-span-1 sm:col-span-2 space-y-1">
+                    <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Email Address <span class="text-red-600">*</span></label>
+                    <input id="email" type="email" required
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                           placeholder="contact@business.com" />
+                </div>
+
+                <div class="col-span-1 sm:col-span-2 space-y-1">
+                    <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">GST Number (Optional)</label>
+                    <input id="gstin" type="text" 
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all uppercase" 
+                           placeholder="22AAAAA0000A1Z5" />
+                </div>
+
+                <div class="col-span-1 space-y-1">
+                    <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Password <span class="text-red-600">*</span></label>
+                    <div class="relative">
+                        <input id="password" type="password" required
+                               class="w-full bg-white/60 border border-black/5 rounded-xl pl-5 pr-10 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                               placeholder="••••••••" />
+                        <button type="button" onclick="togglePassword('password', 'eye1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-primary transition-colors">
+                            <span id="eye1" class="material-symbols-outlined text-[18px]">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-span-1 space-y-1">
+                    <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Confirm <span class="text-red-600">*</span></label>
+                    <div class="relative">
+                        <input id="confirmPassword" type="password" required
+                               class="w-full bg-white/60 border border-black/5 rounded-xl pl-5 pr-10 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                               placeholder="••••••••" />
+                        <button type="button" onclick="togglePassword('confirmPassword', 'eye2')" class="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-primary transition-colors">
+                            <span id="eye2" class="material-symbols-outlined text-[18px]">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-span-1 sm:col-span-2 mt-2">
+                    <button id="registerBtn" type="submit" class="w-full py-3.5 rounded-full bg-gradient-to-br from-primary to-primary-container text-white font-bold text-base shadow-[0_10px_20px_-5px_rgba(0,69,13,0.4)] hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
+                        Register Account
+                    </button>
+                </div>
+            </form>
+
+            <p class="mt-4 text-center text-sm text-on-surface-variant font-medium">
+                Already registered? <a href="/vendor/login" class="text-primary font-bold hover:text-primary-container hover:underline underline-offset-4 ml-1 transition-all">Sign In</a>
+            </p>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = "http://localhost:5020";
+
+        window.togglePassword = function(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        };
+
+        window.showToast = function(title, message, isError = false) {
+            const container = document.getElementById('notificationArea');
+            if (!container) return;
+
+            const bgClass = isError ? 'bg-red-600' : 'bg-primary';
+            const icon = isError ? 'error' : 'check_circle';
+
+            const toast = document.createElement('div');
+            toast.className = `${bgClass} text-white px-5 py-4 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] flex items-center gap-3 transform transition-all duration-500 translate-x-full opacity-0 pointer-events-auto border border-white/20 backdrop-blur-md`;
+            
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-2xl drop-shadow-md">${icon}</span>
+                <div>
+                    <h4 class="font-bold text-sm tracking-wide">${title}</h4>
+                    <p class="text-xs text-white/90 mt-0.5">${message}</p>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 500);
+            }, 4500);
+        };
+
+        window.handleVendorRegister = async function() {
+            const businessName = document.getElementById('businessName').value.trim();
+            const contactPerson = document.getElementById('contactPerson').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const gstin = document.getElementById('gstin').value.trim().toUpperCase();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('registerBtn');
+
+            if (!businessName || !contactPerson || !phone || !email || !password || !confirmPassword) {
+                showToast("Missing Fields", "Please fill out all required fields.", true);
+                return;
+            }
+
+            if (!/^[^\s\x40]+\x40[^\s\x40]+\.[^\s\x40]+$/.test(email)) {
+                showToast("Invalid Email", "Please enter a valid email address.", true);
+                return;
+            }
+
+            if (!/^\+?[0-9\s\-()]{7,15}$/.test(phone)) {
+                showToast("Invalid Phone", "Please enter a valid phone number.", true);
+                return;
+            }
+
+            if (gstin !== "" && !/^([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1})$/.test(gstin)) {
+                showToast("Invalid GSTIN", "Please enter a valid GST format or leave it blank.", true);
+                return;
+            }
+
+            if (password.length < 8) {
+                showToast("Weak Password", "Password must be at least 8 characters.", true);
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showToast("Password Mismatch", "Your passwords do not match.", true);
+                return;
+            }
+
+            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<div class="flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined animate-spin">progress_activity</span> 
+                                Registering...
+                             </div>`;
+
+            const payload = {
+                businessName: businessName,
+                contactPerson: contactPerson,
+                email: email,
+                phone: phone,
+                gstin: gstin || "",
+                password: password,
+                confirmPassword: confirmPassword
+            };
+
+            try {
+                const response = await fetch(API_BASE + "/api/vendor/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    showToast('Welcome!', 'Registration successful! Redirecting...', false);
+                    setTimeout(() => { window.location.href = '/vendor/login'; }, 1500);
+                } else {
+                    const result = await response.json();
+                    resetBtn();
+                    showToast('Registration Failed', result.message || 'Unable to register account.', true);
+                }
+            } catch (error) {
+                resetBtn();
+                showToast('Network Error', 'Cannot connect to server. Please try again.', true);
+            }
+
+            function resetBtn() {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        };
+    </script>
+    <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/site.js" asp-append-version="true"></script>
+</body>
+</html>
+

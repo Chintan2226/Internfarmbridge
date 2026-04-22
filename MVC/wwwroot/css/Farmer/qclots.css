@@ -1,0 +1,330 @@
+/* QC Slots Styles */
+.qc-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.qc-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    flex: 1;
+    min-width: 400px;
+}
+
+.qc-panel h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-main);
+}
+
+.warehouse-info {
+    background: #ebf8ff;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3182ce;
+}
+
+.warehouse-info h4 {
+    margin: 0 0 8px 0;
+    color: #2b6cb0;
+    font-size: 16px;
+}
+
+.warehouse-info p {
+    margin: 0;
+    color: #4a5568;
+    font-size: 14px;
+}
+
+.slot-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.slot-card:hover {
+    border-color: #3182ce;
+    background: #f7fafc;
+}
+
+.slot-card.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    background: #edf2f7;
+}
+
+.slot-details h5 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.slot-details p {
+    margin: 0;
+    font-size: 13px;
+    color: #718096;
+}
+
+.capacity-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #e6fffa;
+    color: #319795;
+}
+
+.capacity-badge.full {
+    background: #fff5f5;
+    color: #e53e3e;
+}
+
+.status-up {
+    background: #ebf8ff;
+    color: #3182ce;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-comp {
+    background: #f0fff4;
+    color: #38a169;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-canc {
+    background: #fff5f5;
+    color: #e53e3e;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Responsive grid layout */
+.qc-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.slot-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.kendo-widget-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Form labels */
+.premium-lbl {
+    font-size: 12px;
+    font-weight: 800;
+    color: #475569;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Time slot cards */
+.slot-btn {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background: #ffffff;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    width: 100%;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.slot-btn:hover {
+    border-color: #10b981 !important;
+    background: #f0fdf4 !important;
+    transform: translateY(-2px);
+}
+
+.slot-btn.selected {
+    border-color: #10b981 !important;
+    background: #10b981 !important;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+}
+
+.slot-capacity {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.slot-btn.selected .slot-capacity {
+    color: #d1fae5;
+}
+
+/* Calendar past date blur */
+.k-calendar .k-state-disabled,
+.k-calendar .k-out-of-range {
+    opacity: 0.25 !important;
+    filter: blur(1.5px);
+    pointer-events: none;
+    background-color: #f8fafc !important;
+}
+
+/* Page layout extractions */
+.qc-db-wrap {
+    gap: 20px;
+    padding-bottom: 20px;
+}
+
+.qc-hdr {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.qc-header-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+}
+
+.qc-req-btn {
+    background: linear-gradient(135deg, #10b981, #047857);
+    border: none;
+    color: white;
+    font-weight: 700;
+    padding: 10px 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.qc-req-btn:hover {
+    background: linear-gradient(135deg, #059669, #064e3b);
+}
+
+.qc-btn-icon {
+    margin-right: 8px;
+}
+
+.qc-kpi-card {
+    padding: 20px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.qc-icon-up {
+    background: var(--grad-farm);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.qc-icon-wait {
+    background: var(--grad-vend);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.qc-icon-pass {
+    background: var(--grad-fo);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.qc-icon-grade {
+    background: var(--grad-rev);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.qc-lg-icon {
+    font-size: 18px;
+}
+
+.qc-grid-wrap {
+    padding: 20px;
+}
+
+.qc-grid-head {
+    margin-bottom: 16px;
+}
+
+.qc-book-win {
+    padding: 0 !important;
+}
+
+.qc-hide-start {
+    display: none;
+}
+
+.k-window-content {
+    padding: 0 !important;
+}
+
+@media (max-width: 1024px) {
+    .qc-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .qc-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .qc-header-row {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+
+    .qc-header-row button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .slot-grid-layout {
+        grid-template-columns: 1fr;
+    }
+}

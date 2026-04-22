@@ -1,0 +1,78 @@
+/* Farmer-Specific Dashboard Styles */
+
+.farmer-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.f-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 12px;
+    border-left: 4px solid var(--grad-ord);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+
+.f-alert.info { border-left-color: #3b82f6; }
+.f-alert.success { border-left-color: #10b981; }
+
+.f-alert-icon { font-size: 20px; color: #b45309; }
+.f-alert.info .f-alert-icon { color: #1d4ed8; }
+.f-alert.success .f-alert-icon { color: #047857; }
+
+.f-alert-text h4 { margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: var(--dash-text); }
+.f-alert-text p { margin: 0; font-size: 12px; color: var(--dash-text-light); }
+
+.f-action-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.f-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.1);
+    font-weight: 600;
+    font-size: 13px;
+    color: #2e7d32;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.f-btn:hover { background: #eaf7e8; border-color: #2e7d32; }
+
+/* Dashboard Squeezing constraints for 100vh */
+.db-wrap { gap: 14px !important; padding-bottom: 16px !important; }
+.kpi-card { padding: 14px 18px !important; }
+.kpi-top { margin-bottom: 8px !important; }
+.kpi-val { font-size: 24px !important; margin-bottom: 4px !important; }
+.chart-card, .grid-card { padding: 16px !important; }
+.f-action-row { margin-bottom: 0 !important; }
+
+/* Default desktop layout */
+.kpi-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.dash-two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; }
+
+/* Tablet (768px) */
+@media (max-width: 768px) {
+    .f-action-row { flex-direction: column; }
+    .f-btn { width: 100%; justify-content: center; padding: 12px 16px; font-size: 14px; border-radius: 12px; }
+    .db-wrap { padding-bottom: 90px !important; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    .kpi-grid { gap: 10px !important; }
+    .kpi-val { font-size: 20px !important; }
+}
+

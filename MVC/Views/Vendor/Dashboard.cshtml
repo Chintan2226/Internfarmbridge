@@ -1,0 +1,229 @@
+﻿@{
+    Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
+    ViewData["Title"] = "Dashboard";
+}
+
+
+<link rel="stylesheet" href="~/css/pages/vendor/dashboard.css" asp-append-version="true" />
+
+
+<div class="dashboard-header">
+    <h1 class="dashboard-title">
+        <i class="fi fi-rr-chart-histogram"></i>
+        Your Dashboard
+    </h1>
+    <p class="dashboard-subtitle">Overview of your orders, spending, and activity</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, rgba(45, 122, 39, 0.1) 0%, rgba(212, 240, 208, 0.2) 100%); color: #2d7a27;">
+            <i class="fi fi-rr-shopping-cart"></i>
+        </div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" id="totalOrders">0</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, rgba(232, 114, 12, 0.1) 0%, rgba(253, 240, 227, 0.2) 100%); color: #E8720C;">
+            <i class="fi fi-rr-indian-rupee"></i>
+        </div>
+        <div class="stat-label">Total Spent</div>
+        <div class="stat-value" id="totalSpent">â‚¹0</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, rgba(45, 122, 122, 0.1) 0%, rgba(200, 232, 242, 0.2) 100%); color: #2d7a7a;">
+            <i class="fi fi-rr-weight"></i>
+        </div>
+        <div class="stat-label">Total Quantity</div>
+        <div class="stat-value" id="totalQuantity">0 kg</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(254, 226, 226, 0.2) 100%); color: #dc2626;">
+            <i class="fi fi-rr-clock"></i>
+        </div>
+        <div class="stat-label">Pending Delivery</div>
+        <div class="stat-value" id="pendingDeliveries">0</div>
+    </div>
+</div>
+
+<div class="charts-row">
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-title">Monthly Purchase Trends</div>
+            <span class="live-badge">Live</span>
+        </div>
+        <canvas id="ordersChart" height="250"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-title">Spending by Category</div>
+        </div>
+        <canvas id="categoryChart" height="250"></canvas>
+    </div>
+</div>
+
+<div class="recent-card">
+    <div class="recent-header">
+        <div class="recent-title">Recent Orders</div>
+        <a href="/Vendor/Orders" class="view-all-link">View All Orders <i class="fi fi-rr-arrow-right"></i></a>
+    </div>
+    <div class="table-responsive">
+        <table class="recent-table">
+            <thead>
+                <tr>
+                    <th>ORDER ID</th>
+                    <th>AMOUNT</th>
+                    <th>STATUS</th>
+                    <th>DATE</th>
+                </tr>
+            </thead>
+            <tbody id="recentOrdersBody">
+                <tr>
+                    <td colspan="4" class="text-center" style="padding: 40px; color: #5a7257;">Loading orders...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5020/api/Vendor';
+        let ordersChart, categoryChart;
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        async function authorizedFetch(url, options = {}) {
+            const token = getCookie("authToken");
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            const response = await fetch(url, options);
+            if (response.status === 401) {
+                window.location.href = "/Vendor/Login";
+                return null;
+            }
+            return response;
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await authorizedFetch(`${API_URL}/dashboard`);
+                if (!response) return;
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const data = result.data;
+                    document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+                    document.getElementById('totalSpent').textContent = `â‚¹${(data.totalSpent || 0).toLocaleString('en-IN')}`;
+                    document.getElementById('totalQuantity').textContent = `${(data.totalQuantity || 0).toLocaleString('en-IN')} kg`;
+                    document.getElementById('pendingDeliveries').textContent = data.pendingDeliveries || 0;
+
+                    displayCharts(data);
+                    displayRecentOrders(data.recentOrders || []);
+                }
+            } catch (error) {
+                console.error('Dashboard error:', error);
+            }
+        }
+
+        function displayCharts(data) {
+            const ctxOrders = document.getElementById('ordersChart').getContext('2d');
+            ordersChart = new Chart(ctxOrders, {
+                type: 'line',
+                data: {
+                    labels: data.monthlyLabels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Orders',
+                        data: data.monthlySalesData || [0, 0, 0, 0, 0, 0],
+                        borderColor: '#2d7a27',
+                        backgroundColor: 'rgba(45, 122, 39, 0.05)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#2d7a27',
+                        pointBorderWidth: 2,
+                        pointBorderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(45, 122, 39, 0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(ctxCategory, {
+                type: 'doughnut',
+                data: {
+                    labels: data.categoryLabels || ['Category 1', 'Category 2'],
+                    datasets: [{
+                        data: data.categoryData || [50, 50],
+                        backgroundColor: ['#2d7a27', '#f4a621', '#1565c0', '#dc2626'],
+                        borderColor: 'rgba(255, 255, 255, 0.95)',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 12, family: "'Poppins', sans-serif" }, padding: 15 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayRecentOrders(orders) {
+            if (!orders || orders.length === 0) {
+                document.getElementById('recentOrdersBody').innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 40px; color: #5a7257;">No orders yet</td></tr>';
+                return;
+            }
+
+            let html = orders.slice(0, 5).map(order => {
+                const status = (order.status || '').toLowerCase();
+                let statusClass = status === 'delivered' ? 'status-delivered' :
+                    (status === 'pending' || status === 'placed') ? 'status-pending' : 'status-processing';
+                const date = new Date(order.orderDate).toLocaleDateString('en-IN');
+
+                return `
+                    <tr>
+                        <td><strong>${order.orderId}</strong></td>
+                        <td>â‚¹${order.totalAmount.toLocaleString('en-IN')}</td>
+                        <td><span class="order-status-badge ${statusClass}">${order.statusText || order.status}</span></td>
+                        <td>${date}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('recentOrdersBody').innerHTML = html;
+        }
+
+        $(document).ready(() => {
+            loadDashboard();
+        });
+    </script>
+}
+
+
+
