@@ -20,7 +20,6 @@ $(document).ready(function () {
 
     $("#historyGrid").kendoGrid({
         dataSource: {
-            // transport: { read: { url: window.API_BASE + "/qcslots/history" } },
             pageSize: 5
         },
         pageable: true,
@@ -57,19 +56,14 @@ $(document).ready(function () {
         }).text().trim();
         var date = kendo.toString($("#slotDate").data("kendoDatePicker").value(), "yyyy-MM-dd");
 
-        Swal.fire({
-            title: "Confirm Appointment?",
-            text: "Schedule QC inspection for " + date + " at " + selectedTime + "?",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonColor: "#10b981",
-            cancelButtonColor: "#cbd5e1",
-            confirmButtonText: "Yes, Book It!"
-        }).then(function (result) {
-            if (result.isConfirmed) {
-                Swal.fire({ title: "Confirmed!", text: "Your appointment is scheduled. The Field Officer will meet you at the warehouse.", icon: "success", confirmButtonColor: "#10b981" });
-                closeQCWindow();
-            }
+        fbConfirm(
+            "Confirm Appointment?",
+            "Schedule QC inspection for " + date + " at " + selectedTime + "?",
+            "Yes, Book It!"
+        ).then(function (confirmed) {
+            if (!confirmed) return;
+            fbSuccess("Booking Confirmed", "Your appointment is scheduled. The Field Officer will meet you at the warehouse.");
+            closeQCWindow();
         });
     });
 });
@@ -97,7 +91,7 @@ function fetchTimeSlots(selectedDate) {
         data: { date: dateString },
         success: function (response) { renderSlots(response); },
         error: function () {
-            Swal.fire({ icon: "error", title: "Could not load time slots", text: "Please check the API connection and try again." });
+            fbError("Could not Load Time Slots", "Please check the API connection and try again.");
         }
     });
 }
@@ -130,22 +124,13 @@ function renderSlots(slots) {
 
 function editSlot(id) {
     openQCSlotWindow();
-    Swal.fire({ toast: true, position: "top-end", icon: "info", title: "Loading appointment #" + id + "...", showConfirmButton: false, timer: 2000 });
+    fbAlert("Loading appointment #" + id + "...", "Loading");
 }
 
 function deleteSlot(id) {
-    Swal.fire({
-        title: "Cancel Appointment?",
-        text: "Cancellations must be made at least 2 hours before the scheduled time.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#ef4444",
-        cancelButtonColor: "#cbd5e1",
-        confirmButtonText: "Yes, Cancel it"
-    }).then(function (result) {
-        if (result.isConfirmed) {
-            // TODO: DELETE /api/qcslots/:id
-            Swal.fire({ title: "Cancelled!", text: "Slot removed. Capacity has been released.", icon: "success", confirmButtonColor: "#10b981" });
-        }
+    fbConfirm("Cancel Appointment?", "Cancellations must be made at least 2 hours before the scheduled time.", "Yes, Cancel").then(function (confirmed) {
+        if (!confirmed) return;
+        // TODO: DELETE /api/qcslots/:id
+        fbSuccess("Cancelled", "Slot removed. Capacity has been released.");
     });
 }

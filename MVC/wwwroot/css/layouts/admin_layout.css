@@ -63,7 +63,7 @@ ul {
     list-style: none;
 }
 
-/* ── Sidebar ── */
+/* Sidebar */
 .adm-sidebar {
     position: fixed;
     top: 16px;
@@ -279,7 +279,7 @@ ul {
     background: rgba(220, 38, 38, 0.1) !important;
 }
 
-/* ── Main ── */
+/* Main */
 .adm-main {
     margin-left: calc(var(--adm-sidebar-w) + 32px);
     min-height: 100dvh;
@@ -292,7 +292,7 @@ ul {
     margin-left: calc(var(--adm-sidebar-wx) + 32px);
 }
 
-/* ── Topbar ── */
+/* Topbar */
 .adm-topbar {
     position: sticky;
     top: 0;
@@ -381,13 +381,13 @@ ul {
     transform: scale(1.07);
 }
 
-/* ── Content ── */
+/* Content */
 .adm-content {
     flex: 1;
     padding: 24px;
 }
 
-/* ── Notification drawer ── */
+/* Notification drawer */
 .adm-notif {
     position: fixed;
     top: calc(var(--adm-topbar-h) + 8px);
@@ -530,7 +530,7 @@ ul {
     border-left: 3px solid var(--adm-lime-dk);
 }
 
-/* ── Toast ── */
+/* Toast */
 .adm-toasts {
     position: fixed;
     bottom: 20px;
@@ -584,7 +584,7 @@ ul {
     }
 }
 
-/* ── Kendo overrides ── */
+/* Kendo overrides */
 .k-grid {
     border: none !important;
     font-family: 'Inter', sans-serif !important;
@@ -607,7 +607,7 @@ ul {
     padding: 11px 13px !important;
 }
 
-/* ── Animations ── */
+/* Animations */
 @keyframes fadeUpIn {
     from {
         opacity: 0;
@@ -620,7 +620,7 @@ ul {
     }
 }
 
-/* ── Mobile Menu Btn ── */
+/* Mobile Menu Btn */
 .adm-menu-btn {
     display: none;
     background: none;
@@ -633,7 +633,7 @@ ul {
     margin-right: 12px;
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 768px) {
     .adm-menu-btn {
         display: flex;

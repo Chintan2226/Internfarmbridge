@@ -267,7 +267,7 @@ body {
   margin-top: 2px;
 }
 
-/* ── Right Form Panel ── */
+/* Right Form Panel */
 .form-container {
   width: 50%;
   display: flex;
@@ -310,7 +310,7 @@ body {
   font-size: 0.9rem;
 }
 
-/* ── Form Fields ── */
+/* Form Fields */
 .field-group {
   margin-bottom: 1.3rem;
 }
@@ -385,7 +385,7 @@ body {
   color: #2563a8;
 }
 
-/* ── Forgot Link ── */
+/* Forgot Link */
 .forgot-row {
   text-align: right;
   margin-top: -6px;
@@ -403,7 +403,7 @@ body {
   text-decoration: underline;
 }
 
-/* ── Submit Button ── */
+/* Submit Button */
 .btn-submit {
   width: 100%;
   height: 48px;
@@ -435,7 +435,7 @@ body {
   transform: none;
 }
 
-/* ── Footer ── */
+/* Footer */
 .form-footer {
   margin-top: 1.5rem;
   padding-top: 1.2rem;
@@ -525,7 +525,7 @@ body {
   color: #94a3b8;
 }
 
-/* ── Security note ── */
+/* Security note */
 .security-note {
   display: flex;
   align-items: center;
@@ -544,7 +544,7 @@ body {
   color: #2563a8;
 }
 
-/* ── Notification ── */
+/* Notification */
 .notification {
   display: none;
   position: fixed;
@@ -583,7 +583,7 @@ body {
   }
 }
 
-/* ── Spinner inside button ── */
+/* Spinner inside button */
 .spinner {
   display: inline-block;
   width: 16px;
@@ -602,7 +602,7 @@ body {
   }
 }
 
-/* ── Mobile ── */
+/* Mobile */
 @media (max-width: 900px) {
   .container-auth {
     flex-direction: column;

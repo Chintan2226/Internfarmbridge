@@ -1,4 +1,4 @@
-﻿/* ========== WISHLIST PAGE ENHANCED STYLING ========== */
+/* ========== WISHLIST PAGE ENHANCED STYLING ========== */
     
     .wishlist-header-area {
         display: flex;
@@ -10,7 +10,7 @@
     }
 
     .wishlist-title {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 32px;
         font-weight: 700;
         color: #0a2108;
@@ -30,7 +30,7 @@
         font-size: 13px;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -60,7 +60,7 @@
     .wishlist-empty h4 {
         color: #1b5e19;
         margin-bottom: 12px;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 24px;
     }
 
@@ -70,9 +70,13 @@
     }
 
     .wishlist-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 24px;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 24px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        white-space: normal !important;
     }
 
     .wishlist-category-section {
@@ -89,7 +93,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .wishlist-category-icon {
@@ -217,7 +221,7 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .wishlist-card-category {
@@ -231,7 +235,7 @@
         font-weight: 800;
         color: #1b5e19;
         margin-bottom: 8px;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .wishlist-card-price small {
@@ -269,7 +273,7 @@
         justify-content: center;
         gap: 6px;
         text-decoration: none;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         box-shadow: 0 4px 12px rgba(45, 122, 39, 0.2);
     }
 
@@ -292,7 +296,7 @@
         align-items: center;
         gap: 8px;
         transition: all 0.3s ease;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .btn-browse-catalog:hover {

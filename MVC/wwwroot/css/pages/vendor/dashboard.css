@@ -1,17 +1,17 @@
 :root {
-    --green-dark: #1a5c2a;
-    --green-mid: #2d8a45;
-    --green-light: #4caf66;
-    --green-pale: #a8ddb5;
-    --green-mist: #e8f5ec;
-    --gray-text: #4a5e50;
-    --gray-mid: #e0ece3;
-    --bg-color: #f0faf2;
-    --sidebar-bg: #0d2b14;
+    --green-dark: var(--fv-primary-dk, #047857);
+    --green-mid: var(--fv-primary, #10b981);
+    --green-light: var(--fv-primary-lt, rgba(16, 185, 129, 0.2));
+    --green-pale: #a7f3d0;
+    --green-mist: #ecfdf5;
+    --gray-text: var(--fv-muted, #64748b);
+    --gray-mid: var(--fv-border, #e2e8f0);
+    --bg-color: var(--fv-bg, #f8fafc);
+    --sidebar-bg: var(--fv-surface, #ffffff);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); overflow-x: hidden; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-color); overflow-x: hidden; }
 body.no-scroll { overflow: hidden !important; }
 
 /* ============ Kendo AppBar ============ */
@@ -25,7 +25,7 @@ body.no-scroll { overflow: hidden !important; }
     position: sticky;
     top: 0;
 }
-.topbar-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--green-dark); }
+.topbar-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 700; color: var(--green-dark); }
 .topbar-btn {
     width: 38px; height: 38px; border-radius: 10px; background: var(--green-mist);
     border: none; display: flex; align-items: center; justify-content: center;
@@ -64,7 +64,7 @@ body.no-scroll { overflow: hidden !important; }
 
 /* ============ Sidebar Components ============ */
 .sidebar-header { padding: 28px 20px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: transparent !important; }
-.sidebar-logo { display: flex; align-items: center; gap: 10px; color: white; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+.sidebar-logo { display: flex; align-items: center; gap: 10px; color: white; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 700; }
 .sidebar-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--green-light), var(--green-mid)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 .sidebar-user { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: white; background: transparent !important; }
 .sidebar-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--green-light), #00897b); color: #fff; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
@@ -257,7 +257,15 @@ body.no-scroll { overflow: hidden !important; }
     }
 }
 /* ============ Product Cards ============ */
-.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+.products-grid { 
+    display: grid !important; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important; 
+    gap: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    white-space: normal !important;
+}
 .product-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); transition: all 0.3s ease; }
 .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12); }
 .product-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 64px; background: linear-gradient(135deg, #f5f7f0 0%, #e8f5e9 100%); position: relative; }
@@ -275,7 +283,7 @@ body.no-scroll { overflow: hidden !important; }
 .stat-card { background: white; border-radius: 20px; padding: 24px; box-shadow: 0 2px 12px rgba(26, 92, 42, 0.08); transition: all 0.3s ease; border: 1px solid rgba(45, 138, 69, 0.1); }
 .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(26, 92, 42, 0.12); }
 .stat-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; }
-.stat-value { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: #1a5c2a; line-height: 1.2; }
+.stat-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; font-weight: 700; color: #1a5c2a; line-height: 1.2; }
 .stat-label { font-size: 13px; color: #64748b; margin-top: 6px; }
 .stat-trend { font-size: 12px; font-weight: 600; margin-top: 10px; display: flex; align-items: center; gap: 5px; }
 .trend-up { color: #10b981; }
@@ -287,7 +295,7 @@ body.no-scroll { overflow: hidden !important; }
 .chart-card { background: white; border-radius: 20px; padding: 12px; box-shadow: 0 2px 12px rgba(26, 92, 42, 0.08); }
 .chart-card canvas { max-height: 260px !important; width: 100%; }
 .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.chart-title { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #1a5c2a; }
+.chart-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; color: #1a5c2a; }
 .live-badge { background: #e8f5ec; color: #1a5c2a; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
 
 /* ============ Recent Orders Table ============ */
@@ -309,7 +317,7 @@ body.no-scroll { overflow: hidden !important; }
 }
 
 .recent-title {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 16px;
     font-weight: 700;
     color: #1a5c2a;
@@ -369,7 +377,7 @@ body.no-scroll { overflow: hidden !important; }
 .order-id {
     font-weight: 700;
     color: #1a5c2a;
-    font-family: 'Courier New', monospace;
+    font-family: 'Plus Jakarta Sans', monospace;
     font-size: 12px;
     background: #e8f5ec;
     padding: 3px 8px;
@@ -925,7 +933,7 @@ body.no-scroll { overflow: hidden !important; }
 }
 
 .k-window-title {
-    font-family: 'Playfair Display', serif !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-weight: 700 !important;
 }
 

@@ -1,4 +1,4 @@
-﻿/* ========== CATALOG PAGE ENHANCED STYLING ========== */
+/* ========== CATALOG PAGE ENHANCED STYLING ========== */
     
     .catalog-page-header {
         display: flex;
@@ -10,7 +10,7 @@
     }
 
     .catalog-page-title {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 32px;
         font-weight: 700;
         color: #0a2108;
@@ -40,7 +40,7 @@
         padding: 10px 16px;
         border: 1.5px solid var(--border-soft, rgba(45, 122, 39, 0.12));
         border-radius: 12px;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 13px;
         transition: all 0.3s ease;
         background: white;
@@ -86,7 +86,7 @@
         font-weight: 700;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         border: none;
     }
 
@@ -125,10 +125,14 @@
     }
 
     .products-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 24px;
-        padding: 28px 0;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 24px !important;
+        padding: 0 0 24px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        white-space: normal !important;
     }
 
     /* Product Card */
@@ -226,7 +230,7 @@
         color: #1b5e19;
         margin-bottom: 6px;
         font-size: 15px;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         line-height: 1.4;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -247,7 +251,7 @@
         font-size: 22px;
         font-weight: 800;
         color: #1b5e19;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         margin-bottom: 8px;
     }
 
@@ -282,7 +286,7 @@
         cursor: pointer;
         font-weight: 700;
         font-size: 13px;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         display: flex;
         align-items: center;
@@ -355,7 +359,7 @@
     .catalog-loading h3 {
         color: #1b5e19;
         margin-bottom: 8px;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .catalog-empty p,

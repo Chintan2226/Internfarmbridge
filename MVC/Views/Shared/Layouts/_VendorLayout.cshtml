@@ -1,8 +1,10 @@
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<MVC.Controllers.LanguageController> Localizer
 @{
     Layout = null;
     var role = "Vendor";
     var title = (ViewData["Title"] ?? "Dashboard").ToString();
-    /* ── Detect current language from culture cookie ── */
+    // Lang cookie
     var currentLang = "en";
     var cultureCookie = Context.Request.Cookies[".AspNetCore.Culture"];
     if (!string.IsNullOrEmpty(cultureCookie)) {
@@ -13,6 +15,7 @@
 <!DOCTYPE html>
 <html lang="@currentLang">
 <head>
+    <link rel="icon" type="image/png" href="~/Logo/Logo_Without_Bg.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@title — FarmBridge</title>
@@ -43,6 +46,9 @@
         window.USER_ROLE = '@role';
         window.API_BASE = `http://localhost:5020/api/@role`;
         window.CURRENT_LANG = '@currentLang';
+        window.fbServerTranslations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Localizer.GetAllStrings(includeParentCultures: true).ToDictionary(s => s.Name, s => s.Value)
+        ));
     </script>
     <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
 </head>
@@ -70,10 +76,10 @@
              <li><a href="/Vendor/Profile" class="fv-nav-link @(path.Contains("/vendor/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span data-i18n="nav_profile">Profile</span></a></li>
         </ul>
         <div class="fv-sidebar-foot">
-    <a href="javascript:void(0)" class="fv-nav-link fv-logout" onclick="logoutVendor()">
-        <i class="fi fi-rr-exit"></i>
-        <span data-i18n="nav_logout">Logout</span>
-    </a>
+            <a href="javascript:void(0)" class="fv-nav-link fv-logout" onclick="logoutVendor()">
+                <i class="fi fi-rr-exit"></i>
+                <span data-i18n="nav_logout">Logout</span>
+            </a>
 </div>
     </nav>
 
@@ -162,11 +168,11 @@
         function logoutVendor() {
     document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
-    // Clear other storage if used
+    // Clear storage
     localStorage.clear();
     sessionStorage.clear();
 
-    // Redirect to login
+    // Redirect login
     window.location.href = "/Vendor/Login";
 }
         function getCookie(name) {
@@ -176,9 +182,9 @@
             return null;
         }
 
-        // --- NEW LOGIC: Badge Sync (Handles Cart/Wishlist only) ---
+        // Badge Sync
         function syncGlobalBadges() {
-            // 1. Sync Cart Badge (LocalStorage)
+            // Cart Badge
             const cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
             const cartBadge = document.getElementById('globalCartCount');
             if (cartBadge) {
@@ -190,7 +196,7 @@
                 }
             }
 
-            // 2. Sync Wishlist Badge (API)
+            // Wishlist Badge
             const token = getCookie("authToken");
             if (token && window.USER_ROLE === 'Vendor') {
                 fetch('http://localhost:5020/api/Vendor/wishlist', {
@@ -213,7 +219,7 @@
             }
         }
 
-        // --- NEW LOGIC: Dynamic Avatar ---
+        // Dynamic Avatar
         function parseJwtVendor(token) {
             try {
                 var base64Url = token.split('.')[1];

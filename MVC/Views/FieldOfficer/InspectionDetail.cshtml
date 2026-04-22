@@ -248,13 +248,7 @@ $(document).ready(function () {
 // Request Payment - AUTO PAYMENT (No admin approval needed)
 function requestPayment() {
     if (!window.inspectionData) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Inspection data not loaded',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#28a745'
-        });
+        foError('Data Error', 'Inspection data not loaded');
         return;
     }
 
@@ -262,17 +256,11 @@ function requestPayment() {
         'Amount: ₹' + Number(window.inspectionData.advanceAmount).toLocaleString('en-IN') + '\n' +
         'Farmer: ' + window.inspectionData.farmerName;
 
-    Swal.fire({
-        icon: 'question',
-        title: 'Confirm Payment',
-        html: 'Process 30% Advance Payment?<br><br><strong>Amount:</strong> ₹' + Number(window.inspectionData.advanceAmount).toLocaleString('en-IN') + '<br><strong>Farmer:</strong> ' + window.inspectionData.farmerName,
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Process',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#d33'
-    }).then((result) => {
-        if (!result.isConfirmed) return;
+    foConfirm('Confirm Payment',
+        'Process 30% Advance Payment?<br><br><strong>Amount:</strong> ₹' + Number(window.inspectionData.advanceAmount).toLocaleString('en-IN') + '<br><strong>Farmer:</strong> ' + window.inspectionData.farmerName,
+        'Yes, Process'
+    ).then((confirmed) => {
+        if (!confirmed) return;
 
     $('#payBtn').prop('disabled', true)
               .html('<i class="fa fa-spinner fa-spin"></i> Processing Payment...');
@@ -301,13 +289,7 @@ function requestPayment() {
                 showPaymentDetails(response);
             } else {
                 // Payment failed
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Payment Failed',
-                    text: response.message || 'Payment processing failed',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#28a745'
-                });
+                foError('Payment Failed', response.message || 'Payment processing failed');
                 $('#payBtn').prop('disabled', false)
                            .html('<i class="fa fa-credit-card"></i> Request 30% Payment');
             }
@@ -315,13 +297,7 @@ function requestPayment() {
         error: function (xhr) {
             if (handleFoUnauthorized(xhr)) return;
             var msg = xhr.responseJSON?.message || 'Payment processing failed. Please try again.';
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: msg,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745'
-            });
+            foError('Error', msg);
             $('#payBtn').prop('disabled', false)
                        .html('<i class="fa fa-credit-card"></i> Request 30% Payment');
         }

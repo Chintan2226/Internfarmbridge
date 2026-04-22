@@ -3,7 +3,7 @@
 
 $(document).ready(function () {
 
-    /* ── Initialize Kendo Widgets ── */
+    /* Initialize Kendo Widgets */
     
     const fullName = $("#fullName").kendoTextBox({
         placeholder: "Ramesh Kumar"
@@ -45,7 +45,7 @@ $(document).ready(function () {
         enable: true
     }).data("kendoButton");
 
-    /* ── Kendo Validator ── */
+    /* Kendo Validator */
     const validator = $("#registerForm").kendoValidator({
         rules: {
             required: function (input) {
@@ -105,7 +105,7 @@ $(document).ready(function () {
         }
     }).data("kendoValidator");
 
-    /* ── Toast ── */
+    /* Toast */
     function showToast(msg, type) {
         const stack = document.getElementById('toastStack');
         const t = document.createElement('div');
@@ -121,7 +121,7 @@ $(document).ready(function () {
         setTimeout(() => t.remove(), 5000);
     }
 
-    /* ── Password Strength ── */
+    /* Password Strength */
     const strengthColors = ['', '#dc2626', '#f97316', '#16a34a', '#15522a'];
     const strengthLabels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
 
@@ -147,7 +147,7 @@ $(document).ready(function () {
         txt.style.color = s > 0 ? strengthColors[s] : 'var(--fa-light)';
     });
 
-    /* ── Eye toggles ── */
+    /* Eye toggles */
     $(".fa-eye-btn").on("click", function() {
         const targetId = $(this).data("target");
         const target = $("#" + targetId);
@@ -155,7 +155,7 @@ $(document).ready(function () {
         target.attr("type", type);
     });
 
-    /* ── Submit Form ── */
+    /* Submit Form */
     $("#registerForm").on("submit", function (e) {
         e.preventDefault();
 

@@ -21,10 +21,7 @@ namespace API.BAL
             _configuration = configuration;
         }
 
-        // ──────────────────────────────────────────
-        // REGISTER FARMER
-        // Inserts into t_users + t_farmer_profiles (atomic transaction)
-        // ──────────────────────────────────────────
+        // Register Farmer
         public async Task<FarmerProfile> RegisterFarmerAsync(
             string email,
             string passwordHash,
@@ -42,10 +39,10 @@ namespace API.BAL
                 using var transaction = _conn.BeginTransaction();
                 try
                 {
-                    // 1. Insert into t_users
+                    // Insert into t_users
                     var userQuery = @"
                         INSERT INTO t_users (c_email, c_password_hash, c_role, c_language_preference,
-                                            c_is_first_login, c_is_active, c_is_approved)
+                                             c_is_first_login, c_is_active, c_is_approved)
                         VALUES (@email, @passwordHash, 'farmer', 'en', true, true, true)
                         RETURNING c_id;";
 
@@ -57,7 +54,7 @@ namespace API.BAL
                         userId = Convert.ToInt32(await userCmd.ExecuteScalarAsync());
                     }
 
-                    // 2. Insert into t_farmer_profiles
+                    // Insert into t_farmer_profiles
                     var farmerQuery = @"
                         INSERT INTO t_farmer_profiles (c_user_id, c_full_name, c_phone, c_address, c_state, c_district, c_created_at)
                         VALUES (@userId, @fullName, @phone, @address, @state, @district, NOW())
@@ -102,9 +99,7 @@ namespace API.BAL
             }
         }
 
-        // ──────────────────────────────────────────
-        // GET FARMER BY EMAIL (for login)
-        // ──────────────────────────────────────────
+        // Get Farmer by Email
         public async Task<(User user, FarmerProfile farmer)> GetFarmerByEmailAsync(string email)
         {
             try
@@ -113,7 +108,7 @@ namespace API.BAL
                     await _conn.OpenAsync();
 
                 var query = @"
-                    SELECT u.c_id, u.c_email, u.c_password_hash, u.c_role, u.c_is_active, u.c_is_approved,
+                    SELECT u.c_id, u.c_email, u.c_password_hash, u.c_role, u.c_is_active, u.c_is_approved, u.c_profile_image_url,
                            fp.c_id, fp.c_full_name, fp.c_phone, fp.c_address, fp.c_state, fp.c_district
                     FROM t_users u
                     LEFT JOIN t_farmer_profiles fp ON u.c_id = fp.c_user_id
@@ -132,27 +127,27 @@ namespace API.BAL
                         PasswordHash = reader.IsDBNull(2) ? "" : reader.GetString(2),
                         Role = reader.GetString(3),
                         IsActive = reader.GetBoolean(4),
-                        IsApproved = reader.GetBoolean(5)
+                        IsApproved = reader.GetBoolean(5),
+                        ProfileImageUrl = reader.IsDBNull(6) ? "" : reader.GetString(6)
                     };
 
                     FarmerProfile? farmer = null;
-                    if (!reader.IsDBNull(6))
+                    if (!reader.IsDBNull(7))
                     {
                         farmer = new FarmerProfile
                         {
-                            Id = reader.GetInt32(6),
+                            Id = reader.GetInt32(7),
                             UserId = user.Id,
-                            FullName = reader.GetString(7),
-                            Phone = reader.IsDBNull(8) ? "" : reader.GetString(8),
-                            Address = reader.IsDBNull(9) ? "" : reader.GetString(9),
-                            State = reader.IsDBNull(10) ? "" : reader.GetString(10),
-                            District = reader.IsDBNull(11) ? "" : reader.GetString(11)
+                            FullName = reader.GetString(8),
+                            Phone = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                            Address = reader.IsDBNull(10) ? "" : reader.GetString(10),
+                            State = reader.IsDBNull(11) ? "" : reader.GetString(11),
+                            District = reader.IsDBNull(12) ? "" : reader.GetString(12)
                         };
                     }
 
                     return (user, farmer)!;
                 }
-
                 return (null, null)!;
             }
             catch (Exception ex)
@@ -161,9 +156,7 @@ namespace API.BAL
             }
         }
 
-        // ──────────────────────────────────────────
-        // GET FARMER BY PHONE (for login)
-        // ──────────────────────────────────────────
+        // Get Farmer by Phone
         public async Task<(User user, FarmerProfile farmer)> GetFarmerByPhoneAsync(string phone)
         {
             try
@@ -172,7 +165,7 @@ namespace API.BAL
                     await _conn.OpenAsync();
 
                 var query = @"
-                    SELECT u.c_id, u.c_email, u.c_password_hash, u.c_role, u.c_is_active, u.c_is_approved,
+                    SELECT u.c_id, u.c_email, u.c_password_hash, u.c_role, u.c_is_active, u.c_is_approved, u.c_profile_image_url,
                            fp.c_id, fp.c_full_name, fp.c_phone, fp.c_address, fp.c_state, fp.c_district
                     FROM t_users u
                     LEFT JOIN t_farmer_profiles fp ON u.c_id = fp.c_user_id
@@ -191,27 +184,26 @@ namespace API.BAL
                         PasswordHash = reader.IsDBNull(2) ? "" : reader.GetString(2),
                         Role = reader.GetString(3),
                         IsActive = reader.GetBoolean(4),
-                        IsApproved = reader.GetBoolean(5)
+                        IsApproved = reader.GetBoolean(5),
+                        ProfileImageUrl = reader.IsDBNull(6) ? "" : reader.GetString(6)
                     };
 
                     FarmerProfile? farmer = null;
-                    if (!reader.IsDBNull(6))
+                    if (!reader.IsDBNull(7))
                     {
                         farmer = new FarmerProfile
                         {
-                            Id = reader.GetInt32(6),
+                            Id = reader.GetInt32(7),
                             UserId = user.Id,
-                            FullName = reader.GetString(7),
-                            Phone = reader.IsDBNull(8) ? "" : reader.GetString(8),
-                            Address = reader.IsDBNull(9) ? "" : reader.GetString(9),
-                            State = reader.IsDBNull(10) ? "" : reader.GetString(10),
-                            District = reader.IsDBNull(11) ? "" : reader.GetString(11)
+                            FullName = reader.GetString(8),
+                            Phone = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                            Address = reader.IsDBNull(10) ? "" : reader.GetString(10),
+                            State = reader.IsDBNull(11) ? "" : reader.GetString(11),
+                            District = reader.IsDBNull(12) ? "" : reader.GetString(12)
                         };
                     }
-
                     return (user, farmer)!;
                 }
-
                 return (null, null)!;
             }
             catch (Exception ex)
@@ -220,9 +212,7 @@ namespace API.BAL
             }
         }
 
-        // ──────────────────────────────────────────
-        // EMAIL / PHONE EXISTENCE CHECKS
-        // ──────────────────────────────────────────
+        // Check Existence
         public async Task<bool> EmailExistsAsync(string email)
         {
             try
@@ -261,9 +251,7 @@ namespace API.BAL
             }
         }
 
-        // ──────────────────────────────────────────
-        // FORGOT PASSWORD — Send OTP
-        // ──────────────────────────────────────────
+        // OTP Management
         public async Task<string> SendForgotPasswordOtpAsync(string email, EmailService emailService)
         {
             try
@@ -271,22 +259,18 @@ namespace API.BAL
                 if (_conn.State != System.Data.ConnectionState.Open)
                     await _conn.OpenAsync();
 
-                // Check user exists (any role with this email)
                 var checkSql = "SELECT c_id FROM t_users WHERE c_email = @email AND c_is_active = true;";
                 using (var cmd = new NpgsqlCommand(checkSql, _conn))
                 {
                     cmd.Parameters.AddWithValue("@email", email);
                     var result = await cmd.ExecuteScalarAsync();
-                    if (result == null)
-                        return "SUCCESS"; // Security: don't reveal if email exists
+                    if (result == null) return "SUCCESS";
                 }
 
-                // Generate OTP
                 string otp = new Random().Next(100000, 999999).ToString();
                 string otpHash = BCrypt.Net.BCrypt.HashPassword(otp);
                 DateTime expiresAt = DateTime.UtcNow.AddMinutes(10);
 
-                // Upsert OTP into t_password_otps
                 var upsertSql = @"
                     INSERT INTO t_password_otps (c_email, c_otp_hash, c_expires_at)
                     VALUES (@email, @otpHash, @expiresAt)
@@ -301,9 +285,7 @@ namespace API.BAL
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-                // Send OTP via email
                 await emailService.SendOtpEmailAsync(email, otp);
-
                 return "SUCCESS";
             }
             catch (Exception ex)
@@ -317,9 +299,7 @@ namespace API.BAL
             }
         }
 
-        // ──────────────────────────────────────────
-        // RESET PASSWORD — Verify OTP + update password
-        // ──────────────────────────────────────────
+        // Reset Password
         public async Task<string> ResetFarmerPasswordAsync(string email, string otp, string newPassword)
         {
             try
@@ -327,7 +307,6 @@ namespace API.BAL
                 if (_conn.State != System.Data.ConnectionState.Open)
                     await _conn.OpenAsync();
 
-                // 1. Fetch stored OTP
                 string? storedHash = null;
                 DateTime expiresAt = DateTime.MinValue;
 
@@ -343,22 +322,14 @@ namespace API.BAL
                     }
                 }
 
-                if (storedHash == null)
-                    return "OTP expired or not requested";
+                if (storedHash == null) return "OTP expired or not requested";
+                if (DateTime.UtcNow > expiresAt) return "OTP expired";
+                if (!BCrypt.Net.BCrypt.Verify(otp, storedHash)) return "Invalid OTP";
 
-                if (DateTime.UtcNow > expiresAt)
-                    return "OTP expired";
-
-                if (!BCrypt.Net.BCrypt.Verify(otp, storedHash))
-                    return "Invalid OTP";
-
-                // 2. Password strength validation
-                var regex = new System.Text.RegularExpressions.Regex(
-                    @"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$");
+                var regex = new System.Text.RegularExpressions.Regex(@"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$");
                 if (!regex.IsMatch(newPassword))
                     return "Weak password. Must be 8+ chars with letters, numbers & special characters.";
 
-                // 3. Hash and update
                 string hashed = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
                 var updateSql = "UPDATE t_users SET c_password_hash = @pass WHERE c_email = @email;";
@@ -369,7 +340,6 @@ namespace API.BAL
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-                // 4. Remove used OTP
                 var deleteSql = "DELETE FROM t_password_otps WHERE c_email = @email;";
                 using (var cmd = new NpgsqlCommand(deleteSql, _conn))
                 {
@@ -390,33 +360,21 @@ namespace API.BAL
             }
         }
 
-        // ──────────────────────────────────────────
-        // PASSWORD HELPERS
-        // ──────────────────────────────────────────
+        // Helpers
         public string HashPassword(string password)
         {
-            try
-            {
-                return BCrypt.Net.BCrypt.HashPassword(password);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error hashing password: {ex.Message}", ex);
-            }
+            try { return BCrypt.Net.BCrypt.HashPassword(password); }
+            catch (Exception ex) { throw new Exception($"Error hashing password: {ex.Message}", ex); }
         }
 
         public bool VerifyPassword(string password, string hash)
         {
             try
             {
-                if (!hash.StartsWith("$2"))
-                    return password == hash; // plain text fallback for legacy data
+                if (!hash.StartsWith("$2")) return password == hash;
                 return BCrypt.Net.BCrypt.Verify(password, hash);
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error verifying password: {ex.Message}", ex);
-            }
+            catch (Exception ex) { throw new Exception($"Error verifying password: {ex.Message}", ex); }
         }
     }
 }
