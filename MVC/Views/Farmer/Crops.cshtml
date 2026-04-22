@@ -9,7 +9,7 @@
     <link href="~/css/Farmer/crops.css" rel="stylesheet" asp-append-version="true" />
 }
 
-<!-- ── Page Header ──────────────────────────────────────────────────────────── -->
+<!-- Page Header -->
 <div class="crops-page-header">
     <div>
         <h1 class="crops-page-title">
@@ -22,7 +22,7 @@
     </button>
 </div>
 
-<!-- ── Stats Bar ─────────────────────────────────────────────────────────────── -->
+<!-- Stats Bar -->
 <div class="crops-stats-bar" id="cropsStatsBar" style="display:none;">
     <div class="stat-chip chip-active">
         <span class="chip-dot"></span>
@@ -42,122 +42,124 @@
     </div>
 </div>
 
-<!-- ── Card Grid ────────────────────────────────────────────────────────────── -->
+<!-- Card Grid -->
 <div id="cropsGrid"></div>
 
-<!-- ── Empty State ──────────────────────────────────────────────────────────── -->
+<!-- Empty State -->
 <div id="cropsEmpty" class="crops-empty" style="display:none;">
     <div class="empty-icon">🌱</div>
     <div class="empty-title">No crop listings yet</div>
     <div class="empty-sub">Click "List New Crop" to publish your first listing</div>
 </div>
 
-<!-- ── Hidden edit id ───────────────────────────────────────────────────────── -->
+<!-- Hidden edit id -->
 <input type="hidden" id="editListingId" value="" />
 
-<!-- ── Create / Edit Modal ──────────────────────────────────────────────────── -->
+<!-- Create / Edit Modal -->
 <div id="cropWindow" style="display:none; padding:0;">
-    <form id="cropForm" autocomplete="off" style="display:flex; flex-direction:column; max-height:82vh;">
+    <form id="cropForm" autocomplete="off" class="premium-form-container">
 
-        <div style="padding:22px 26px; flex:1; overflow-y:auto;">
+        <div class="premium-form-body">
 
             <!-- Section: Product -->
-            <div class="section-heading">
-                <i class="fi fi-rr-seedling"></i> Product Specifications
-            </div>
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-lbl">Crop Category <span class="req">*</span></label>
-                    <input id="cropType" style="width:100%; border-radius:8px;" />
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-seedling"></i></div>
+                    <h4>Product Specifications</h4>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-lbl">Variety / Strain</label>
-                    <input class="k-textbox" id="cropVariety"
-                           style="width:100%; border-radius:8px; padding:6px 10px;"
-                           placeholder="e.g. Sharbati" />
+                <div class="premium-row">
+                    <div class="premium-col-6">
+                        <label class="premium-lbl">Crop Category <span class="req">*</span></label>
+                        <input id="cropType" />
+                    </div>
+                    <div class="premium-col-6">
+                        <label class="premium-lbl">Variety / Strain</label>
+                        <input id="cropVariety" placeholder="e.g. Sharbati" />
+                    </div>
                 </div>
             </div>
 
             <!-- Section: Inventory -->
-            <div class="section-heading">
-                <i class="fi fi-rr-box-alt"></i> Inventory &amp; Pricing
-            </div>
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <label class="form-lbl">Available Qty <span class="req">*</span></label>
-                    <input id="cropQty" style="width:100%; border-radius:8px;" />
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-box-alt"></i></div>
+                    <h4>Inventory &amp; Pricing</h4>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-lbl">Unit <span class="req">*</span></label>
-                    <input id="cropUnit" style="width:100%; border-radius:8px;" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-lbl">Asking Price (₹) <span class="req">*</span></label>
-                    <input id="cropPrice" style="width:100%; border-radius:8px;" />
+                <div class="premium-row">
+                    <div class="premium-col-4">
+                        <label class="premium-lbl">Available Qty <span class="req">*</span></label>
+                        <input id="cropQty" />
+                    </div>
+                    <div class="premium-col-4">
+                        <label class="premium-lbl">Unit (per unit) <span class="req">*</span></label>
+                        <input id="cropUnit" />
+                    </div>
+                    <div class="premium-col-4">
+                        <label class="premium-lbl">Asking Price (₹) (per unit) <span class="req">*</span></label>
+                        <input id="cropPrice" />
+                    </div>
                 </div>
             </div>
 
             <!-- Section: Logistics -->
-            <div class="section-heading">
-                <i class="fi fi-rr-map-marker"></i> Logistics &amp; Location
-            </div>
-            <div class="row g-3 mb-2">
-                <div class="col-md-6">
-                    <label class="form-lbl">Expected Harvest Date <span class="req">*</span></label>
-                    <input id="harvestDate" style="width:100%; border-radius:8px;" />
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-map-marker"></i></div>
+                    <h4>Logistics &amp; Location</h4>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-lbl">State</label>
-                    <input class="k-textbox" id="farmState"
-                           style="width:100%; border-radius:8px; padding:6px 10px;"
-                           placeholder="e.g. Gujarat" />
+                <div class="premium-row">
+                    <div class="premium-col-6">
+                        <label class="premium-lbl">Expected Harvest Date <span class="req">*</span></label>
+                        <input id="harvestDate" />
+                    </div>
+                    <div class="premium-col-3">
+                        <label class="premium-lbl">State</label>
+                        <input id="farmState" placeholder="e.g. Gujarat" />
+                    </div>
+                    <div class="premium-col-3">
+                        <label class="premium-lbl">District</label>
+                        <input id="farmDistrict" placeholder="e.g. Surat" />
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-lbl">District</label>
-                    <input class="k-textbox" id="farmDistrict"
-                           style="width:100%; border-radius:8px; padding:6px 10px;"
-                           placeholder="e.g. Surat" />
+                <div class="premium-row mt-3">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Farm Address</label>
+                        <textarea id="farmLocation" placeholder="Village, Taluka, full address..."></textarea>
+                    </div>
                 </div>
-                <div class="col-12">
-                    <label class="form-lbl">Farm Address</label>
-                    <textarea class="k-textarea" id="farmLocation" rows="2"
-                              style="width:100%; border-radius:8px; border:1px solid rgba(0,0,0,0.12);
-                                     padding:8px 12px; font-size:13px; resize:vertical;"
-                              placeholder="Village, Taluka, full address..."></textarea>
-                </div>
-                <div class="col-12">
-                    <label class="form-lbl">Additional Notes</label>
-                    <textarea class="k-textarea" id="cropNotes" rows="2"
-                              style="width:100%; border-radius:8px; border:1px solid rgba(0,0,0,0.12);
-                                     padding:8px 12px; font-size:13px; resize:vertical;"
-                              placeholder="Any specific details about the crop batch..."></textarea>
+                <div class="premium-row mt-3">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Additional Notes</label>
+                        <textarea id="cropNotes" placeholder="Any specific details about the crop batch..."></textarea>
+                    </div>
                 </div>
             </div>
 
         </div>
 
         <!-- Footer Buttons -->
-        <div class="modal-footer-bar">
-            <button type="button" class="btn-modal-cancel" onclick="closeCropWindow()">
+        <div class="premium-modal-footer">
+            <button type="button" class="premium-btn-cancel" onclick="closeCropWindow()">
                 Cancel
             </button>
-            <button type="button" class="btn-modal-draft" onclick="saveCrop('Draft')">
-                <i class="fi fi-rr-floppy-disk"></i> Save Draft
-            </button>
-            <button type="button" class="btn-modal-publish" onclick="saveCrop('Active')">
-                <i class="fi fi-rr-cloud-upload"></i> Publish Listing
-            </button>
+            <div class="premium-actions">
+                <button type="button" class="premium-btn-draft" onclick="saveCrop('Draft')">
+                    <i class="fi fi-rr-floppy-disk"></i> Save Draft
+                </button>
+                <button type="button" class="premium-btn-publish" onclick="saveCrop('Active')">
+                    <i class="fi fi-rr-cloud-upload"></i> Publish Listing
+                </button>
+            </div>
         </div>
     </form>
 </div>
 
-<!-- ── Kendo Card Template ───────────────────────────────────────────────────── -->
+<!-- Kendo Card Template -->
 <!--
-    FIX: HTML entities (&#8377; &#9998;) have been replaced with their literal
+    NOTE: HTML entities (&#8377; &#9998;) have been replaced with literal
     Unicode characters (₹ ✎). The browser decodes HTML entities inside
     <script type="text/x-kendo-template"> BEFORE Kendo parses the template,
     which inserts raw & characters that break Kendo's code generator.
-    Using literal Unicode characters avoids this entirely.
 -->
 <script id="crop-card-template" type="text/x-kendo-template">
     <div class="crop-card status-#: Status.toLowerCase() #">
@@ -193,7 +195,6 @@
         </div>
 
         <div class="crop-card-footer">
-      
 
             # if (Status.toLowerCase() === "active" || Status.toLowerCase() === "draft") { #
                 <button class="ca-btn btn-danger" onclick="deleteCrop(#: Id #)">

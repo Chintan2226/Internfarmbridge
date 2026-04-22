@@ -1,231 +1,3 @@
-@* @{
-    ViewData["Title"] = "QC Slot Booking";
-    ViewData["UserRole"] = "Farmer";
-    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
-}
-
-@section Styles {
-    <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/Farmer/qcslots.css" asp-append-version="true" />
-    <style>
-        /* ── CALENDAR BLUR FOR PAST DATES ── */
-        .k-calendar .k-state-disabled, 
-        .k-calendar .k-out-of-range {
-            opacity: 0.25 !important;
-            filter: blur(1.5px);
-            pointer-events: none;
-            background-color: #f8fafc !important;
-        }
-
-        /* ── MODERN FORM LABELS ── */
-        .premium-label {
-            font-size: 12px;
-            font-weight: 800;
-            color: #475569;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        /* Step Number Badge */
-        .step-badge {
-            background: #e2e8f0;
-            color: #475569;
-            width: 20px;
-            height: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 11px;
-            font-weight: 800;
-        }
-
-        /* ── KENDO UI FIELD OVERRIDES (The Secret to Good UI) ── */
-        /* Forces Kendo Dropdowns and DatePickers to look like modern web inputs */
-        .k-dropdown, .k-datepicker {
-            width: 100% !important;
-        }
-        .k-dropdown-wrap, .k-picker-wrap {
-            border-radius: 10px !important;
-            border: 2px solid #e2e8f0 !important;
-            background: #f8fafc !important;
-            height: 48px !important; /* Tall, tappable height */
-            box-shadow: none !important;
-            transition: all 0.2s ease !important;
-            display: flex;
-            align-items: center;
-        }
-        .k-dropdown-wrap:hover, .k-picker-wrap:hover {
-            border-color: #cbd5e1 !important;
-        }
-        /* Green Focus State */
-        .k-dropdown-wrap.k-state-focused, .k-picker-wrap.k-state-focused, .k-state-active {
-            border-color: #10b981 !important;
-            background: #ffffff !important;
-            box-shadow: 0 0 0 4px rgba(16,185,129,0.15) !important;
-        }
-        /* Inner text alignment */
-        .k-input {
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            color: #1e293b !important;
-            padding-left: 12px !important;
-        }
-        .k-select {
-            height: 100% !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ── INTERACTIVE TIME SLOT CARDS ── */
-        .slot-btn {
-            background: #ffffff;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #334155;
-            width: 100%;
-        }
-        .slot-btn:hover {
-            border-color: #10b981;
-            background: #f0fdf4;
-            transform: translateY(-2px);
-        }
-        .slot-btn.selected {
-            border-color: #10b981;
-            background: #10b981;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
-        }
-        .slot-capacity {
-            font-size: 11px;
-            font-weight: 600;
-            color: #64748b;
-        }
-        .slot-btn.selected .slot-capacity {
-            color: #d1fae5; /* Light green text when selected */
-        }
-        
-        /* Remove default Kendo Window padding to allow edge-to-edge footer */
-        .k-window-content { padding: 0 !important; }
-    </style>
-}
-
-<div class="db-wrap" style="gap: 20px; padding-bottom: 20px;">
-
-    <div class="f-action-row" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="font-size: 22px; font-weight: 800; color: #1e293b; margin: 0;">QC Appointments</h2>
-        <button class="k-button" style="background: linear-gradient(135deg, #10b981, #047857); border: none; color: white; font-weight: 700; padding: 10px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.3);" onclick="openQCSlotWindow()"><i class="fi fi-rr-calendar-plus" style="margin-right: 8px;"></i> Request New QC Appointment</button>
-    </div>
-
-    <section>
-        <div class="kpi-grid" style="display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Upcoming Appts</div>
-                    <div class="kpi-icon" style="background:var(--grad-farm);"><i class="fi fi-rr-calendar" style="color:white; font-size: 18px;"></i></div>
-                </div>
-                <div class="kpi-val" id="kpiUpcoming">0</div>
-                <div class="watermark"><i class="fi fi-rr-calendar"></i></div>
-            </div>
-            
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Awaiting Results</div>
-                    <div class="kpi-icon" style="background:var(--grad-vend);"><i class="fi fi-rr-hourglass-end" style="color:white; font-size: 18px;"></i></div>
-                </div>
-                <div class="kpi-val" id="kpiAwaiting">0</div>
-                <div class="watermark"><i class="fi fi-rr-hourglass-end"></i></div>
-            </div>
- 
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Total QC Passed</div>
-                    <div class="kpi-icon" style="background:var(--grad-fo);"><i class="fi fi-rr-badge-check" style="color:white; font-size: 18px;"></i></div>
-                </div>
-                <div class="kpi-val" id="kpiTotalPassed">0</div>
-                <div class="watermark"><i class="fi fi-rr-badge-check"></i></div>
-            </div>
- 
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Premium Grade Rate</div>
-                    <div class="kpi-icon" style="background:var(--grad-rev);"><i class="fi fi-rr-star" style="color:white; font-size: 18px;"></i></div>
-                </div>
-                <div class="kpi-val" id="kpiGradeRate">0%</div>
-                <div class="watermark"><i class="fi fi-rr-star"></i></div>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <div class="grid-card" style="padding: 20px;">
-            <div class="grid-head" style="margin-bottom: 16px;">
-                <div class="grid-title">Recent & Future Appointments</div>
-            </div>
-            <div class="kendo-widget-container">
-                <div id="historyGrid" class="borderless-grid"></div>
-            </div>
-        </div>
-    </section>
-
-</div>
-
-<div id="qcBookWindow" style="display:none;">
-    <form id="qcBookForm" style="display: flex; flex-direction: column; height: 100%;">
-        <div style="padding: 24px; flex-grow: 1; display: flex; flex-direction: column; gap: 24px;">
-            
-            <div>
-                <label class="premium-label"><span class="step-badge">1</span> Select Warehouse Facility</label>
-                <select id="warehouseLocation">
-                    <option value="">Select Nearest Warehouse...</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="premium-label"><span class="step-badge">2</span> Select Active Crop Listing</label>
-                <select id="cropListing">
-                    <option value="">Select Crop for Inspection...</option>
-                </select>
-            </div>
-
-            <div style="border-top: 1px dashed #cbd5e1; padding-top: 24px;">
-                <label class="premium-label"><span class="step-badge">3</span> Select Inspection Date</label>
-                <input id="slotDate" />
-            </div>
-
-            <div id="slotsContainer" style="display: none; padding-top: 8px;">
-                <label class="premium-label"><span class="step-badge">4</span> Available Inspection Slots</label>
-                <div id="timeSlotGrid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 10px;">
-                    </div>
-            </div>
-
-        </div>
-        
-        <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
-            <button type="button" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onclick="closeQCWindow()" style="font-weight: 700; padding: 8px 20px; border-radius: 8px;">Cancel</button>
-            <button type="button" id="confirmBookingBtn" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary" style="font-weight: 700; padding: 8px 24px; border-radius: 8px; background: linear-gradient(135deg, #10b981, #047857); border: none; box-shadow: 0 4px 12px rgba(16,185,129,0.3);" disabled><i class="fi fi-rr-check"></i> Confirm Booking</button>
-        </div>
-    </form>
-</div>
-
-@section Scripts {
-    <script src="~/js/Farmer/qcslots.js" asp-append-version="true"></script>
-} *@
-
 @{
     ViewData["Title"] = "QC Slot Booking";
     ViewData["UserRole"] = "Farmer";
@@ -234,159 +6,50 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/Farmer/qcslots.css" asp-append-version="true" />
-    <style>
-        /* ── CALENDAR BLUR FOR PAST DATES ── */
-        .k-calendar .k-state-disabled, 
-        .k-calendar .k-out-of-range {
-            opacity: 0.25 !important;
-            filter: blur(1.5px);
-            pointer-events: none;
-            background-color: #f8fafc !important;
-        }
-
-        /* ── MODERN FORM LABELS ── */
-        .premium-label {
-            font-size: 12px;
-            font-weight: 800;
-            color: #475569;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        /* Step Number Badge */
-        .step-badge {
-            background: #e2e8f0;
-            color: #475569;
-            width: 20px;
-            height: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 11px;
-            font-weight: 800;
-        }
-
-        /* ── KENDO UI FIELD OVERRIDES ── */
-        .k-dropdown, .k-datepicker {
-            width: 100% !important;
-        }
-        .k-dropdown-wrap, .k-picker-wrap {
-            border-radius: 10px !important;
-            border: 2px solid #e2e8f0 !important;
-            background: #f8fafc !important;
-            height: 48px !important; 
-            box-shadow: none !important;
-            transition: all 0.2s ease !important;
-            display: flex;
-            align-items: center;
-        }
-        .k-dropdown-wrap:hover, .k-picker-wrap:hover {
-            border-color: #cbd5e1 !important;
-        }
-        .k-dropdown-wrap.k-state-focused, .k-picker-wrap.k-state-focused, .k-state-active {
-            border-color: #10b981 !important;
-            background: #ffffff !important;
-            box-shadow: 0 0 0 4px rgba(16,185,129,0.15) !important;
-        }
-        .k-input {
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            color: #1e293b !important;
-            padding-left: 12px !important;
-        }
-        .k-select {
-            height: 100% !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ── INTERACTIVE TIME SLOT CARDS ── */
-        .slot-btn {
-            background: #ffffff;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #334155;
-            width: 100%;
-        }
-        .slot-btn:hover {
-            border-color: #10b981;
-            background: #f0fdf4;
-            transform: translateY(-2px);
-        }
-        .slot-btn.selected {
-            border-color: #10b981;
-            background: #10b981;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
-        }
-        .slot-capacity {
-            font-size: 11px;
-            font-weight: 600;
-            color: #64748b;
-        }
-        .slot-btn.selected .slot-capacity {
-            color: #d1fae5; 
-        }
-        .k-window-content { padding: 0 !important; }
-    </style>
+    <link href="~/css/Farmer/crops.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/Farmer/qclots.css" rel="stylesheet" asp-append-version="true" />
 }
 
-<div class="db-wrap" style="gap: 20px; padding-bottom: 20px;">
+<div class="db-wrap qc-db-wrap">
 
-    <div class="f-action-row qc-header-row" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="font-size: 22px; font-weight: 800; color: #1e293b; margin: 0;">QC Appointments</h2>
-        <button class="k-button" style="background: linear-gradient(135deg, #10b981, #047857); border: none; color: white; font-weight: 700; padding: 10px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.3);" onclick="openQCSlotWindow()"><i class="fi fi-rr-calendar-plus" style="margin-right: 8px;"></i> Request New QC Appointment</button>
+    <div class="f-action-row qc-header-row qc-hdr">
+        <h2 class="qc-header-title">QC Appointments</h2>
+        <button id="btnOpenQCWindow" class="qc-req-btn"><i class="fi fi-rr-calendar-plus qc-btn-icon"></i> Request New QC Appointment</button>
     </div>
 
     <section>
         <div class="kpi-grid qc-kpi-grid">
-            <div class="kpi-card">
+            <div class="kpi-card qc-kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Upcoming Appts</div>
-                    <div class="kpi-icon" style="background:var(--grad-farm);"><i class="fi fi-rr-calendar" style="color:white; font-size: 18px;"></i></div>
+                    <div class="kpi-icon qc-icon-up"><i class="fi fi-rr-calendar text-white qc-lg-icon"></i></div>
                 </div>
                 <div class="kpi-val" id="kpiUpcoming">0</div>
                 <div class="watermark"><i class="fi fi-rr-calendar"></i></div>
             </div>
             
-            <div class="kpi-card">
+            <div class="kpi-card qc-kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Awaiting Results</div>
-                    <div class="kpi-icon" style="background:var(--grad-vend);"><i class="fi fi-rr-hourglass-end" style="color:white; font-size: 18px;"></i></div>
+                    <div class="kpi-icon qc-icon-wait"><i class="fi fi-rr-hourglass-end text-white qc-lg-icon"></i></div>
                 </div>
                 <div class="kpi-val" id="kpiAwaiting">0</div>
                 <div class="watermark"><i class="fi fi-rr-hourglass-end"></i></div>
             </div>
  
-            <div class="kpi-card">
+            <div class="kpi-card qc-kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Total QC Passed</div>
-                    <div class="kpi-icon" style="background:var(--grad-fo);"><i class="fi fi-rr-badge-check" style="color:white; font-size: 18px;"></i></div>
+                    <div class="kpi-icon qc-icon-pass"><i class="fi fi-rr-badge-check text-white qc-lg-icon"></i></div>
                 </div>
                 <div class="kpi-val" id="kpiTotalPassed">0</div>
                 <div class="watermark"><i class="fi fi-rr-badge-check"></i></div>
             </div>
  
-            <div class="kpi-card">
+            <div class="kpi-card qc-kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Premium Grade Rate</div>
-                    <div class="kpi-icon" style="background:var(--grad-rev);"><i class="fi fi-rr-star" style="color:white; font-size: 18px;"></i></div>
+                    <div class="kpi-icon qc-icon-grade"><i class="fi fi-rr-star text-white qc-lg-icon"></i></div>
                 </div>
                 <div class="kpi-val" id="kpiGradeRate">0%</div>
                 <div class="watermark"><i class="fi fi-rr-star"></i></div>
@@ -395,8 +58,8 @@
     </section>
 
     <section>
-        <div class="grid-card" style="padding: 20px;">
-            <div class="grid-head" style="margin-bottom: 16px;">
+        <div class="grid-card qc-grid-wrap">
+            <div class="grid-head qc-grid-head">
                 <div class="grid-title">Recent & Future Appointments</div>
             </div>
             <div class="kendo-widget-container">
@@ -407,41 +70,71 @@
 
 </div>
 
-<div id="qcBookWindow" style="display:none;">
-    <form id="qcBookForm" style="display: flex; flex-direction: column; height: 100%;">
-        <div style="padding: 24px; flex-grow: 1; display: flex; flex-direction: column; gap: 24px;">
+<div id="qcBookWindow" class="qc-book-win">
+    <form id="qcBookForm" autocomplete="off" class="premium-form-container">
+        
+        <div class="premium-form-body">
             
-            <div>
-                <label class="premium-label"><span class="step-badge">1</span> Select Warehouse Facility</label>
-                <select id="warehouseLocation">
-                    <option value="">Select Nearest Warehouse...</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="premium-label"><span class="step-badge">2</span> Select Active Crop Listing</label>
-                <select id="cropListing">
-                    <option value="">Select Crop for Inspection...</option>
-                </select>
-            </div>
-
-            <div style="border-top: 1px dashed #cbd5e1; padding-top: 24px;">
-                <label class="premium-label"><span class="step-badge">3</span> Select Inspection Date</label>
-                <input id="slotDate" />
-            </div>
-
-            <div id="slotsContainer" style="display: none; padding-top: 8px;">
-                <label class="premium-label"><span class="step-badge">4</span> Available Inspection Slots</label>
-                <div id="timeSlotGrid" class="slot-grid-layout">
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-building"></i></div>
+                    <h4>Facility Selection</h4>
+                </div>
+                <div class="premium-row">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Select Warehouse Facility <span class="req">*</span></label>
+                        <select id="warehouseLocation">
+                            <option value="">Select Nearest Warehouse...</option>
+                        </select>
                     </div>
+                </div>
+            </div>
+
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-seedling"></i></div>
+                    <h4>Crop Details</h4>
+                </div>
+                <div class="premium-row">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Select Active Crop Listing <span class="req">*</span></label>
+                        <select id="cropListing">
+                            <option value="">Select Crop for Inspection...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-section">
+                <div class="premium-section-header">
+                    <div class="icon-wrap"><i class="fi fi-rr-calendar"></i></div>
+                    <h4>Appointment Schedule</h4>
+                </div>
+                <div class="premium-row">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Select Inspection Date <span class="req">*</span></label>
+                        <input id="slotDate" />
+                    </div>
+                </div>
+                <div id="slotsContainer" class="premium-row mt-3 qc-hide-start">
+                    <div class="premium-col-12">
+                        <label class="premium-lbl">Available Inspection Slots <span class="req">*</span></label>
+                        <div id="timeSlotGrid" class="slot-grid-layout"></div>
+                    </div>
+                </div>
             </div>
 
         </div>
         
-        <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
-            <button type="button" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onclick="closeQCWindow()" style="font-weight: 700; padding: 8px 20px; border-radius: 8px;">Cancel</button>
-            <button type="button" id="confirmBookingBtn" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary" style="font-weight: 700; padding: 8px 24px; border-radius: 8px; background: linear-gradient(135deg, #10b981, #047857); border: none; box-shadow: 0 4px 12px rgba(16,185,129,0.3);" disabled><i class="fi fi-rr-check"></i> Confirm Booking</button>
+        <div class="premium-modal-footer">
+            <button type="button" id="btnCloseQCWindow" class="premium-btn-cancel">Cancel</button>
+            <div class="premium-actions">
+                <button type="button" id="confirmBookingBtn" class="premium-btn-publish" disabled>
+                    <i class="fi fi-rr-check"></i> Confirm Booking
+                </button>
+            </div>
         </div>
+
     </form>
 </div>
 
