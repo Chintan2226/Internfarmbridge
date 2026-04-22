@@ -296,25 +296,25 @@ $(document).ready(function () {
 
         var payload = {
 
-            FarmerId: window.FARMER_ID,
+    FarmerId: parseInt(window.FARMER_ID),
 
-            WarehouseId: $("#warehouseLocation").val(),
+    WarehouseId: parseInt($("#warehouseLocation").val()),
 
-            CropListingId: $("#cropListing").val(),
+    CropListingId: parseInt($("#cropListing").val()),
 
-            SlotId: window.SELECTED_SLOT_ID,
+    SlotId: window.SELECTED_SLOT_ID,
 
-            SlotDate: kendo.toString(
-                $("#slotDate")
-                    .data("kendoDatePicker")
-                    .value(),
-                "yyyy-MM-dd"
-            ),
+    SlotDate: kendo.toString(
+        $("#slotDate")
+            .data("kendoDatePicker")
+            .value(),
+        "yyyy-MM-dd"
+    ),
 
-            TimeStart: window.SELECTED_SLOT_START,
+    TimeStart: window.SELECTED_SLOT_START,
 
-            TimeEnd: window.SELECTED_SLOT_END
-        };
+    TimeEnd: window.SELECTED_SLOT_END
+};
 
 
         $.ajax({
