@@ -50,7 +50,10 @@ namespace API.Controllers
         [HttpPost("slots/book")]
         public async Task<IActionResult> BookSlot([FromBody] vm_BookQcSlotRequest req)
         {
-            if (!FarmerOwns(req.FarmerId)) return Forbid();
+            // if (!FarmerOwns(req.FarmerId)) return Forbid();
+            var farmerId = int.Parse(User.FindFirst("farmer_id")?.Value);
+            req.FarmerId = farmerId;
+
 
             bool success = await _helper.BookQcSlotAsync(req);
 
@@ -392,8 +395,8 @@ namespace API.Controllers
             if (success)
             {
                 await _rabbitMqService.PublishToRoleAsync("admin",
-                    "New Payment Inquiry",
-                    $"Farmer has submitted a {req.Department} inquiry.",
+                    $"New {req.Department} Inquiry",
+                    $"Farmer has submitted a {req.Subject} inquiry.",
                     "inquiry");
 
                 await _rabbitMqService.PublishToUserAsync(req.FarmerId,

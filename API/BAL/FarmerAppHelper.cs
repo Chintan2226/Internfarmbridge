@@ -482,7 +482,7 @@ namespace API.BAL
                 FROM t_warehouse_slot_bookings wsb
                 JOIN t_farmer_crop_listings cl ON wsb.c_crop_listing_id = cl.c_id
                 JOIN t_catalog_products cp ON cl.c_catalog_product_id = cp.c_id
-                WHERE wsb.c_farmer_id = @fid ORDER BY wsb.c_slot_date DESC LIMIT 10";
+                WHERE wsb.c_farmer_id = @fid ORDER BY wsb.c_slot_date DESC";
             
             using var cmd2 = new NpgsqlCommand(listSql, _conn);
             cmd2.Parameters.AddWithValue("@fid", farmerId);
