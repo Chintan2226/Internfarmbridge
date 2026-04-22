@@ -74,7 +74,10 @@ namespace API.Controllers
         [HttpPost("slots/book")]
         public async Task<IActionResult> BookSlot([FromBody] vm_BookQcSlotRequest req)
         {
-            if (!FarmerOwns(req.FarmerId)) return Forbid();
+            // if (!FarmerOwns(req.FarmerId)) return Forbid();
+            var farmerId = int.Parse(User.FindFirst("farmer_id")?.Value);
+            req.FarmerId = farmerId;
+
 
             bool success = await _helper.BookQcSlotAsync(req);
 
@@ -86,20 +89,20 @@ namespace API.Controllers
 
                     if (profile != null && !string.IsNullOrEmpty(profile.Email))
                     {
-                         var emailData = new AcceptEmailData 
-                         {
-                             FarmerEmail = profile.Email,
-                             FarmerName = profile.FullName ?? "Farmer",
-                             ProcurementRequestId = 0,
-                             CropName = "Your Listed Crop", 
-                             WarehouseName = "Assigned Warehouse", 
-                             QuantityDisplay = "Requested Quantity",
-                             SlotDateFormatted = DateTime.Now.ToString("MMM dd, yyyy"),
-                             TimeRange = "Standard Business Hours",
-                             AcceptedAtFormatted = DateTime.Now.ToString("MMM dd, yyyy")
-                         };
-                         
-                         await _emailService.SendFarmerRequestAcceptedEmailAsync(emailData);
+                        var emailData = new AcceptEmailData
+                        {
+                            FarmerEmail = profile.Email,
+                            FarmerName = profile.FullName ?? "Farmer",
+                            ProcurementRequestId = 0,
+                            CropName = "Your Listed Crop",
+                            WarehouseName = "Assigned Warehouse",
+                            QuantityDisplay = "Requested Quantity",
+                            SlotDateFormatted = DateTime.Now.ToString("MMM dd, yyyy"),
+                            TimeRange = "Standard Business Hours",
+                            AcceptedAtFormatted = DateTime.Now.ToString("MMM dd, yyyy")
+                        };
+
+                        await _emailService.SendFarmerRequestAcceptedEmailAsync(emailData);
                     }
                 }
                 catch (Exception ex)
@@ -435,8 +438,8 @@ namespace API.Controllers
             {
                 // ✅ NOTIFICATION to Admin
                 await _rabbitMqService.PublishToRoleAsync("admin",
-                    "New Payment Inquiry",
-                    $"Farmer has submitted a {req.Department} inquiry.",
+                    $"New {req.Department} Inquiry",
+                    $"Farmer has submitted a {req.Subject} inquiry.",
                     "inquiry");
 
                 // ✅ NOTIFICATION to Farmer
