@@ -14,7 +14,7 @@
     loadFarmers();
   });
 
-  // ── STATS ──────────────────────────────────────────────────────────────
+  // STATS
   async function loadStats() {
     try {
       const res = await fetch(`${FARMER_API_BASE}/dashboard`);
@@ -37,7 +37,7 @@
     }
   }
 
-  // ── FARMER GRID ────────────────────────────────────────────────────────
+  // FARMER GRID
   async function loadFarmers() {
     const query = document.getElementById("search-input").value;
     const container = document.getElementById("f-grid");
@@ -106,10 +106,9 @@
       .join("");
   }
 
-  // ── PAYMENTS MODAL ─────────────────────────────────────────────────────
+  // PAYMENTS MODAL
   async function openPaymentModal(farmerId) {
     currentPaymentFarmerId = farmerId;
-    alert("kjhgfd")
     document.getElementById("paymentModalOverlay").classList.add("open");
     const tbody = document.getElementById("pending-payments-body");
     tbody.innerHTML =
@@ -187,7 +186,7 @@
     }
   }
 
-  // ── SEARCH & PAGINATION ────────────────────────────────────────────────
+  // SEARCH & PAGINATION
   function handleSearch() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
@@ -202,7 +201,7 @@
     }
   }
 
-  // ── ACTIVATE / DEACTIVATE ──────────────────────────────────────────────
+  // ACTIVATE / DEACTIVATE
   function triggerDeactivate(id) {
     pendingDeactivateId = id;
     document.getElementById("deactReason").value = "";
@@ -241,7 +240,7 @@
     }
   }
 
-  // ── DETAIL MODAL ───────────────────────────────────────────────────────
+  // DETAIL MODAL
   async function openDetail(id) {
     try {
       const res = await fetch(`${FARMER_API_BASE}/details/${id}`);
@@ -253,7 +252,7 @@
       document.getElementById("m-title").textContent =
         `Farmer Profile — ${d.profile.fullName}`;
 
-      // ── TAB 1: PROFILE only ──────────────────────────────────────
+      // TAB 1: PROFILE only
       document.getElementById("profile-content").innerHTML = `
                 <div class="info-box">
                     <div class="f-label">Full Name</div>
@@ -277,7 +276,7 @@
                 </div>
             `;
 
-      // ── TAB 2: BANK & KYC only ───────────────────────────────────
+      // TAB 2: BANK & KYC only
       const b = (d.bankDetails && d.bankDetails[0]) || {};
       document.getElementById("bank-content").innerHTML = `
                 <div class="info-box">
@@ -298,7 +297,7 @@
                 </div>
             `;
 
-      // ── TAB 3: CROP LISTINGS only ────────────────────────────────
+      // TAB 3: CROP LISTINGS only
       document.getElementById("crops-body").innerHTML =
         d.cropHistory && d.cropHistory.length
           ? d.cropHistory
@@ -315,7 +314,7 @@
               .join("")
           : `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">No crops listed yet.</td></tr>`;
 
-      // ── TAB 4: ORDERS only ───────────────────────────────────────
+      // TAB 4: ORDERS only
       document.getElementById("orders-body").innerHTML =
         d.orderHistory && d.orderHistory.length
           ? d.orderHistory
@@ -343,7 +342,7 @@
     }
   }
 
-  // ── MODAL UTILS ────────────────────────────────────────────────────────
+  // MODAL UTILS
   function closeModal(id) {
     document.getElementById(id).classList.remove("open");
   }

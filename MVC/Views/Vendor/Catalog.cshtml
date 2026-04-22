@@ -202,7 +202,7 @@
         return;
         }
 
-        let html = '<div class="products-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px;">';
+        let html = '<div class="products-container">';
         products.forEach(p => {
         // Grade-aware wishlist key: productId_grade
         const wishlistKey = `${p.id}_${p.grade || 'nograde'}`;
@@ -214,26 +214,26 @@
         let displayName = p.grade ? `${p.name} (Grade ${p.grade})` : p.name;
 
         let mediaContent = displayImg
-        ? `<img src="${displayImg}" alt="${escapeHtml(displayName)}" style="width: 100%; height: 100%; object-fit: cover;">`
-        : `<i class="fas ${getProductIcon(p.name)} fa-3x text-success"></i>`;
+        ? `<img src="${displayImg}" alt="${escapeHtml(displayName)}">`
+        : `<i class="fas ${getProductIcon(p.name)}"></i>`;
 
         html += `
-        <div class="catalog-product-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
+        <div class="catalog-product-card">
         <div class="catalog-product-img">
         ${mediaContent}
-        ${p.grade ? `<div class="catalog-product-badge" style="position: absolute; top: 10px; left: 10px; background: #f4a621; color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">Grade ${p.grade}</div>` : ''}
-        ${p.discountPercentage > 0 ? `<div class="catalog-product-badge" style="position: absolute; top: 10px; right: 10px; background: #e53e3e; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">${p.discountPercentage}% OFF</div>` : ''}
+        ${p.grade ? `<div class="catalog-product-badge grade">Grade ${p.grade}</div>` : ''}
+        ${p.discountPercentage > 0 ? `<div class="catalog-product-badge discount">${p.discountPercentage}% OFF</div>` : ''}
         </div>
-        <div class="catalog-product-body" style="padding: 16px;">
-        <div class="catalog-product-name" style="font-weight: 700; color: #1a5c2a; margin-bottom: 4px;">${escapeHtml(displayName)}</div>
-        <div class="catalog-product-farmer" style="font-size: 12px; color: #64748b; margin-bottom: 8px;"><i class="fas fa-user-check"></i> ${escapeHtml(p.farmerName || 'Verified Farmer')}</div>
+        <div class="catalog-product-body">
+        <div class="catalog-product-name">${escapeHtml(displayName)}</div>
+        <div class="catalog-product-farmer"><i class="fi fi-rr-user"></i> ${escapeHtml(p.farmerName || 'Verified Farmer')}</div>
                         
-        <div class="catalog-product-price" style="font-size: 18px; font-weight: 800; color: #2d8a45;">
+        <div class="catalog-product-price">
         ₹${price.toLocaleString('en-IN')}<small>/${p.unit || 'kg'}</small>
         </div>
                         
-        <div class="catalog-product-stock" style="font-size: 12px; color: #64748b; margin-top: 4px;">
-        <i class="fas fa-box"></i> ${p.quantityAvailable} ${p.unit || 'kg'} available
+        <div class="catalog-product-stock">
+        <i class="fi fi-rr-box"></i> ${p.quantityAvailable} ${p.unit || 'kg'} available
         </div>
         <div class="catalog-product-actions">
         <button class="btn-catalog-add-cart" onclick="addToCart(${p.id}, '${escapeHtml(p.name)}', ${price}, ${p.quantityAvailable}, '${displayImg || ''}', '${p.grade || ''}')">

@@ -5,6 +5,7 @@
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="~/Logo/Logo_Without_Bg.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Login to your FarmBridge farmer account." />
@@ -178,7 +179,7 @@
     </div>
 
     <script>
-        // ── Notifications â”€â”€
+        // Notifications
         window.showToast = function(title, message, isError = false) {
             const container = document.getElementById('notificationArea');
             if (!container) return;
@@ -207,7 +208,7 @@
             }, 3500);
         };
 
-        // ── Password toggle â”€â”€
+        // Password toggle
         window.togglePassword = function() {
             const input = document.getElementById('password');
             const icon  = document.getElementById('eyeIcon');
@@ -220,7 +221,7 @@
             }
         };
 
-        // ── Login â”€â”€
+        // Login
         window.handleLogin = function(e) {
             if (e) e.preventDefault();
             
@@ -265,12 +266,12 @@
             return false;
         };
 
-        // ── Google Login Placeholder â”€â”€
+        // Google Login Placeholder
         window.handleGoogleLogin = function() {
             window.showToast('Coming Soon', 'Google Login is currently being configured.', false);
         };
 
-        // ── Forgot password â”€â”€
+        // Forgot password
         window.handleForgot = function(e) {
             if (e) e.preventDefault();
             
@@ -312,7 +313,7 @@
             return false;
         };
 
-        // ── Section toggle â”€â”€
+        // Section toggle
         document.addEventListener('DOMContentLoaded', function() {
             const forgotLink = document.getElementById('forgotPasswordLink');
             const backLink = document.getElementById('backToLoginLink');

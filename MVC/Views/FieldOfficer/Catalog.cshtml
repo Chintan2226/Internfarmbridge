@@ -1,4 +1,4 @@
-﻿@{
+@{
     Layout = "_FieldOfficerLayout";
     ViewData["Title"] = "Catalog";
 }
@@ -63,13 +63,7 @@ $(document).ready(function () {
         },
         error: function (xhr) {
             if (handleFoUnauthorized(xhr)) return;
-            Swal.fire({
-                icon: 'error',
-                title: 'Load Failed',
-                text: 'Failed to load catalog. Please try again.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745'
-            });
+            foError('Load Failed', 'Failed to load catalog. Please try again.');
         }
     });
 

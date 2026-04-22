@@ -1,137 +1,3 @@
-﻿.profile-layout {
-            display: flex;
-            gap: 24px;
-            align-items: flex-start;
-        }
-        
-        .profile-sidebar {
-            flex: 1;
-            max-width: 340px;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
-            overflow: hidden;
-        }
-        
-        .profile-header {
-            background: linear-gradient(135deg, #10b981, #047857);
-            height: 100px;
-            position: relative;
-        }
-
-        .profile-avatar-wrap {
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 4px solid #fff;
-            background: #f1f5f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .profile-main-card {
-            flex: 2;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
-            padding: 32px;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 24px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .premium-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #64748b;
-            margin-bottom: 8px;
-            display: block;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-        }
-
-        .text-field {
-            width: 100%;
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-            background: #f8fafc;
-            padding: 10px 16px;
-            font-size: 14px;
-            color: #1e293b;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            box-shadow: none;
-            outline: none;
-        }
-
-        .text-field:focus {
-            border-color: #10b981;
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(16,185,129,0.1);
-        }
-
-        .text-field:disabled {
-            background: #f1f5f9;
-            color: #94a3b8;
-            cursor: not-allowed;
-        }
-
-        .btn-update {
-            background: #10b981;
-            border: none;
-            color: #ffffff;
-            font-weight: 700;
-            padding: 12px 28px;
-            border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(16,185,129,0.2);
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .btn-update:hover {
-            background: #059669;
-            transform: translateY(-2px);
-        }
-        
-        .kpi-stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px dashed #e2e8f0;
-        }
-        .kpi-stat-lbl { font-size: 13px; color: #64748b; font-weight: 500; }
-        .kpi-stat-val { font-size: 13px; color: #1e293b; font-weight: 700; }
-        .btn-logout {
-            width: 100%;
-            background: #fff0f2;
-            color: #e11d48;
-            font-weight: 600;
-            padding: 10px;
-            border: 1px solid #fecdd3;
-            border-radius: 8px;
-            transition: all 0.2s;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .btn-logout:hover {
-            background: #ffe4e6;
-        }
-
 .profile-layout {
             display: flex;
             gap: 24px;
@@ -167,6 +33,23 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar-wrap:hover .photo-overlay {
+            opacity: 1;
+        }
+
+        .photo-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .profile-main-card {
@@ -266,8 +149,9 @@
             background: #ffe4e6;
         }
 
+
         /* --- RESPONSIVE FIXES --- */
-        @@media (max-width: 900px) {
+        @media (max-width: 900px) {
             .profile-layout { flex-direction: column; }
             .profile-sidebar { max-width: 100%; width: 100%; }
             .profile-main-card { padding: 20px; }

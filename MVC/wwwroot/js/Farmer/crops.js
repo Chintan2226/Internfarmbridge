@@ -96,7 +96,7 @@ $(document).ready(function () {
 
     console.log("Farmer ID:", window.FARMER_ID);
 
-    /* ── 1. INITIAL LISTINGS LOAD ────────────────── */
+    /* 1. INITIAL LISTINGS LOAD */
 
     $.ajax({
         url: window.API_BASE + "/" + window.FARMER_ID + "/listings",
@@ -135,7 +135,7 @@ $(document).ready(function () {
         }
     });
 
-    /* ── 2. DROPDOWNS ────────────────────────────── */
+    /* 2. DROPDOWNS */
 
     $.ajax({
         url: window.API_BASE + "/dropdowns/catalog",
@@ -157,7 +157,7 @@ $(document).ready(function () {
         }
     });
 
-    /* ── 3. KENDO WIDGETS ────────────────────────── */
+    /* 3. KENDO WIDGETS */
 
     $("#cropUnit").kendoDropDownList({
         dataSource: ["kg", "quintal", "ton"]
@@ -261,11 +261,7 @@ function saveCrop(statusMode) {
         data: JSON.stringify(payload),
 
         success: function (res) {
-            Swal.fire({
-                icon: "success",
-                title: "Success",
-                text: res.message || "Listing saved successfully."
-            });
+            fbSuccess("Saved", res.message || "Listing saved successfully.");
             closeCropWindow();
             reloadListings();
         },
@@ -275,11 +271,7 @@ function saveCrop(statusMode) {
                 redirectToLogin();
                 return;
             }
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Failed to save listing. Please try again."
-            });
+            fbError("Save Failed", "Failed to save listing. Please try again.");
             console.error("[crops.js] saveCrop error:", xhr.status, xhr.responseText);
         }
     });
@@ -341,16 +333,8 @@ function editCrop(id) {
 // DELETE / WITHDRAW CROP
 function deleteCrop(id) {
 
-    Swal.fire({
-        icon: "warning",
-        title: "Withdraw Listing?",
-        text: "This will remove the listing from the marketplace.",
-        showCancelButton: true,
-        confirmButtonText: "Yes, Withdraw",
-        confirmButtonColor: "#ef4444"
-    }).then(function (result) {
-
-        if (!result.isConfirmed) return;
+    fbConfirm("Withdraw Listing?", "This will remove the listing from the marketplace.", "Yes, Withdraw").then(function (confirmed) {
+        if (!confirmed) return;
 
         var token = getToken();
         if (!token) { redirectToLogin(); return; }
@@ -361,11 +345,7 @@ function deleteCrop(id) {
             headers: { "Authorization": "Bearer " + token },
 
             success: function (res) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Withdrawn",
-                    text: res.message || "Listing removed successfully."
-                });
+                fbSuccess("Withdrawn", res.message || "Listing removed successfully.");
 
                 reloadListings();
             },
@@ -373,11 +353,7 @@ function deleteCrop(id) {
             error: function (xhr) {
                 if (handleUnauthorized(xhr)) return;
 
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Could not withdraw listing."
-                });
+                fbError("Error", "Could not withdraw listing.");
 
                 console.error("[crops.js] delete error:", xhr.status, xhr.responseText);
             }

@@ -14,26 +14,16 @@ $(document).ready(function () {
     }
 
     function authHeaders() {
-
         var token = getToken();
-
-        if (!token) {
-            redirectToLogin();
-            return {};
-        }
-
-        return {
-            "Authorization": "Bearer " + token
-        };
+        if (!token) { redirectToLogin(); return {}; }
+        return { "Authorization": "Bearer " + token };
     }
 
     function handleUnauthorized(xhr) {
-
         if (!xhr || xhr.status === 401 || xhr.status === 403 || !getToken()) {
             redirectToLogin();
             return true;
         }
-
         return false;
     }
 
@@ -41,12 +31,7 @@ $(document).ready(function () {
         window.location.href = "/Farmer/Login";
     }
 
-    function showLoadError(section) {
-        console.error("Failed to load:", section);
-    }
-
     // Abort if token missing
-
     if (!getToken()) {
         redirectToLogin();
         return;
@@ -58,58 +43,35 @@ $(document).ready(function () {
     // 1. INQUIRIES KPIs
 
     $.ajax({
-
         url: `${window.API_BASE}/${window.FARMER_ID}/inquiries`,
         type: "GET",
         headers: authHeaders(),
 
         success: function (res) {
-
             if (res.success) {
-
                 var data = res.data || [];
-
-                $("#kpiTotal").text(
-                    data.length
-                );
-
-                $("#kpiPending").text(
-                    data.filter(function (x) {
-                        return x.status === "open";
-                    }).length
-                );
-
-                $("#kpiSolved").text(
-                    data.filter(function (x) {
-                        return x.status === "closed";
-                    }).length
-                );
+                $("#kpiTotal").text(data.length);
+                $("#kpiPending").text(data.filter(x => x.status === "open").length);
+                $("#kpiSolved").text(data.filter(x => x.status === "closed").length);
             }
         },
 
         error: function (xhr) {
-
             if (handleUnauthorized(xhr)) return;
-
-            showLoadError("inquiries");
-
+            console.error("Failed to load inquiries KPIs");
         }
-
     });
 
 
     // 2. TEXTAREA WIDGET
 
-    $("#messageBody").kendoTextArea({
-        rows: 5
-    });
+    $("#messageBody").kendoTextArea({ rows: 5 });
 
-    $("#btnResetInquiry").on("click", function() {
+    $("#btnResetInquiry").on("click", function () {
         $("#inquiryForm")[0].reset();
     });
 
     $("#btnSubmitInquiry").on("click", submitInquiry);
-
 });
 
 
@@ -130,69 +92,39 @@ function submitInquiry() {
     }
 
     var payload = {
-
-        FarmerId: window.FARMER_ID,
-
+        FarmerId:   window.FARMER_ID,
         Department: $("#inquiryType").val(),
-
-        Subject: $("#subject").val(),
-
-        Details: $("#messageBody").val()
+        Subject:    $("#subject").val(),
+        Details:    $("#messageBody").val()
     };
 
-
     if (!payload.Department || !payload.Subject || !payload.Details) {
-
-        kendo.alert(
-            "Please fill out Department, Subject, and Details."
-        );
-
+        fbAlert("Please fill out Department, Subject, and Details.", "Missing Fields");
         return;
     }
 
-
     $.ajax({
-
         url: `${window.API_BASE}/inquiries/submit`,
-
         type: "POST",
-
         contentType: "application/json",
-
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-
+        headers: { "Authorization": "Bearer " + token },
         data: JSON.stringify(payload),
 
         success: function () {
-
-            kendo.alert(
-                "Your ticket has been logged in our system."
-            );
-
+            fbSuccess("Ticket Submitted", "Your ticket has been logged. The relevant department will respond shortly.");
             $("#inquiryForm")[0].reset();
-
-            $("#messageBody")
-                .data("kendoTextArea")
-                .value("");
-
+            $("#messageBody").data("kendoTextArea").value("");
             reloadInquiryKPIs();
         },
 
         error: function (xhr) {
-
             if (xhr.status === 401 || xhr.status === 403) {
                 window.location.href = "/Farmer/Login";
                 return;
             }
-
-            console.error("Failed to submit inquiry");
-
+            fbError("Submission Failed", "Could not submit your inquiry. Please try again.");
         }
-
     });
-
 }
 
 
@@ -208,34 +140,17 @@ function reloadInquiryKPIs() {
     var token = getToken();
 
     $.ajax({
-
         url: `${window.API_BASE}/${window.FARMER_ID}/inquiries`,
-
         type: "GET",
-
-        headers: {
-            "Authorization": "Bearer " + token
-        },
+        headers: { "Authorization": "Bearer " + token },
 
         success: function (res) {
-
             if (res.success) {
-
                 var data = res.data || [];
-
                 $("#kpiTotal").text(data.length);
-
-                $("#kpiPending").text(
-                    data.filter(x => x.status === "open").length
-                );
-
-                $("#kpiSolved").text(
-                    data.filter(x => x.status === "closed").length
-                );
+                $("#kpiPending").text(data.filter(x => x.status === "open").length);
+                $("#kpiSolved").text(data.filter(x => x.status === "closed").length);
             }
-
         }
-
     });
-
 }

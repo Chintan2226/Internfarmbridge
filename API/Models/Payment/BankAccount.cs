@@ -35,9 +35,9 @@ namespace API.Models.Payment
 
         [Required(ErrorMessage = "Account type is required.")]
         [MaxLength(50, ErrorMessage = "Account type must not exceed 50 characters.")]
-        [RegularExpression("^(Savings|Current|Overdraft)$",
-            ErrorMessage = "Account type must be Savings, Current, or Overdraft.")]
-        public string AccountType { get; set; } = "Savings";
+        [RegularExpression("^(savings|current|overdraft)$",
+            ErrorMessage = "Account type must be savings, current, or overdraft.")]
+        public string AccountType { get; set; } = "savings";
 
         [Required(ErrorMessage = "IFSC code is required.")]
         [MaxLength(11, ErrorMessage = "IFSC code must not exceed 11 characters.")]
@@ -49,9 +49,9 @@ namespace API.Models.Payment
         public string? UpiId { get; set; }
 
         [MaxLength(50, ErrorMessage = "Verification status must not exceed 50 characters.")]
-        [RegularExpression("^(Pending|Verified|Failed)$",
-            ErrorMessage = "Verification status must be Pending, Verified, or Failed.")]
-        public string VerificationStatus { get; set; } = "Pending";
+        [RegularExpression("^(pending|verified|failed)$",
+            ErrorMessage = "Verification status must be pending, verified, or failed.")]
+        public string VerificationStatus { get; set; } = "pending";
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

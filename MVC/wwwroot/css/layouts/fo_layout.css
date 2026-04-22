@@ -61,7 +61,7 @@ ul {
     list-style: none;
 }
 
-/* ── Sidebar ── */
+/* Sidebar */
 .fo-sidebar {
     position: fixed;
     top: 16px;
@@ -251,7 +251,7 @@ ul {
     background: rgba(220, 38, 38, 0.1) !important;
 }
 
-/* ── Main ── */
+/* Main */
 .fo-main {
     margin-left: calc(var(--fo-sidebar-w) + 32px);
     min-height: 100dvh;
@@ -264,7 +264,7 @@ ul {
     margin-left: calc(var(--fo-sidebar-wx) + 32px);
 }
 
-/* ── Topbar ── */
+/* Topbar */
 .fo-topbar {
     position: sticky;
     top: 0;
@@ -373,13 +373,13 @@ ul {
     transform: scale(1.07);
 }
 
-/* ── Content ── */
+/* Content */
 .fo-content {
     flex: 1;
     padding: 24px;
 }
 
-/* ── Notification drawer ── */
+/* Notification drawer */
 .fo-notif {
     position: fixed;
     top: calc(var(--fo-topbar-h) + 8px);
@@ -476,7 +476,7 @@ ul {
     border-left: 3px solid var(--fo-blue);
 }
 
-/* ── Toast ── */
+/* Toast */
 .fo-toasts {
     position: fixed;
     bottom: calc(var(--fo-bottom-h)+12px);
@@ -509,7 +509,7 @@ ul {
     border-left: 4px solid var(--fo-blue);
 }
 
-/* ── Mobile overlay & drawer ── */
+/* Mobile overlay & drawer */
 .fo-overlay {
     display: none;
     position: fixed;
@@ -634,7 +634,7 @@ ul {
     color: #ff6b6b;
 }
 
-/* ── Bottom nav ── */
+/* Bottom nav */
 .fo-bottom-nav {
     display: none;
     position: fixed;
@@ -675,7 +675,7 @@ ul {
     color: var(--fo-blue);
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 768px) {
     .fo-menu-btn {
         display: flex;
