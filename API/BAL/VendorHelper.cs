@@ -415,11 +415,13 @@ namespace API.BAL
                 int vendorId = 0;
                 string businessName = "Vendor";
 
-                await using var reader = await getVendorCmd.ExecuteReaderAsync();
-                if (await reader.ReadAsync())
+                await using (var reader = await getVendorCmd.ExecuteReaderAsync())
                 {
-                    vendorId = reader.GetInt32(0);
-                    businessName = reader.IsDBNull(1) ? "Vendor" : reader.GetString(1);
+                    if (await reader.ReadAsync())
+                    {
+                        vendorId = reader.GetInt32(0);
+                        businessName = reader.IsDBNull(1) ? "Vendor" : reader.GetString(1);
+                    }
                 }
 
                 if (vendorId == 0)
