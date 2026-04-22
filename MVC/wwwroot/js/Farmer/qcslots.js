@@ -6,16 +6,12 @@
 
 $(document).ready(function () {
 
-    /* ──────────────────────────────────────────────
-       CONFIG
-    ────────────────────────────────────────────── */
+    // CONFIG
 
     window.API_BASE = "http://localhost:5020/api/FarmerApp";
 
 
-    /* ──────────────────────────────────────────────
-       AUTH HELPERS
-    ────────────────────────────────────────────── */
+    // AUTH HELPERS
 
     function getToken() {
         var match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
@@ -111,9 +107,7 @@ $(document).ready(function () {
     console.log("Farmer ID:", window.FARMER_ID);
 
 
-    /* ──────────────────────────────────────────────
-       WINDOW INIT
-    ────────────────────────────────────────────── */
+    // WINDOW INIT
 
     $("#qcBookWindow").kendoWindow({
         width: "550px",
@@ -123,9 +117,7 @@ $(document).ready(function () {
     });
 
 
-    /* ──────────────────────────────────────────────
-       1. QC DASHBOARD
-    ────────────────────────────────────────────── */
+    // 1. QC DASHBOARD
 
     $.ajax({
 
@@ -208,9 +200,7 @@ $(document).ready(function () {
     });
 
 
-    /* ──────────────────────────────────────────────
-       2. WAREHOUSE DROPDOWN
-    ────────────────────────────────────────────── */
+    // 2. WAREHOUSE DROPDOWN
     $.ajax({
         url: `${window.API_BASE}/dropdowns/warehouses`,
         type: "GET",
@@ -243,9 +233,7 @@ $(document).ready(function () {
         }
     });
 
-    /* ──────────────────────────────────────────────
-       3. CROP LISTINGS DROPDOWN
-    ────────────────────────────────────────────── */
+    // 3. CROP LISTINGS DROPDOWN
 
     $.ajax({
 
@@ -302,9 +290,7 @@ $(document).ready(function () {
 
     });
 
-    /* ──────────────────────────────────────────────
-       CONFIRM BOOKING
-    ────────────────────────────────────────────── */
+    // CONFIRM BOOKING
 
     $(document).on("click", "#confirmBookingBtn", function () {
 
@@ -377,12 +363,13 @@ $(document).ready(function () {
 
     });
 
+    $("#btnOpenQCWindow").on("click", openQCSlotWindow);
+    $("#btnCloseQCWindow").on("click", closeQCWindow);
+
 });
 
 
-/* ──────────────────────────────────────────────
-   WINDOW HELPERS
-────────────────────────────────────────────── */
+// WINDOW HELPERS
 
 function openQCSlotWindow() {
 
@@ -407,9 +394,7 @@ function closeQCWindow() {
 }
 
 
-/* ──────────────────────────────────────────────
-   FETCH TIME SLOTS
-────────────────────────────────────────────── */
+// FETCH TIME SLOTS
 function fetchTimeSlots(warehouseId) {
     // 1. Get the exact date the user picked as a string (e.g., "2026-04-17")
     var selectedDateStr = kendo.toString($("#slotDate").data("kendoDatePicker").value(), "yyyy-MM-dd");
