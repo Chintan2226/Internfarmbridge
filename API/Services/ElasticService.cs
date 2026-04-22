@@ -51,6 +51,7 @@ namespace API.Services
                 await CreateIndexIfNotExistsAsync("orders");
                 await CreateIndexIfNotExistsAsync("users");
                 await CreateIndexIfNotExistsAsync("qc_records");
+                await CreateIndexIfNotExistsAsync("warehouses");
 
                 _logger.LogInformation("ElasticSearch indexes initialized successfully");
             }
@@ -75,195 +76,7 @@ namespace API.Services
             }
         }
 
-        // ============== SEARCH METHODS FOR MVC ==============
-
-        public async Task<SearchResponseModel<CatalogSearchResult>> SearchCatalogForMVCAsync(SearchRequestModel request)
-        {
-            var response = new SearchResponseModel<CatalogSearchResult>();
-
-            try
-            {
-                // Direct index search with simple match all
-                var searchRequest = new SearchRequest("catalog_products")
-                {
-                    Size = 100,
-                    Query = new MatchAllQuery()
-                };
-
-                var result = await _client.SearchAsync<CatalogProductDocument>(searchRequest);
-
-                if (result.IsValidResponse && result.Documents.Any())
-                {
-                    response.Results = result.Documents.Select(p => new CatalogSearchResult
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        Category = p.Category,
-                        UnitOfMeasure = p.UnitOfMeasure,
-                        Description = p.Description,
-                        ImageUrl = p.ImageUrl,
-                        IsActive = p.IsActive
-                    }).ToList();
-
-                    response.TotalCount = result.Total;
-                    response.Page = request.Page;
-                    response.PageSize = request.PageSize;
-
-                    Console.WriteLine($"Found {response.Results.Count} catalog products");
-                }
-                else
-                {
-                    Console.WriteLine($"Search failed or no documents. Valid: {result.IsValidResponse}, Total: {result.Total}");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching catalog");
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
-
-            return response;
-        }
-
-        public async Task<SearchResponseModel<CropSearchResult>> SearchCropsForMVCAsync(SearchRequestModel request)
-        {
-            var response = new SearchResponseModel<CropSearchResult>();
-
-            try
-            {
-                int from = (request.Page - 1) * request.PageSize;
-
-                var searchRequest = new SearchRequest("crop_listings")
-                {
-                    From = from,
-                    Size = request.PageSize,
-                    Query = BuildCropSearchQuery(request.Query, request.FarmerId, request.Status, request.State)
-                };
-
-                var result = await _client.SearchAsync<object>(searchRequest);
-
-                if (result.IsValidResponse && result.Documents.Any())
-                {
-                    response.Results = MapToCropResults(result.Documents);
-                    response.TotalCount = result.Total;
-                    response.Page = request.Page;
-                    response.PageSize = request.PageSize;
-                    response.ProcessingTimeMs = result.Took;
-                    response.Query = request.Query;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching crops");
-            }
-
-            return response;
-        }
-
-        public async Task<SearchResponseModel<OrderSearchResult>> SearchOrdersForMVCAsync(SearchRequestModel request)
-        {
-            var response = new SearchResponseModel<OrderSearchResult>();
-
-            try
-            {
-                int from = (request.Page - 1) * request.PageSize;
-
-                var searchRequest = new SearchRequest("orders")
-                {
-                    From = from,
-                    Size = request.PageSize,
-                    Query = BuildOrderSearchQuery(request.Query, request.VendorId, request.Status)
-                };
-
-                var result = await _client.SearchAsync<object>(searchRequest);
-
-                if (result.IsValidResponse && result.Documents.Any())
-                {
-                    response.Results = MapToOrderResults(result.Documents);
-                    response.TotalCount = result.Total;
-                    response.Page = request.Page;
-                    response.PageSize = request.PageSize;
-                    response.ProcessingTimeMs = result.Took;
-                    response.Query = request.Query;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching orders");
-            }
-
-            return response;
-        }
-
-        public async Task<SearchResponseModel<UserSearchResult>> SearchUsersForMVCAsync(SearchRequestModel request)
-        {
-            var response = new SearchResponseModel<UserSearchResult>();
-
-            try
-            {
-                int from = (request.Page - 1) * request.PageSize;
-
-                var searchRequest = new SearchRequest("users")
-                {
-                    From = from,
-                    Size = request.PageSize,
-                    Query = BuildUserSearchQuery(request.Query, request.Role, request.IsActive)
-                };
-
-                var result = await _client.SearchAsync<object>(searchRequest);
-
-                if (result.IsValidResponse && result.Documents.Any())
-                {
-                    response.Results = MapToUserResults(result.Documents);
-                    response.TotalCount = result.Total;
-                    response.Page = request.Page;
-                    response.PageSize = request.PageSize;
-                    response.ProcessingTimeMs = result.Took;
-                    response.Query = request.Query;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching users");
-            }
-
-            return response;
-        }
-
-        public async Task<SearchResponseModel<QCSearchResult>> SearchQCRecordsForMVCAsync(SearchRequestModel request)
-        {
-            var response = new SearchResponseModel<QCSearchResult>();
-
-            try
-            {
-                int from = (request.Page - 1) * request.PageSize;
-
-                var searchRequest = new SearchRequest("qc_records")
-                {
-                    From = from,
-                    Size = request.PageSize,
-                    Query = BuildQCSearchQuery(request.Query, request.FoId, request.Passed, request.Grade)
-                };
-
-                var result = await _client.SearchAsync<object>(searchRequest);
-
-                if (result.IsValidResponse && result.Documents.Any())
-                {
-                    response.Results = MapToQCResults(result.Documents);
-                    response.TotalCount = result.Total;
-                    response.Page = request.Page;
-                    response.PageSize = request.PageSize;
-                    response.ProcessingTimeMs = result.Took;
-                    response.Query = request.Query;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching QC records");
-            }
-
-            return response;
-        }
+        // ============== UNIVERSAL SEARCH (FIXED FOR WAREHOUSES) ==============
 
         public async Task<List<UniversalSearchResult>> UniversalSearchForMVCAsync(string query, int limit = 50)
         {
@@ -271,16 +84,32 @@ namespace API.Services
 
             try
             {
-                // Search catalog_products - simple approach
+                // Search warehouses - WITH QUERY FILTER (not MatchAll)
+                var warehouseResult = await _client.SearchAsync<WarehouseDocument>("warehouses", s => s
+                    .Size(limit)
+                    .Query(q => q.MatchAll())
+                );
+
+                Console.WriteLine($"Warehouse search - Total: {warehouseResult.Total}, IsValid: {warehouseResult.IsValidResponse}, Documents: {warehouseResult.Documents.Count}");
+                // Search catalog_products
                 var catalogResult = await _client.SearchAsync<CatalogProductDocument>("catalog_products", s => s
                     .Size(limit)
                     .Query(q => q.QueryString(qs => qs.Query($"*{query}*")))
                 );
 
-                // Search users (farmers, vendors, field officers)
+                // Search users
                 var userResult = await _client.SearchAsync<UserDocument>("users", s => s
                     .Size(limit)
-                    .Query(q => q.QueryString(qs => qs.Query($"*{query}*")))
+                    .Query(q => q.QueryString(qs => qs
+                        .Query($"*{query}*")
+                        .Fields(new[] {
+                            "fullName^3",
+                            "email^2",
+                            "businessName^2",
+                            "phone",
+                            "role"
+                        })
+                    ))
                 );
 
                 // Search crop_listings
@@ -294,6 +123,25 @@ namespace API.Services
                     .Size(limit)
                     .Query(q => q.QueryString(qs => qs.Query($"*{query}*")))
                 );
+
+                // Add warehouses - Manual dictionary mapping
+                if (warehouseResult.IsValidResponse && warehouseResult.Documents.Any())
+                {
+                    foreach (var warehouse in warehouseResult.Documents)
+                    {
+                        results.Add(new UniversalSearchResult
+                        {
+                            Type = "warehouse",
+                            Id = warehouse.Id,
+                            Title = warehouse.Name,
+                            Subtitle = $"{warehouse.District}, {warehouse.State} | Capacity: {warehouse.DailyCapacity} MT",
+                            Description = warehouse.Address ?? "",
+                            Url = $"/Admin/Warehouse/{warehouse.Id}",
+                            Status = warehouse.IsActive ? "Active" : "Inactive",
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
 
                 // Add catalog products
                 if (catalogResult.IsValidResponse && catalogResult.Documents.Any())
@@ -314,11 +162,21 @@ namespace API.Services
                     }
                 }
 
-                // Add users (farmers, vendors, field officers)
+                // Add users
                 if (userResult.IsValidResponse && userResult.Documents.Any())
                 {
                     foreach (var user in userResult.Documents)
                     {
+                        string url = "";
+                        if (user.Role == "farmer")
+                            url = $"/Admin/FarmerManagment?userId={user.Id}";
+                        else if (user.Role == "vendor")
+                            url = $"/Admin/Vendor?userId={user.Id}";
+                        else if (user.Role == "field_officer")
+                            url = $"/Admin/FieldOfficers?userId={user.Id}";
+                        else
+                            url = $"/Admin/UserDetails/{user.Id}";
+
                         results.Add(new UniversalSearchResult
                         {
                             Type = "user",
@@ -326,31 +184,31 @@ namespace API.Services
                             Title = user.FullName ?? user.BusinessName ?? user.Email,
                             Subtitle = $"{user.Role} | {user.Email}",
                             Description = $"Phone: {user.Phone ?? "N/A"}",
-                            Url = $"/Admin/UserDetails/{user.Id}",
+                            Url = url,
                             Status = user.IsActive ? "Active" : "Inactive",
                             CreatedAt = DateTime.UtcNow
                         });
                     }
                 }
 
-                // Add crop listings
-                if (cropResult.IsValidResponse && cropResult.Documents.Any())
-                {
-                    foreach (var crop in cropResult.Documents)
-                    {
-                        results.Add(new UniversalSearchResult
-                        {
-                            Type = "crop",
-                            Id = crop.Id,
-                            Title = crop.CropName,
-                            Subtitle = $"Farmer: {crop.FarmerName} | {crop.QuantityAvailable} {crop.Unit}",
-                            Description = $"Variety: {crop.Variety} | Location: {crop.FarmState}",
-                            Url = $"/Farmer/Listing/{crop.Id}",
-                            Status = crop.Status,
-                            CreatedAt = DateTime.UtcNow
-                        });
-                    }
-                }
+                // // Add crop listings
+                // if (cropResult.IsValidResponse && cropResult.Documents.Any())
+                // {
+                //     foreach (var crop in cropResult.Documents)
+                //     {
+                //         results.Add(new UniversalSearchResult
+                //         {
+                //             Type = "crop",
+                //             Id = crop.Id,
+                //             Title = crop.CropName,
+                //             Subtitle = $"Farmer: {crop.FarmerName} | {crop.QuantityAvailable} {crop.Unit}",
+                //             Description = $"Variety: {crop.Variety} | Location: {crop.FarmState}",
+                //             Url = $"/Farmer/Listing/{crop.Id}",
+                //             Status = crop.Status,
+                //             CreatedAt = DateTime.UtcNow
+                //         });
+                //     }
+                // }
 
                 // Add orders
                 if (orderResult.IsValidResponse && orderResult.Documents.Any())
@@ -382,6 +240,7 @@ namespace API.Services
 
             return results;
         }
+
         // ============== INDEXING METHODS ==============
 
         public async Task<bool> IndexCatalogProductAsync(CatalogProductDocument product)
@@ -458,6 +317,58 @@ namespace API.Services
 
         // ============== RE-INDEX METHODS ==============
 
+        private async Task<int> ReindexWarehousesAsync()
+        {
+            int indexed = 0;
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"SELECT c_id, c_name, c_address, c_state, c_district, c_daily_capacity, c_is_active FROM t_warehouses";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var id = reader.GetInt32(0);
+                var name = reader.GetString(1);
+
+                Console.WriteLine($"Indexing warehouse: ID={id}, Name={name}");
+
+                var doc = new
+                {
+                    id = id,
+                    name = name,
+                    address = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    state = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                    district = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    dailyCapacity = reader.GetInt32(5),
+                    isActive = reader.GetBoolean(6),
+                    documentType = "warehouse",
+                    indexedAt = DateTime.UtcNow
+                };
+
+                var response = await _client.IndexAsync(doc, idx => idx
+                    .Index("warehouses")
+                    .Id(id)
+                );
+
+                if (response.IsValidResponse)
+                {
+                    indexed++;
+                    Console.WriteLine($"Successfully indexed warehouse: {name}");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to index warehouse {id}: {response.DebugInformation}");
+                }
+            }
+
+            return indexed;
+        }
+
         public async Task<ReindexResult> ReindexAllAsync()
         {
             var result = new ReindexResult();
@@ -471,6 +382,7 @@ namespace API.Services
                 result.Orders = await ReindexOrdersAsync();
                 result.Users = await ReindexUsersAsync();
                 result.QCRecords = await ReindexQCRecordsAsync();
+                result.Warehouses = await ReindexWarehousesAsync();
 
                 result.Success = true;
                 result.Message = $"Re-index completed. Indexed: {result.TotalIndexed} records";
@@ -622,7 +534,7 @@ namespace API.Services
                 LEFT JOIN t_farmer_profiles fp ON u.c_id = fp.c_user_id
                 LEFT JOIN t_vendor_profiles vp ON u.c_id = vp.c_user_id
                 LEFT JOIN t_field_officer_profiles fop ON u.c_id = fop.c_user_id
-                WHERE u.c_role IN ('farmer', 'vendor', 'fieldofficer', 'admin')";
+                WHERE u.c_role IN ('farmer', 'vendor', 'field_officer', 'admin')";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             using var reader = await cmd.ExecuteReaderAsync();
@@ -685,6 +597,188 @@ namespace API.Services
             }
 
             return indexed;
+        }
+
+        // ============== OTHER SEARCH METHODS ==============
+
+        public async Task<SearchResponseModel<CatalogSearchResult>> SearchCatalogForMVCAsync(SearchRequestModel request)
+        {
+            var response = new SearchResponseModel<CatalogSearchResult>();
+
+            try
+            {
+                var searchRequest = new SearchRequest("catalog_products")
+                {
+                    Size = 100,
+                    Query = new MatchAllQuery()
+                };
+
+                var result = await _client.SearchAsync<CatalogProductDocument>(searchRequest);
+
+                if (result.IsValidResponse && result.Documents.Any())
+                {
+                    response.Results = result.Documents.Select(p => new CatalogSearchResult
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Category = p.Category,
+                        UnitOfMeasure = p.UnitOfMeasure,
+                        Description = p.Description,
+                        ImageUrl = p.ImageUrl,
+                        IsActive = p.IsActive
+                    }).ToList();
+
+                    response.TotalCount = result.Total;
+                    response.Page = request.Page;
+                    response.PageSize = request.PageSize;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching catalog");
+            }
+
+            return response;
+        }
+
+        public async Task<SearchResponseModel<CropSearchResult>> SearchCropsForMVCAsync(SearchRequestModel request)
+        {
+            var response = new SearchResponseModel<CropSearchResult>();
+
+            try
+            {
+                int from = (request.Page - 1) * request.PageSize;
+
+                var searchRequest = new SearchRequest("crop_listings")
+                {
+                    From = from,
+                    Size = request.PageSize,
+                    Query = BuildCropSearchQuery(request.Query, request.FarmerId, request.Status, request.State)
+                };
+
+                var result = await _client.SearchAsync<object>(searchRequest);
+
+                if (result.IsValidResponse && result.Documents.Any())
+                {
+                    response.Results = MapToCropResults(result.Documents);
+                    response.TotalCount = result.Total;
+                    response.Page = request.Page;
+                    response.PageSize = request.PageSize;
+                    response.ProcessingTimeMs = result.Took;
+                    response.Query = request.Query;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching crops");
+            }
+
+            return response;
+        }
+
+        public async Task<SearchResponseModel<OrderSearchResult>> SearchOrdersForMVCAsync(SearchRequestModel request)
+        {
+            var response = new SearchResponseModel<OrderSearchResult>();
+
+            try
+            {
+                int from = (request.Page - 1) * request.PageSize;
+
+                var searchRequest = new SearchRequest("orders")
+                {
+                    From = from,
+                    Size = request.PageSize,
+                    Query = BuildOrderSearchQuery(request.Query, request.VendorId, request.Status)
+                };
+
+                var result = await _client.SearchAsync<object>(searchRequest);
+
+                if (result.IsValidResponse && result.Documents.Any())
+                {
+                    response.Results = MapToOrderResults(result.Documents);
+                    response.TotalCount = result.Total;
+                    response.Page = request.Page;
+                    response.PageSize = request.PageSize;
+                    response.ProcessingTimeMs = result.Took;
+                    response.Query = request.Query;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching orders");
+            }
+
+            return response;
+        }
+
+        public async Task<SearchResponseModel<UserSearchResult>> SearchUsersForMVCAsync(SearchRequestModel request)
+        {
+            var response = new SearchResponseModel<UserSearchResult>();
+
+            try
+            {
+                int from = (request.Page - 1) * request.PageSize;
+
+                var searchRequest = new SearchRequest("users")
+                {
+                    From = from,
+                    Size = request.PageSize,
+                    Query = BuildUserSearchQuery(request.Query, request.Role, request.IsActive)
+                };
+
+                var result = await _client.SearchAsync<object>(searchRequest);
+
+                if (result.IsValidResponse && result.Documents.Any())
+                {
+                    response.Results = MapToUserResults(result.Documents);
+                    response.TotalCount = result.Total;
+                    response.Page = request.Page;
+                    response.PageSize = request.PageSize;
+                    response.ProcessingTimeMs = result.Took;
+                    response.Query = request.Query;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching users");
+            }
+
+            return response;
+        }
+
+        public async Task<SearchResponseModel<QCSearchResult>> SearchQCRecordsForMVCAsync(SearchRequestModel request)
+        {
+            var response = new SearchResponseModel<QCSearchResult>();
+
+            try
+            {
+                int from = (request.Page - 1) * request.PageSize;
+
+                var searchRequest = new SearchRequest("qc_records")
+                {
+                    From = from,
+                    Size = request.PageSize,
+                    Query = BuildQCSearchQuery(request.Query, request.FoId, request.Passed, request.Grade)
+                };
+
+                var result = await _client.SearchAsync<object>(searchRequest);
+
+                if (result.IsValidResponse && result.Documents.Any())
+                {
+                    response.Results = MapToQCResults(result.Documents);
+                    response.TotalCount = result.Total;
+                    response.Page = request.Page;
+                    response.PageSize = request.PageSize;
+                    response.ProcessingTimeMs = result.Took;
+                    response.Query = request.Query;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching QC records");
+            }
+
+            return response;
         }
 
         // ============== HEALTH CHECK ==============
@@ -1041,64 +1135,5 @@ namespace API.Services
 
             return results;
         }
-
-        private List<UniversalSearchResult> MapToUniversalResults(IReadOnlyCollection<object> documents, string query)
-        {
-            var results = new List<UniversalSearchResult>();
-
-            foreach (var doc in documents)
-            {
-                var dict = doc as IDictionary<string, object>;
-                if (dict != null)
-                {
-                    var type = dict["documentType"]?.ToString();
-                    var result = new UniversalSearchResult
-                    {
-                        Type = type,
-                        Id = Convert.ToInt32(dict["id"]),
-                        Status = dict.ContainsKey("isActive") ? (Convert.ToBoolean(dict["isActive"]) ? "Active" : "Inactive") : "Active",
-                        CreatedAt = DateTime.UtcNow
-                    };
-
-                    switch (type)
-                    {
-                        case "catalog_product":
-                            result.Title = dict["name"]?.ToString();
-                            result.Subtitle = $"Category: {dict["category"]} | {dict["unitOfMeasure"]}";
-                            result.Url = $"/Admin/Catalog/Edit/{result.Id}";
-                            break;
-                        case "crop_listing":
-                            result.Title = dict["cropName"]?.ToString();
-                            result.Subtitle = $"Farmer: {dict["farmerName"]} | {dict["quantityAvailable"]} {dict["unit"]}";
-                            result.Url = $"/Farmer/Listing/{result.Id}";
-                            result.Status = dict["status"]?.ToString();
-                            break;
-                        case "order":
-                            result.Title = $"Order #{result.Id}";
-                            result.Subtitle = $"Vendor: {dict["vendorBusinessName"]} | ₹{dict["totalAmount"]}";
-                            result.Url = $"/Vendor/OrderDetails/{result.Id}";
-                            result.Status = dict["status"]?.ToString();
-                            break;
-                        case "user":
-                            result.Title = dict["fullName"]?.ToString() ?? dict["email"]?.ToString();
-                            result.Subtitle = $"{dict["role"]} | {dict["email"]}";
-                            result.Url = $"/Admin/UserDetails/{result.Id}";
-                            break;
-                        case "qc_record":
-                            result.Title = $"QC Inspection #{result.Id}";
-                            result.Subtitle = $"FO: {dict["foName"]} | Grade: {dict["grade"]}";
-                            result.Url = $"/FieldOfficer/QCForm/{dict["procurementRequestId"]}";
-                            result.Status = Convert.ToBoolean(dict["passed"]) ? "Passed" : "Failed";
-                            break;
-                    }
-
-                    results.Add(result);
-                }
-            }
-
-            return results.OrderByDescending(r => r.Title?.ToLower().Contains(query.ToLower()) == true ? 1 : 0).ToList();
-        }
-
-
     }
 }

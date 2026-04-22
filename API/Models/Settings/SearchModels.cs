@@ -136,7 +136,8 @@ namespace API.Models.Settings
         public int Orders { get; set; }
         public int Users { get; set; }
         public int QCRecords { get; set; }
-        public int TotalIndexed => CatalogProducts + CropListings + Orders + Users + QCRecords;
+        public int Warehouses { get; set; }
+        public int TotalIndexed => CatalogProducts + CropListings + Orders + Users + QCRecords + Warehouses;
     }
     public class CatalogProductDocument
     {
@@ -208,6 +209,19 @@ namespace API.Models.Settings
         public string AssignedRegion { get; set; }
         public bool IsActive { get; set; }
         public string DocumentType { get; set; } = "user";
+        public DateTime IndexedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class WarehouseDocument
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string State { get; set; }
+        public string District { get; set; }
+        public int DailyCapacity { get; set; }
+        public bool IsActive { get; set; }
+        public string DocumentType { get; set; } = "warehouse";
         public DateTime IndexedAt { get; set; } = DateTime.UtcNow;
     }
 }
