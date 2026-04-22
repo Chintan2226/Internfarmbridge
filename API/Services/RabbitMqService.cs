@@ -23,45 +23,67 @@ namespace API.Services
         {
             _config = config;
             _logger = logger;
-            
+
             // Read configuration properly
             _host = _config["RabbitMQ:Host"] ?? "localhost";
             _port = int.Parse(_config["RabbitMQ:Port"] ?? "5672");
             _username = _config["RabbitMQ:Username"] ?? "guest";
             _password = _config["RabbitMQ:Password"] ?? "guest";
             _virtualHost = _config["RabbitMQ:VirtualHost"] ?? "/";
-            
+
             _logger.LogInformation("RabbitMqService initialized with Host: {Host}, VHost: {VHost}", _host, _virtualHost);
         }
+        private readonly SemaphoreSlim _connectionLock = new(1, 1);
 
         private async Task EnsureConnectionAsync()
         {
-            if (_connection != null && _channel != null && _connection.IsOpen && _channel.IsOpen)
+            if (_connection != null && _channel != null &&
+                _connection.IsOpen && _channel.IsOpen)
                 return;
 
-            var factory = new ConnectionFactory
+            await _connectionLock.WaitAsync();
+
+            try
             {
-                HostName = _host,
-                Port = _port,
-                UserName = _username,
-                Password = _password,
-                VirtualHost = _virtualHost,
-                AutomaticRecoveryEnabled = true,
-                NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
-                RequestedHeartbeat = TimeSpan.FromSeconds(60)
-            };
+                if (_connection != null && _channel != null &&
+                    _connection.IsOpen && _channel.IsOpen)
+                    return;
 
-            _logger.LogInformation("Connecting to RabbitMQ at {Host}:{Port}, VHost: {VHost}", _host, _port, _virtualHost);
-            
-            _connection = await factory.CreateConnectionAsync();
-            _channel = await _connection.CreateChannelAsync();
-            
-            _logger.LogInformation("RabbitMQ connection established successfully");
+                var factory = new ConnectionFactory
+                {
+                    HostName = _host,
+                    Port = _port,
+                    UserName = _username,
+                    Password = _password,
+                    VirtualHost = _virtualHost,
+                    AutomaticRecoveryEnabled = true,
+                    NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
+                    RequestedHeartbeat = TimeSpan.FromSeconds(60)
+                };
+
+                _logger.LogInformation(
+                    "Connecting to RabbitMQ at {Host}:{Port}, VHost: {VHost}",
+                    _host, _port, _virtualHost
+                );
+
+                _connection = await factory.CreateConnectionAsync();
+                _channel = await _connection.CreateChannelAsync();
+
+                _logger.LogInformation("RabbitMQ connection established successfully");
+            }
+            finally
+            {
+                _connectionLock.Release();
+            }
         }
-
         // Send to SPECIFIC user
-        public async Task PublishToUserAsync(int userId, string title, string message, string type,
-            string? refType = null, int? refId = null)
+        public async Task PublishToUserAsync(
+           int userId,
+           string title,
+           string message,
+           string type,
+           string? refType = null,
+           int? refId = null)
         {
             try
             {
@@ -70,7 +92,7 @@ namespace API.Services
                 var notification = new vm_Notification
                 {
                     TargetUserId = userId,
-                    TargetRole = "", // Will be determined by consumer
+                    TargetRole = "",
                     Title = title,
                     Message = message,
                     Type = type,
@@ -79,8 +101,15 @@ namespace API.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await PublishAsync("notifications_user", notification);
-                _logger.LogInformation("Published notification to user {UserId}: {Title}", userId, title);
+                // ✅ FIX: Single queue
+                var queueName = "notifications_user";
+
+                await PublishAsync(queueName, notification);
+
+                _logger.LogInformation(
+                    "Published notification to user {UserId}",
+                    userId
+                );
             }
             catch (Exception ex)
             {
@@ -88,7 +117,6 @@ namespace API.Services
                 throw;
             }
         }
-
         // Send to ALL users with a specific ROLE
         public async Task PublishToRoleAsync(string role, string title, string message, string type,
             string? refType = null, int? refId = null)
@@ -122,36 +150,52 @@ namespace API.Services
 
         private async Task PublishAsync(string queue, vm_Notification notification)
         {
+            await EnsureConnectionAsync();
+
             var options = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
-            
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(notification, options));
 
-            // Declare queue as durable
+            var body = Encoding.UTF8.GetBytes(
+                JsonSerializer.Serialize(notification, options)
+            );
+
             await _channel!.QueueDeclareAsync(
-                queue: queue, 
-                durable: true, 
-                exclusive: false, 
+                queue: queue,
+                durable: true,
+                exclusive: false,
                 autoDelete: false
             );
-            
+
             var properties = new BasicProperties
             {
                 Persistent = true,
                 DeliveryMode = DeliveryModes.Persistent
             };
-            
-            await _channel.BasicPublishAsync("", queue, true, properties, body);
+
+            await _channel.BasicPublishAsync(
+                exchange: "",
+                routingKey: queue,
+                mandatory: false,
+                basicProperties: properties,
+                body: body
+            );
         }
-        
         public async Task DisposeAsync()
         {
-            if (_channel != null)
-                await _channel.CloseAsync();
-            if (_connection != null)
-                await _connection.CloseAsync();
+            try
+            {
+                if (_channel != null && _channel.IsOpen)
+                    await _channel.CloseAsync();
+
+                if (_connection != null && _connection.IsOpen)
+                    await _connection.CloseAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error closing RabbitMQ connection");
+            }
         }
     }
 }

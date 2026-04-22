@@ -5,11 +5,14 @@ namespace API.Models.FieldOfficer
         public string Email { get; set; } = "";
         public string FullName { get; set; } = "";
         public string CropName { get; set; } = "";
+
+        public int UserId{get;set;}
     }
 
     public class RescheduleEmailData
     {
         public int ProcurementRequestId { get; set; }
+        public int FarmerId { get; set; }
         public string FarmerEmail { get; set; } = "";
         public string FarmerName { get; set; } = "";
         public string CropName { get; set; } = "";
@@ -23,6 +26,7 @@ namespace API.Models.FieldOfficer
     public class AcceptEmailData
     {
         public int ProcurementRequestId { get; set; }
+        public int FarmerId { get; set; }
         public string FarmerEmail { get; set; } = "";
         public string FarmerName { get; set; } = "";
         public string CropName { get; set; } = "";
@@ -36,6 +40,7 @@ namespace API.Models.FieldOfficer
     public class CancelEmailData
     {
         public int ProcurementRequestId { get; set; }
+        public int FarmerId { get; set; }
         public string FarmerEmail { get; set; } = "";
         public string FarmerName { get; set; } = "";
         public string CropName { get; set; } = "";
