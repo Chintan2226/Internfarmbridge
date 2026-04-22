@@ -1,266 +1,249 @@
 /**
- * Farmer Profile — profile.js
- * JWT Bearer token is read from cookie: "authToken"
- * Multi-farmer support enabled
+ * Farmer Profile JS
+ * Handles profile loading, saving, and photo management.
  */
 
-$(document).ready(function () {
+// Auth Helpers
+function getToken() {
+    var match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
 
-    /* ──────────────────────────────────────────────
-       AUTH HELPERS
-    ────────────────────────────────────────────── */
-
-    function getToken() {
-        var match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
-        return match ? decodeURIComponent(match[1]) : null;
-    }
-
-    function authHeaders() {
-
-        var token = getToken();
-
-        if (!token) {
-            redirectToLogin();
-            return {};
-        }
-
-        return {
-            "Authorization": "Bearer " + token
-        };
-    }
-
-    function handleUnauthorized(xhr) {
-
-        if (!xhr || xhr.status === 401 || xhr.status === 403 || !getToken()) {
-            redirectToLogin();
-            return true;
-        }
-
-        return false;
-    }
-
-    function redirectToLogin() {
-        window.location.href = "/Farmer/Login";
-    }
-
-    function showLoadError(section) {
-        console.error("Failed to load:", section);
-    }
-
-    /* Abort if token missing */
-
-    if (!getToken()) {
-        redirectToLogin();
-        return;
-    }
-
-    console.log("Farmer ID:", window.FARMER_ID);
-
-
-    /* ──────────────────────────────────────────────
-       1. LOAD PROFILE DATA
-    ────────────────────────────────────────────── */
-
-    $.ajax({
-
-        url: `${window.API_BASE}/${window.FARMER_ID}/profile`,
-
-        type: "GET",
-
-        headers: authHeaders(),
-
-        success: function (res) {
-
-            if (res.success) {
-
-                var p = res.data;
-
-                /* Sidebar */
-
-                $("#farmerNameLabel")
-                    .text(p.fullName || "FarmBridge User");
-
-                $("#farmerMetaLabel")
-                    .text((p.district || "") + ", " + (p.state || ""));
-
-
-                /* Form fields */
-
-                $("#fullName").val(p.fullName);
-
-                $("#phoneNo").val(p.phone);
-
-                $("#farmRegion").val(
-                    (p.state || "").toLowerCase()
-                );
-
-                $("#specialty").val(p.primaryCrop);
-
-                $("#bankName").val(p.bankName);
-
-                $("#acctName").val(
-                    p.accountHolderName
-                );
-
-                $("#acctNo").val(
-                    p.accountNumber
-                );
-
-                $("#ifscCode").val(
-                    p.ifscCode
-                );
-            }
-
-        },
-
-        error: function (xhr) {
-
-            if (handleUnauthorized(xhr)) return;
-
-            showLoadError("profile");
-
-        }
-
-    });
-
-});
-
-
-/* ──────────────────────────────────────────────
-   SAVE PROFILE
-────────────────────────────────────────────── */
-
-function saveProfile() {
-
-    function getToken() {
-        var match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
-        return match ? decodeURIComponent(match[1]) : null;
-    }
-
+function authHeaders() {
     var token = getToken();
-
     if (!token) {
         window.location.href = "/Farmer/Login";
+        return {};
+    }
+    return { "Authorization": "Bearer " + token };
+}
+
+function handleUnauthorized(xhr) {
+    if (!xhr || xhr.status === 401 || xhr.status === 403 || !getToken()) {
+        window.location.href = "/Farmer/Login";
+        return true;
+    }
+    return false;
+}
+
+// Initialization
+$(document).ready(function () {
+    if (!getToken() || !window.FARMER_ID) {
+        window.location.href = "/Farmer/Login";
         return;
+    }
+    loadProfile();
+    loadProfileKpis();
+});
+
+// Load Profile Data
+function loadProfile() {
+    $.ajax({
+        url: `${window.API_BASE}/${window.FARMER_ID}/profile`,
+        type: "GET",
+        headers: authHeaders(),
+        success: function (res) {
+            if (!res.success) return;
+            var p = res.data;
+
+            // Sidebar info
+            var displayName = p.fullName || window.FARMER_NAME || "FarmBridge User";
+            $("#farmerNameLabel").text(displayName);
+            $("#farmerMetaLabel").text([p.district, p.state].filter(Boolean).join(", ") || fbT("profile_location_not_set"));
+
+            // Avatar placeholder
+            var firstLetter = displayName.charAt(0).toUpperCase();
+            $("#avatarPlaceholder").html(`<span style="font-size: 32px; color: #10b981; font-weight: 800;">${firstLetter}</span>`);
+
+            // Bind fields
+            $("#fullName").val(p.fullName || "");
+            $("#phoneNo").val(p.phone || "");
+            $("#farmState").val(p.state || "");
+            $("#farmDistrict").val(p.district || "");
+            $("#address").val(p.address || "");
+            $("#bankName").val(p.bankName || "");
+            $("#branchName").val(p.branchName || "");
+            $("#acctName").val(p.accountHolderName || "");
+            $("#acctNo").val(p.accountNumber || "");
+            $("#ifscCode").val(p.ifscCode || "");
+            $("#upiId").val(p.upiId || "");
+            if (p.accountType) $("#acctType").val(p.accountType);
+
+            // Photo management
+            window.CURRENT_PHOTO_URL = p.imageUrl || "";
+            if (p.imageUrl) {
+                $("#farmerPhoto").attr("src", p.imageUrl).show();
+                $("#avatarPlaceholder").hide();
+                $("#btnDeletePhoto").show();
+            } else {
+                $("#farmerPhoto").hide();
+                $("#avatarPlaceholder").show();
+                $("#btnDeletePhoto").hide();
+            }
+        },
+        error: function (xhr) {
+            if (handleUnauthorized(xhr)) return;
+            fbError(fbT("profile_load_error_title"), fbT("profile_load_error_msg"));
+        }
+    });
+}
+
+// Load Sidebar KPIs
+function loadProfileKpis() {
+    $.ajax({
+        url: `${window.API_BASE}/${window.FARMER_ID}/dashboard`,
+        type: "GET",
+        headers: authHeaders(),
+        success: function (res) {
+            if (!res.success || !res.data) return;
+            var kpis = res.data.kpis;
+            if (kpis) {
+                $("#statActiveListings").text(kpis.totalCropsListed || 0);
+                $("#statQCPassed").text(kpis.confirmedQcSlots || 0);
+            }
+        }
+    });
+}
+
+// Save Profile Info
+function saveProfile() {
+    var token = getToken();
+    if (!token) return;
+
+    var fullName = $("#fullName").val().trim();
+    if (!fullName) {
+        fbAlert(fbT("profile_val_name_req"), fbT("profile_val_error_title"));
+        return;
+    }
+
+    var state = $("#farmState").val().trim();
+    var district = $("#farmDistrict").val().trim();
+    var address = $("#address").val().trim();
+
+    if (!state) { fbAlert(fbT("profile_val_state_req"), fbT("profile_val_error_title")); return; }
+    if (!district) { fbAlert(fbT("profile_val_district_req"), fbT("profile_val_error_title")); return; }
+    if (!address) { fbAlert(fbT("profile_val_address_req"), fbT("profile_val_error_title")); return; }
+
+    var bankName = $("#bankName").val().trim();
+    var branchName = $("#branchName").val().trim();
+    var acctName = $("#acctName").val().trim();
+    var acctNo = $("#acctNo").val().trim();
+    var ifscCode = $("#ifscCode").val().trim().toUpperCase();
+    var upiId = $("#upiId").val().trim();
+    var acctType = $("#acctType").val();
+
+    if (bankName || acctName || acctNo || ifscCode) {
+        if (!bankName || !acctName || !acctNo || !ifscCode || !acctType) {
+            fbAlert(fbT("profile_val_bank_all_req"), fbT("profile_val_error_title"));
+            return;
+        }
+        if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifscCode)) {
+            fbAlert(fbT("profile_val_ifsc_invalid"), fbT("profile_val_error_title"));
+            return;
+        }
     }
 
     var payload = {
-
         FarmerId: window.FARMER_ID,
-
-        FullName: $("#fullName").val(),
-
-        Phone: $("#phoneNo").val(),
-
-        State: $("#farmRegion option:selected").text(),
-
-        District: "Updated via UI",
-
-        PrimaryCrop: $("#specialty").val(),
-
-        BankName: $("#bankName").val(),
-
-        AccountHolderName: $("#acctName").val(),
-
-        AccountNumber: $("#acctNo").val(),
-
-        IfscCode: $("#ifscCode").val()
+        FullName: fullName,
+        Phone: $("#phoneNo").val().trim(),
+        State: state,
+        District: district,
+        Address: address,
+        BankName: bankName,
+        BranchName: branchName,
+        AccountHolderName: acctName,
+        AccountNumber: acctNo,
+        IfscCode: ifscCode,
+        UpiId: upiId,
+        AccountType: acctType,
+        ImageUrl: window.CURRENT_PHOTO_URL || ""
     };
 
-
     $.ajax({
-
         url: `${window.API_BASE}/profile/update`,
-
         type: "PUT",
-
         contentType: "application/json",
-
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-
+        headers: { "Authorization": "Bearer " + token },
         data: JSON.stringify(payload),
-
         success: function () {
-
-            kendo.alert(
-                "Profile updated successfully!"
-            );
-
-            reloadProfile();
-
+            fbSuccess(fbT("profile_updated_title"), fbT("profile_updated_success"));
+            loadProfile();
+            loadProfileKpis();
         },
-
         error: function (xhr) {
-
-            if (xhr.status === 401 || xhr.status === 403) {
-                window.location.href = "/Farmer/Login";
-                return;
-            }
-
-            console.error("Failed to update profile");
-
+            if (handleUnauthorized(xhr)) return;
+            fbError(fbT("profile_save_failed_title"), fbT("profile_save_failed_msg"));
         }
-
     });
-
 }
 
-
-/* ──────────────────────────────────────────────
-   RELOAD PROFILE
-────────────────────────────────────────────── */
-
-function reloadProfile() {
-
-    function getToken() {
-        var match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
-        return match ? decodeURIComponent(match[1]) : null;
+// Photo Handlers
+function handlePhotoUpload(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+        fbAlert("File size exceeds 5MB limit.", fbT("profile_upload_failed_title"));
+        return;
     }
 
-    var token = getToken();
+    var formData = new FormData();
+    formData.append("file", file);
+    fbLoading(true, fbT("profile_upload_loading"));
 
     $.ajax({
-
-        url: `${window.API_BASE}/${window.FARMER_ID}/profile`,
-
-        type: "GET",
-
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-
+        url: `${window.API_BASE}/profile/photo/upload`,
+        type: "POST",
+        headers: authHeaders(),
+        data: formData,
+        processData: false,
+        contentType: false,
         success: function (res) {
-
-            if (res.success) {
-
-                var p = res.data;
-
-                $("#farmerNameLabel")
-                    .text(p.fullName || "FarmBridge User");
-
-                $("#farmerMetaLabel")
-                    .text((p.district || "") + ", " + (p.state || ""));
-
+            fbLoading(false);
+            if (res.success && res.imageUrl) {
+                window.CURRENT_PHOTO_URL = res.imageUrl;
+                $("#farmerPhoto").attr("src", res.imageUrl).show();
+                $("#avatarPlaceholder").hide();
+                $("#btnDeletePhoto").show();
+                saveProfile();
             }
-
+        },
+        error: function () {
+            fbLoading(false);
+            fbError(fbT("profile_upload_failed_title"), fbT("profile_upload_failed_msg"));
         }
-
     });
-
 }
 
+function deletePhoto() {
+    if (!window.CURRENT_PHOTO_URL) return;
+    fbConfirm(fbT("profile_delete_confirm_title"), fbT("profile_delete_confirm_msg"), function() {
+        fbLoading(true, fbT("profile_delete_loading"));
+        $.ajax({
+            url: `${window.API_BASE}/profile/photo/delete?imageUrl=${encodeURIComponent(window.CURRENT_PHOTO_URL)}`,
+            type: "DELETE",
+            headers: authHeaders(),
+            success: function () {
+                fbLoading(false);
+                window.CURRENT_PHOTO_URL = "";
+                $("#farmerPhoto").hide();
+                $("#avatarPlaceholder").show();
+                $("#btnDeletePhoto").hide();
+                saveProfile();
+                fbSuccess(fbT("profile_delete_success_title"), fbT("profile_delete_success_msg"));
+            },
+            error: function () {
+                fbLoading(false);
+                fbError(fbT("profile_delete_failed_title"), fbT("profile_delete_failed_msg"));
+            }
+        });
+    });
+}
 
-/* ──────────────────────────────────────────────
-   LOGOUT
-────────────────────────────────────────────── */
-
+// Logout
 function logoutUser() {
-
-    document.cookie =
-        "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
+    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    localStorage.clear();
+    sessionStorage.clear();
     window.location.href = "/Farmer/Login";
-
 }

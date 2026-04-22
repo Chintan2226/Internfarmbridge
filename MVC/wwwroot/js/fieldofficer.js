@@ -50,10 +50,13 @@ function handleFoUnauthorized(xhrOrResponse) {
 
     Swal.fire({
         icon: 'warning',
+        iconColor: '#fbbf24',
         title: 'Session Expired',
         text: 'Please log in again to continue.',
         confirmButtonText: 'Go to Login',
-        confirmButtonColor: '#28a745'
+        background: 'linear-gradient(135deg, #1c1200 0%, #3d2800 100%)',
+        color: '#f1f5f9',
+        confirmButtonColor: '#d97706'
     }).then(() => {
         logout();
     });
@@ -271,12 +274,51 @@ function foClearAll() {
 window.showFoLoadFailedAlert = function (entityName) {
     Swal.fire({
         icon: 'error',
+        iconColor: '#f87171',
         title: 'Load Failed',
         text: `Failed to load ${entityName || 'data'}. Please try again.`,
         confirmButtonText: 'OK',
-        confirmButtonColor: '#28a745'
+        background: 'linear-gradient(135deg, #2d0a0a 0%, #450a0a 100%)',
+        color: '#f1f5f9',
+        confirmButtonColor: '#dc2626'
     });
 };
+
+/* ─────────────────────────────────────────────────────────────────────────
+   FarmBridge SweetAlert2 Helpers — Field Officer portal (same scheme as Farmer)
+   foSuccess / foError / foWarning / foAlert / foConfirm
+───────────────────────────────────────────────────────────────────────── */
+const _foBase = {
+    color: '#f1f5f9',
+    customClass: { popup: 'fb-swal-popup', title: 'fb-swal-title' }
+};
+window.foSuccess = (title, text = '') => Swal.fire({
+    ..._foBase, icon: 'success', iconColor: '#34d399', title, text,
+    background: 'linear-gradient(135deg, #052e16 0%, #064e3b 100%)',
+    confirmButtonColor: '#059669', timer: 3000, timerProgressBar: true, showConfirmButton: false
+});
+window.foError = (title, text = '') => Swal.fire({
+    ..._foBase, icon: 'error', iconColor: '#f87171', title, text,
+    background: 'linear-gradient(135deg, #2d0a0a 0%, #450a0a 100%)',
+    confirmButtonColor: '#dc2626'
+});
+window.foWarning = (title, text = '') => Swal.fire({
+    ..._foBase, icon: 'warning', iconColor: '#fbbf24', title, text,
+    background: 'linear-gradient(135deg, #1c1200 0%, #3d2800 100%)',
+    confirmButtonColor: '#d97706'
+});
+window.foAlert = (message, title = 'FarmBridge') => Swal.fire({
+    ..._foBase, icon: 'info', iconColor: '#60a5fa', title, text: message,
+    background: 'linear-gradient(135deg, #0b1526 0%, #0f2746 100%)',
+    confirmButtonColor: '#2563eb'
+});
+window.foConfirm = (title, text = '', confirmLabel = 'Yes, Confirm') =>
+    Swal.fire({
+        ..._foBase, icon: 'question', iconColor: '#a78bfa', title, text,
+        background: 'linear-gradient(135deg, #120d26 0%, #1e1346 100%)',
+        showCancelButton: true, confirmButtonText: confirmLabel, cancelButtonText: 'Cancel',
+        confirmButtonColor: '#7c3aed', cancelButtonColor: '#374151'
+    }).then(r => r.isConfirmed);
 
 /* Toast utility */
 window.showFoToast = function (message, type = 'success') {

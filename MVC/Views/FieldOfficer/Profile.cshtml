@@ -168,23 +168,10 @@
     });
 
     function showToast(msg, type) {
-        const iconMap = {
-            'success': 'success',
-            'error': 'error',
-            'warning': 'warning',
-            'info': 'info'
-        };
-        
-        Swal.fire({
-            icon: iconMap[type] || 'info',
-            title: type.charAt(0).toUpperCase() + type.slice(1),
-            text: msg,
-            timer: 3000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-            position: 'top-end',
-            toast: true
-        });
+        if (type === 'success') foSuccess('Success', msg);
+        else if (type === 'error') foError('Error', msg);
+        else if (type === 'warning') foWarning('Warning', msg);
+        else foAlert(msg);
     }
     let passwordWindow;
 

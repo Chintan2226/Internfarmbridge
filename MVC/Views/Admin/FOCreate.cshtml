@@ -186,18 +186,43 @@ $(document).ready(function () {
                     .html('<span class="k-icon k-i-user-add"></span> Create Account &amp; Send Credentials');
 
                 if (res.success) {
-                    kendo.alert(res.message).bind("close", function () {
-                        @* window.location.href = "/Admin/FO"; *@
+                    Swal.fire({
+                        icon: 'success',
+                        iconColor: '#34d399',
+                        title: 'Account Created',
+                        text: res.message,
+                        background: 'linear-gradient(135deg, #052e16 0%, #064e3b 100%)',
+                        color: '#f1f5f9',
+                        confirmButtonColor: '#059669',
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false
                     });
                 } else {
-                    kendo.alert(res.message);
+                    Swal.fire({
+                        icon: 'warning',
+                        iconColor: '#fbbf24',
+                        title: 'Notice',
+                        text: res.message,
+                        background: 'linear-gradient(135deg, #1c1200 0%, #3d2800 100%)',
+                        color: '#f1f5f9',
+                        confirmButtonColor: '#d97706'
+                    });
                 }
             },
 
             error: function () {
                 $btn.prop("disabled", false)
                     .html('<span class="k-icon k-i-user-add"></span> Create Account &amp; Send Credentials');
-                kendo.alert("Something went wrong. Please try again.");
+                Swal.fire({
+                    icon: 'error',
+                    iconColor: '#f87171',
+                    title: 'Request Failed',
+                    text: 'Something went wrong. Please try again.',
+                    background: 'linear-gradient(135deg, #2d0a0a 0%, #450a0a 100%)',
+                    color: '#f1f5f9',
+                    confirmButtonColor: '#dc2626'
+                });
             }
         });
     });

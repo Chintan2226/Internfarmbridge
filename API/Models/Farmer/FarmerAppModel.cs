@@ -97,6 +97,7 @@ namespace API.Models.FarmerApp
         public string UtrReference { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
     }
 
     // --- 5. DROPDOWN & CHART MODELS ---
@@ -151,21 +152,27 @@ namespace API.Models.FarmerApp
     // --- 8. PROFILE & BANK MODELS ---
     public class vm_FarmerProfileResponse
     {
+        // t_farmer_profiles fields
         public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;       // from t_users
         public string Phone { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
         public string District { get; set; } = string.Empty;
-        public string PrimaryCrop { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;         // c_profile_image_url (t_users)
 
-        public string BankName { get; set; } = string.Empty;
-        public string AccountHolderName { get; set; } = string.Empty;
-        public string AccountNumber { get; set; } = string.Empty;
-        public string IfscCode { get; set; } = string.Empty;
+        // t_bank_accounts fields
+        public string BankName { get; set; } = string.Empty;          // c_bank_name
+        public string BranchName { get; set; } = string.Empty;        // c_branch_name
+        public string AccountHolderName { get; set; } = string.Empty; // c_account_holder_name
+        public string AccountNumber { get; set; } = string.Empty;     // c_account_number
+        public string IfscCode { get; set; } = string.Empty;          // c_ifsc_code
+        public string UpiId { get; set; } = string.Empty;             // c_upi_id
+        public string AccountType { get; set; } = string.Empty;       // c_account_type (savings/current)
     }
 
-    public class vm_UpdateProfileRequest : vm_FarmerProfileResponse 
-    { 
-        public int FarmerId { get; set; } 
+    public class vm_UpdateProfileRequest : vm_FarmerProfileResponse
+    {
+        public int FarmerId { get; set; }
     }
 }

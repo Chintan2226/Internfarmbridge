@@ -1,8 +1,8 @@
-﻿/* ========== ORDERS PAGE ENHANCED STYLING ========== */
+/* ========== ORDERS PAGE ENHANCED STYLING ========== */
     
     /* Page Header */
     .orders-page-title {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 32px;
         font-weight: 700;
         color: var(--text-primary, #0a2108);
@@ -77,7 +77,7 @@
         padding: 6px 14px;
         border-radius: 10px;
         border: 1px solid var(--green-100, #d4f0d0);
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .order-status {
@@ -140,7 +140,7 @@
         font-size: 22px;
         font-weight: 800;
         color: #1b5e19;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .order-date {
@@ -168,7 +168,7 @@
         align-items: center;
         gap: 8px;
         text-decoration: none;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         min-width: 100px;
         justify-content: center;
     }
@@ -219,7 +219,7 @@
     .orders-empty h3 {
         color: #1b5e19;
         margin-bottom: 10px;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 24px;
     }
 
@@ -328,7 +328,7 @@
     .modal-box h4 {
         color: #1b5e19;
         margin-bottom: 12px;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 22px;
     }
 
@@ -345,7 +345,7 @@
         border-radius: 12px;
         margin-top: 12px;
         resize: none;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 13px;
         transition: all 0.3s ease;
     }
@@ -371,7 +371,7 @@
         font-weight: 700;
         font-size: 13px;
         transition: all 0.3s ease;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .modal-btn-secondary {

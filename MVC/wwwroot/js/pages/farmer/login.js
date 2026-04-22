@@ -1,7 +1,7 @@
 // FarmBridge — Farmer Auth · Register (Vanilla JS + Tailwind)
 // Location: wwwroot/js/pages/farmer/register.js
 
-// ── Eye toggles ──────────────────────────────────────────────
+// Eye toggles
 window.togglePassword = function(inputId, iconId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(iconId);
@@ -14,7 +14,7 @@ window.togglePassword = function(inputId, iconId) {
     }
 }
 
-// ── Password Strength ────────────────────────────────────────
+// Password Strength
 document.addEventListener('DOMContentLoaded', function() {
     const pwdInput = document.getElementById("password");
     if(!pwdInput) return;
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ── Form Submission & Validation ──────────────────────────────
+// Form Submission & Validation
 window.handleRegister = function(e) {
     if (e) e.preventDefault();
 

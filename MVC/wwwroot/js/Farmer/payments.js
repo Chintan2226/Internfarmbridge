@@ -71,18 +71,29 @@ $(document).ready(function () {
 
         success: function (response) {
 
-            /* Lifetime earnings KPI */
+            /* Lifetime earnings & Pending KPI */
 
-            var total = 0;
+            var totalEarned = 0;
+            var totalPending = 0;
 
             (response.data || []).forEach(function (x) {
-                total += x.amount;
+                var amt = x.amount || 0;
+                if (x.status === "success") {
+                    totalEarned += amt;
+                } else {
+                    // advance_paid
+                    totalEarned += Math.round(amt * 0.3);
+                    totalPending += (amt - Math.round(amt * 0.3));
+                }
             });
 
             $("#kpiLifetimeEarned").text(
-                "₹" + total.toLocaleString("en-IN")
+                "₹" + totalEarned.toLocaleString("en-IN")
             );
-
+            
+            $("#kpiPendingPay").text(
+                "₹" + totalPending.toLocaleString("en-IN")
+            );
 
             /* Map rows */
 
@@ -94,9 +105,11 @@ $(document).ready(function () {
 
                     CropType: item.cropName,
 
+                    ImageUrl: item.imageUrl || "/images/placeholder.png",
+
                     Amount: item.amount,
 
-                    PayMode: item.paymentMode || "Bank Transfer",
+                    PayMode: item.paymentMode ? item.paymentMode.split('_').map(function(word) { return word.charAt(0).toUpperCase() + word.slice(1); }).join(' ') : "Bank Transfer",
 
                     Status: item.status
                 };
@@ -121,39 +134,38 @@ $(document).ready(function () {
 
                     {
                         field: "OrderRef",
-                        title: "UTR Ref",
-                        width: 145,
-                        template:
-                            "<span class='order-chip'>#:OrderRef#</span>"
+                        title: "Reference",
+                        width: 240,
+                        template: "<div class='order-chip'><i class='fi fi-rr-hashtag' style='color:\\#94a3b8;'></i>#:OrderRef#</div>",
+                        attributes: { "data-i18n-header": "reference" }
                     },
 
                     {
                         field: "CropType",
-                        title: "Crop Listing",
-                        width: 210,
-                        template:
-                            "<div style='font-weight:700; color:rgb(21,128,61); font-size:13px;'>#:CropType#</div>"
+                        title: "Crop Request",
+                        width: 180,
+                        template: 
+                            "<div class='crop-name'>" +
+                            "<div class='crop-image-wrapper'><img src='#:ImageUrl#' class='crop-image' onerror=\"this.src='/images/placeholder.png'\" /></div>" +
+                            "#:CropType#" +
+                            "</div>",
+                        attributes: { "data-i18n-header": "crop_request" }
                     },
 
                     {
                         field: "Amount",
-                        title: "Agreement Value",
-                        width: 160,
+                        title: "Contract Value",
+                        width: 190,
 
                         template:
-                            "<div>" +
-                            "<strong style='font-size:16px; color:rgb(15,23,42); font-weight:800;'>" +
-                            "₹#=kendo.toString(Amount, 'n0')#" +
-                            "</strong>" +
-                            "<div style='font-size:11px; color:rgb(100,116,139); font-weight:600;'>" +
-                            "via #:PayMode#" +
-                            "</div>" +
-                            "</div>"
+                            "<div class='amount-val'>₹#=kendo.toString(Amount, 'n0')#</div>" +
+                            "<div class='amount-sub'><i class='fi fi-rr-bank'></i> #:PayMode#</div>",
+                        attributes: { "data-i18n-header": "contract_value" }
                     },
 
                     {
-                        title: "Payment Progress",
-                        width: 380,
+                        title: "Payment Timeline",
+                        width: 440,
                         template: function (d) {
                             var amt = d.Amount || 0;
                             var advance = Math.round(amt * 0.3);
@@ -167,30 +179,30 @@ $(document).ready(function () {
                             var line2Class = isSuccess ? "settled" : "";
                             var step3Class = isSuccess ? "settled" : "";
                             
-                            var color1 = "#059669";
-                            var color2 = "#059669";
-                            var color3 = isSuccess ? "#0d9488" : "#94a3b8";
+                            var color1 = "#047857"; // Deep Emerald
+                            var color2 = "#d97706"; // Rich Gold
+                            var color3 = isSuccess ? "#047857" : "#94a3b8";
 
-                            return "<div style='padding: 5px 0;'>" +
-                                       "<div class='pay-tracker' style='padding: 0 10px;'>" +
+                            return "<div class='tracker-container'>" +
+                                       "<div class='pay-tracker'>" +
                                            "<div class='tracker-step initiated'></div>" +
                                            "<div class='tracker-line " + line1Class + "'></div>" +
                                            "<div class='tracker-step " + step2Class + "'></div>" +
                                            "<div class='tracker-line " + line2Class + "'></div>" +
                                            "<div class='tracker-step " + step3Class + "'></div>" +
                                        "</div>" +
-                                       "<div class='tracker-label' style='margin-top: 8px;'>" +
-                                           "<div style='text-align: left; color: " + color1 + "; width:33%;'>" +
-                                              "<span style='display:block; font-size:9px; text-transform:uppercase; opacity:0.8;'>Initialized</span>" +
-                                              "<span style='font-size:11px;'>₹" + kendo.toString(amt, 'n0') + "</span>" +
+                                       "<div class='tracker-label'>" +
+                                           "<div class='t-lbl-col' style='color: " + color1 + ";'>" +
+                                              "<span class='t-stage'>Initiated</span>" +
+                                              "<span class='t-amt'>₹" + kendo.toString(amt, 'n0') + "</span>" +
                                            "</div>" +
-                                           "<div style='text-align: center; color: " + color2 + "; width:33%;'>" +
-                                              "<span style='display:block; font-size:9px; text-transform:uppercase; opacity:0.8;'>30% Advance</span>" +
-                                              "<span style='font-size:11px;'>₹" + kendo.toString(advance, 'n0') + "</span>" +
+                                           "<div class='t-lbl-col' style='color: " + color2 + ";'>" +
+                                              "<span class='t-stage'>30% Advance</span>" +
+                                              "<span class='t-amt'>₹" + kendo.toString(advance, 'n0') + "</span>" +
                                            "</div>" +
-                                           "<div style='text-align: right; color: " + color3 + "; width:33%;'>" +
-                                              "<span style='display:block; font-size:9px; text-transform:uppercase; opacity:0.8;'>70% Balance</span>" +
-                                              "<span style='font-size:11px;'>₹" + kendo.toString(finalPay, 'n0') + "</span>" +
+                                           "<div class='t-lbl-col' style='color: " + color3 + ";'>" +
+                                              "<span class='t-stage'>70% Balance</span>" +
+                                              "<span class='t-amt'>₹" + kendo.toString(finalPay, 'n0') + "</span>" +
                                            "</div>" +
                                        "</div>" +
                                    "</div>";

@@ -59,17 +59,13 @@ namespace MVC.Controllers
             }
         }
  
-        // ─────────────────────────────────────────
         // GET /Farmer/Register
-        // ─────────────────────────────────────────
         public IActionResult Register()
         {
             return View();
         }
  
-        // ─────────────────────────────────────────
         // POST /Farmer/Register
-        // ─────────────────────────────────────────
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] vm_FarmerRegister model)
         {
@@ -132,9 +128,7 @@ namespace MVC.Controllers
             }
         }
  
-        // ─────────────────────────────────────────
         // GET /Farmer/Login
-        // ─────────────────────────────────────────
          [HttpGet]
         public IActionResult Login()
         {
@@ -324,9 +318,7 @@ namespace MVC.Controllers
             return View();
         }
  
-        // ─────────────────────────────────────────
         // POST /Farmer/Login
-        // ─────────────────────────────────────────
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] vm_FarmerLogin model)
         {
@@ -390,9 +382,7 @@ namespace MVC.Controllers
             }
         }
  
-        // ─────────────────────────────────────────
         // GET /Farmer/ForgotPassword
-        // ─────────────────────────────────────────
         public IActionResult ForgotPassword()
         {
             return View();

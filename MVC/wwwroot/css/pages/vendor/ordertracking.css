@@ -1,11 +1,11 @@
-﻿/* ========== ORDER TRACKING PAGE ENHANCED STYLING ========== */
+/* ========== ORDER TRACKING PAGE ENHANCED STYLING ========== */
     
     .tracking-header {
         margin-bottom: 28px;
     }
 
     .tracking-title {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 32px;
         font-weight: 700;
         color: #0a2108;
@@ -43,7 +43,7 @@
     }
 
     .order-info-header h4 {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 24px;
         font-weight: 700;
         color: #1b5e19;
@@ -86,7 +86,7 @@
         font-weight: 700;
         color: #1b5e19;
         font-size: 18px;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     /* Timeline */
@@ -101,7 +101,7 @@
     }
 
     .timeline-title {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 20px;
         font-weight: 700;
         color: #1b5e19;
@@ -206,7 +206,7 @@
     }
 
     .items-card h5 {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 20px;
         font-weight: 700;
         color: #1b5e19;
@@ -261,14 +261,14 @@
         font-size: 16px;
         font-weight: 700;
         color: #1b5e19;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .total-row span:last-child {
         font-size: 26px;
         font-weight: 800;
         color: #2d7a27;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     /* Action Button */
@@ -291,7 +291,7 @@
         transition: all 0.3s ease;
         border: none;
         cursor: pointer;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .back-btn:hover {
@@ -317,7 +317,7 @@
     .tracking-error h4 {
         color: #1b5e19;
         margin-bottom: 12px;
-        font-family: 'Playfair Display', serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 24px;
     }
 

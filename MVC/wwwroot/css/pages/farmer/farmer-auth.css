@@ -4,7 +4,7 @@
    Redesigned for Premium Aesthetics & Proper Alignment
    ========================================================== */
 
-/* ── Tokens & Base ── */
+/* Tokens & Base */
 :root {
     /* Primary Project Palette */
     --fa-green-950: #0a2108;
@@ -183,7 +183,7 @@ a {
     line-height: 1.5;
 }
 
-/* ── Form Controls ── */
+/* Form Controls */
 .fa-field {
     margin-bottom: 1.4rem;
 }
@@ -270,7 +270,7 @@ a {
     transform: translateY(-50%) scale(1.1);
 }
 
-/* ── Links ── */
+/* Links */
 .fa-forgot-row {
     text-align: right;
     margin-top: -0.5rem;
@@ -288,7 +288,7 @@ a {
     text-decoration: underline;
 }
 
-/* ── Submit Button ── */
+/* Submit Button */
 .fa-btn-submit {
     width: 100%;
     height: 54px;
@@ -325,7 +325,7 @@ a {
     transform: none;
 }
 
-/* ── Footer Links ── */
+/* Footer Links */
 .fa-card-footer {
     margin-top: 1.8rem;
     padding-top: 1.5rem;
@@ -359,7 +359,7 @@ a {
     color: var(--fa-green-600);
 }
 
-/* ── Kendo UI Overrides (If Used) ── */
+/* Kendo UI Overrides (If Used) */
 .k-textbox, .k-input {
     width: 100% !important;
     border-radius: var(--r-md) !important;
@@ -372,7 +372,7 @@ a {
     height: 52px !important;
 }
 
-/* ── Spinner (Static) ── */
+/* Spinner (Static) */
 .fa-spinner {
     width: 18px;
     height: 18px;
@@ -381,7 +381,7 @@ a {
     border-radius: 50%;
 }
 
-/* ── Toast Notifications ── */
+/* Toast Notifications */
 .fa-notification {
     display: none;
     position: fixed;
@@ -408,7 +408,7 @@ a {
     color: #15803d;
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 1024px) {
     .fa-banner {
         flex: 1;

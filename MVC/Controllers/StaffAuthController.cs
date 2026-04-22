@@ -10,7 +10,6 @@ using Newtonsoft.Json;
 
 namespace MVC.Controllers
 {
-    // [Route("[controller]")]
     public class StaffAuthController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -22,11 +21,11 @@ namespace MVC.Controllers
             _configuration = configuration;
         }
 
-        // ── GET /StaffAuth/Login ──────────────────────────────────────────
+        // Login Page
         [HttpGet]
         public IActionResult Login() => View();
 
-        // ── POST /StaffAuth/Login ─────────────────────────────────────────
+        // Login Action
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] vm_StaffLogin model)
         {
@@ -44,7 +43,6 @@ namespace MVC.Controllers
                 var apiBaseUrl = _configuration["ApiSettings:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:5020";
                 var endpoint = $"{apiBaseUrl}/api/StaffAuth/login";
 
-                // ExpectedRole is NOT sent — the API resolves role from t_users.c_role automatically.
                 var payload = new
                 {
                     Email = model.Email.Trim().ToLower(),
@@ -52,13 +50,14 @@ namespace MVC.Controllers
                 };
 
                 var content = new StringContent(
-    JsonConvert.SerializeObject(payload,
-    new JsonSerializerSettings
-    {
-        ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver()
-    }),
-    Encoding.UTF8,
-    "application/json");
+                    JsonConvert.SerializeObject(payload, new JsonSerializerSettings
+                    {
+                        ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver()
+                    }),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
                 var response = await _httpClient.PostAsync(endpoint, content);
                 var body = await response.Content.ReadAsStringAsync();
 
@@ -66,7 +65,7 @@ namespace MVC.Controllers
                 {
                     dynamic? api = JsonConvert.DeserializeObject(body);
                     string token = api?.token ?? "";
-                    string role = api?.role ?? "";   // role comes from DB via JWT
+                    string role = api?.role ?? "";
                     string fullName = api?.fullName ?? "";
 
                     return Json(new
@@ -93,12 +92,12 @@ namespace MVC.Controllers
             }
             catch (Exception ex)
             {
-                // Log ex in production
+                // Log exception in production
                 return Json(new { success = false, message = "An unexpected error occurred. Please try again." });
             }
         }
 
-        // ── GET /StaffAuth/ForgotPassword ─────────────────────────────────
+        // Forgot Password
         [HttpGet]
         public IActionResult ForgotPassword(string? email)
         {
@@ -113,9 +112,6 @@ namespace MVC.Controllers
         }
     }
 
-    // ── View Model ────────────────────────────────────────────────────────
-    // ExpectedRole removed — the server auto-detects role from t_users.c_role.
-    // The login form only needs email + password.
     public class vm_StaffLogin
     {
         public string Email { get; set; } = string.Empty;
