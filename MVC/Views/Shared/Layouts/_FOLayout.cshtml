@@ -1,17 +1,11 @@
 @{
     Layout = null;
     var title = (ViewData["Title"] ?? "Dashboard").ToString();
-    /* ── Detect current language from culture cookie ── */
-    var currentLang = "en";
-    var cultureCookie = Context.Request.Cookies[".AspNetCore.Culture"];
-    if (!string.IsNullOrEmpty(cultureCookie)) {
-        var match = System.Text.RegularExpressions.Regex.Match(cultureCookie, @"c=(\w+)");
-        if (match.Success) currentLang = match.Groups[1].Value;
-    }
 }
 <!DOCTYPE html>
-<html lang="@currentLang">
+<html lang="en">
 <head>
+    <link rel="icon" type="image/png" href="~/Logo/Logo_Without_Bg.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@title — FarmBridge FO</title>
@@ -61,17 +55,6 @@
                 <h1 class="fo-page-title" id="foPageTitle">@title</h1>
             </div>
             <div class="fo-topbar-right">
-                <!-- Language Switcher -->
-                <div class="fb-lang-switcher">
-                    <button class="fo-action-btn fb-lang-btn" onclick="toggleLangDropdown(event)" aria-label="Language">
-                        <i class="fi fi-rr-globe"></i>
-                    </button>
-                    <div class="fb-lang-dropdown">
-                        <button class="fb-lang-option" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
-                        <button class="fb-lang-option" data-lang="hi" onclick="switchLang('hi')">🇮🇳 हिंदी</button>
-                        <button class="fb-lang-option" data-lang="gu" onclick="switchLang('gu')">🇮🇳 ગુજરાતી</button>
-                    </div>
-                </div>
                 <button class="fo-action-btn" id="foBellBtn" onclick="toggleFoNotif(event)" aria-label="Notifications">
                     <i class="fi fi-rr-bell"></i>
                     <span class="fo-dot" id="foBellDot" hidden></span>
@@ -134,10 +117,8 @@
     <script>
         window.USER_ROLE    = 'FieldOfficer';
         window.API_BASE     = 'http://localhost:5020/api/FieldOfficer';
-        window.CURRENT_LANG = '@currentLang';
     </script>
 
-    <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
     <script src="~/js/layouts/fo_layout.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)

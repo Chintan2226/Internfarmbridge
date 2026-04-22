@@ -1,4 +1,4 @@
-﻿@{
+@{
     Layout = "_FieldOfficerLayout";
     ViewData["Title"] = "Payment History";
 }
@@ -213,13 +213,7 @@
             },
             error: function (xhr) {
                 if (handleFoUnauthorized(xhr)) return;
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Load Failed',
-                    text: 'Failed to load payment details. Please try again.',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#28a745'
-                });
+                foError('Load Failed', 'Failed to load payment details. Please try again.');
             }
         });
     }

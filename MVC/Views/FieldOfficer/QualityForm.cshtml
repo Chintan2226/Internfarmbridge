@@ -294,13 +294,7 @@ function submitInspection() {
 
     // Validation
     if (!moisture || !foreign || !grade || !accepted || !rejected || !weightChk) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Missing Fields',
-            text: 'Please fill all required fields (Price is optional - will use farmer asking price if not provided).',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#28a745'
-        });
+        foWarning('Missing Fields', 'Please fill all required fields (Price is optional - will use farmer asking price if not provided).');
         return;
     }
 
@@ -345,13 +339,7 @@ function submitInspection() {
         error: function (xhr) {
             if (handleFoUnauthorized(xhr)) return;
             console.log("FULL ERROR:", xhr.responseText);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Form submission failed. Check console for details.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745'
-            });
+            foError('Submission Failed', 'Form submission failed. Check console for details.');
         }
     });
 }

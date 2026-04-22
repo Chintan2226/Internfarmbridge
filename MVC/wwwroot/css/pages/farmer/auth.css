@@ -15,13 +15,13 @@ body {
     min-height: 100vh;
 }
 
-/* ── Layout ──────────────────────────────────────── */
+/* Layout */
 .container-auth {
     display: flex;
     min-height: 100vh;
 }
 
-/* ── Left Banner ─────────────────────────────────── */
+/* Left Banner */
 .auth-banner {
     width: 42%;
     background: linear-gradient(145deg, #2d6a2d 0%, #3a8a3a 40%, #4caf50 100%);
@@ -102,7 +102,7 @@ body {
     backdrop-filter: blur(4px);
 }
 
-/* ── Right Form Panel ────────────────────────────── */
+/* Right Form Panel */
 .form-container {
     flex: 1;
     display: flex;
@@ -136,7 +136,7 @@ body {
     margin-bottom: 1.6rem;
 }
 
-/* ── Kendo Form Overrides ────────────────────────── */
+/* Kendo Form Overrides */
 .k-form {
     padding: 0 !important;
 }
@@ -172,7 +172,7 @@ body {
     font-size: 0.78rem;
 }
 
-/* ── Buttons ─────────────────────────────────────── */
+/* Buttons */
 .k-button-solid-success {
     background: linear-gradient(135deg, #2d6a2d, #4caf50) !important;
     border-color: transparent !important;
@@ -194,7 +194,7 @@ body {
     margin-top: 0.5rem;
 }
 
-/* ── Forgot Password Link ────────────────────────── */
+/* Forgot Password Link */
 .forgot-password {
     text-align: right;
     margin-top: -0.5rem;
@@ -211,7 +211,7 @@ body {
     text-decoration: underline;
 }
 
-/* ── Form Footer ─────────────────────────────────── */
+/* Form Footer */
 .form-footer {
     margin-top: 1.5rem;
     text-align: center;
@@ -241,7 +241,7 @@ body {
     font-weight: 400;
 }
 
-/* ── Responsive ──────────────────────────────────── */
+/* Responsive */
 @media (max-width: 768px) {
     .container-auth {
         flex-direction: column;

@@ -57,7 +57,7 @@ function closeCropWindow() {
 
 function saveCrop(status) {
     // Implementation for calling backend API
-    kendo.alert(`Saving listing to backend with status: ${status}...`);
+    fbAlert(`Saving listing with status: ${status}...`, "Saving");
     closeCropWindow();
 }
 
@@ -67,13 +67,14 @@ function editCrop(id) {
 }
 
 function deleteCrop(id) {
-    kendo.confirm("Are you sure you want to delete this listing?").then(function () {
+    fbConfirm("Delete Listing", "Are you sure you want to delete this listing? This cannot be undone.", "Yes, Delete").then(function (confirmed) {
+        if (!confirmed) return;
         // Implementation for deleting via backend API
-        kendo.alert("Listing deleted request sent.");
+        fbSuccess("Deleted", "Listing has been removed.");
     });
 }
 
 function viewHistory(id) {
     // Fetch status history from backend
-    kendo.alert("Loading history...");
+    fbAlert("Loading history for this listing...", "History");
 }

@@ -73,7 +73,7 @@ ul {
     list-style: none;
 }
 
-/* ── Sidebar ── */
+/* Sidebar */
 .fo-sidebar {
     position: fixed;
     top: 16px;
@@ -263,7 +263,7 @@ ul {
     background: rgba(220, 38, 38, 0.1) !important;
 }
 
-/* ── Main ── */
+/* Main */
 .fo-main {
     margin-left: calc(var(--fo-sidebar-w) + 32px);
     min-height: 100dvh;
@@ -276,7 +276,7 @@ ul {
     margin-left: calc(var(--fo-sidebar-wx) + 32px);
 }
 
-/* ── Topbar ── */
+/* Topbar */
 .fo-topbar {
     position: sticky;
     top: 10px;
@@ -415,13 +415,13 @@ ul {
     transform: scale(1.07);
 }
 
-/* ── Content ── */
+/* Content */
 .fo-content {
     flex: 1;
     padding: 24px;
 }
 
-/* ── Notification drawer ── */
+/* Notification drawer */
 .fo-notif {
     position: fixed;
     top: calc(var(--fo-topbar-h) + 8px);
@@ -518,7 +518,7 @@ ul {
     border-left: 3px solid var(--fo-blue);
 }
 
-/* ── Toast ── */
+/* Toast */
 .fo-toasts {
     position: fixed;
     bottom: calc(var(--fo-bottom-h)+12px);
@@ -551,7 +551,7 @@ ul {
     border-left: 4px solid var(--fo-blue);
 }
 
-/* ── Mobile overlay & drawer ── */
+/* Mobile overlay & drawer */
 .fo-overlay {
     display: none;
     position: fixed;
@@ -691,7 +691,7 @@ ul {
     color: #b91c1c;
 }
 
-/* ── Bottom nav ── */
+/* Bottom nav */
 .fo-bottom-nav {
     display: none;
     position: fixed;
@@ -732,7 +732,7 @@ ul {
     color: var(--fo-blue);
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 768px) {
     .fo-menu-btn {
         display: inline-flex !important;
@@ -811,7 +811,7 @@ ul {
 /* From original fieldofficer.css lines 307+                       */
 /* ════════════════════════════════════════════════════════════════ */
 
-/* ── Farmer Request Cards ── */
+/* Farmer Request Cards */
 .farmer-request-card { overflow: visible !important; padding-bottom: 16px; }
 
 .request-card-row {
@@ -1052,7 +1052,7 @@ ul {
     background: transparent;
 }
 
-/* ── Request Management — Page & Card ── */
+/* Request Management — Page & Card */
 .qc-wrapper { padding: clamp(10px, 2vw, 24px); width: 100%; }
 
 .card {
@@ -1069,7 +1069,7 @@ ul {
 }
 .card-header h3 { font-size: clamp(18px, 4vw, 22px); font-weight: 600; color: #1b5e20; }
 
-/* ── Badges ── */
+/* Badges */
 .badge-group { display: flex; gap: 8px; }
 
 .hdr-badge {
@@ -1079,7 +1079,7 @@ ul {
 .hdr-pending  { background: #fff3e0; color: #e65c00; }
 .hdr-complete { background: #e8f5e9; color: #2e7d32; }
 
-/* ── Status Pills ── */
+/* Status Pills */
 .status-pill {
     padding: 4px 12px; border-radius: 20px;
     font-size: 12px; font-weight: 500;
@@ -1090,7 +1090,7 @@ ul {
 .pill-approved  { background: #f3e5f5; color: #6a1b9a; }
 .pill-completed { background: #e8f5e9; color: #2e7d32; }
 
-/* ── Shared Button Styles ── */
+/* Shared Button Styles */
 .btn-group {
     display: flex;
     gap: 8px;
@@ -1119,7 +1119,7 @@ ul {
 .btn-view:hover                       { background: #f0f7f0; }
 .request-card-actions .btn-view:hover { background: var(--green-mist); }
 
-/* ── Kendo Grid (#qcGrid) ── */
+/* Kendo Grid (#qcGrid) */
 .k-grid { border: none !important; background: transparent !important; width: 100% !important;}
 .k-grid-header { background: #f8faf9; border-radius: 8px 8px 0 0; }
 .k-grid-header th {
@@ -1219,7 +1219,7 @@ ul {
     color: white !important;
 }
 
-/* ── Kendo Pickers ── */
+/* Kendo Pickers */
 .k-datepicker .k-input-inner,
 .k-timepicker .k-input-inner {
     cursor: pointer;
@@ -1288,7 +1288,7 @@ ul {
     color: #2e7d32 !important;
 }
 
-/* ── Profile Page ── */
+/* Profile Page */
 .profile-page .profile-image-wrapper {
     width: 170px;
     height: 170px;
@@ -1487,7 +1487,7 @@ ul {
     color: gray;
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (min-width: 769px) {
     #main-content { padding: 24px; }
 }
@@ -1601,7 +1601,7 @@ ul {
     .stat-card { padding: 14px; display: flex; flex-direction: column; align-items: center; text-align: center; }
 }
 
-/* ── Profile Dropdown ── */
+/* Profile Dropdown */
 .fo-profile-dropdown {
     position: relative;
     display: flex;
@@ -1651,7 +1651,7 @@ ul {
     color: #d32f2f;
 }
 
-/* ── Notification Badge ── */
+/* Notification Badge */
 .notif-badge {
     position: absolute;
     top: 4px !important;
@@ -2344,7 +2344,7 @@ ul {
     }
 }
 
-/* ────  Reschedule Modal — Kendo Pickers  ──── */
+/*  */
 
 .reschedule-modal-body {
     padding: 28px;
@@ -2492,7 +2492,7 @@ ul {
     }
 }
 
-/* ── Balanced Theme Overrides (Field Officer module) ── */
+/* Balanced Theme Overrides (Field Officer module) */
 /* Keep blue as primary, avoid over-coloring full UI */
 .card-header h3,
 .ph-title-section h2,

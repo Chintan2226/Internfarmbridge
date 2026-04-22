@@ -5,6 +5,7 @@
 <!DOCTYPE html>
 <html class="h-full" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="~/Logo/Logo_Without_Bg.png" />
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>@ViewData["Title"]</title>
@@ -155,7 +156,7 @@
     </main>
 
     <script>
-        // ── Eye toggles â”€â”€
+        // Eye toggles
         window.togglePassword = function(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -168,7 +169,7 @@
             }
         };
 
-        // ── Universal Toast â”€â”€
+        // Universal Toast
         window.showToast = function(title, message, isError = false) {
             const container = document.getElementById('notificationArea');
             if (!container) return;
@@ -196,7 +197,7 @@
             }, 4500);
         };
 
-        // ── Password Strength â”€â”€
+        // Password Strength
         document.addEventListener('DOMContentLoaded', function() {
             const pwdInput = document.getElementById("password");
             if(!pwdInput) return;
@@ -226,7 +227,7 @@
             });
         });
 
-        // ── Form Submission & Validation â”€â”€
+        // Form Submission & Validation
         window.handleRegister = function(e) {
             if (e) e.preventDefault();
 

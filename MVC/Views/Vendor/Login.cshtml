@@ -6,6 +6,7 @@
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="~/Logo/Logo_Without_Bg.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>@ViewData["Title"]</title>
@@ -176,7 +177,7 @@
     <script>
         const API_BASE = "http://localhost:5020";
 
-        // ── Eye toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Eye toggles
         window.togglePassword = function(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -189,7 +190,7 @@
             }
         };
 
-        // ── Toast Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Toast Notifications
         window.showToast = function(title, message, isError = false) {
             const container = document.getElementById('notificationArea');
             if (!container) return;
@@ -217,7 +218,7 @@
             }, 3500);
         };
 
-        // ── Vendor Login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Vendor Login
         window.handleVendorLogin = async function() {
             const emailOrPhone = document.getElementById('emailOrPhone').value.trim();
             const password = document.getElementById('password').value;
@@ -256,7 +257,7 @@
             }
         };
 
-        // ── Vendor Forgot Password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Vendor Forgot Password
         window.handleVendorForgot = async function() {
             const email = document.getElementById('forgotEmail').value.trim();
             const btn = document.getElementById('forgotBtn');

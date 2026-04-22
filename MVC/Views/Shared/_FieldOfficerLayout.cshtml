@@ -1,4 +1,4 @@
-﻿@{
+@{
     Layout = null;
 }
 
@@ -128,10 +128,13 @@
         window.showFoLoadFailedAlert = window.showFoLoadFailedAlert || function (entityName) {
             Swal.fire({
                 icon: 'error',
+                iconColor: '#f87171',
                 title: 'Load Failed',
                 text: 'Failed to load ' + (entityName || 'data') + '. Please try again.',
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745'
+                background: 'linear-gradient(135deg, #2d0a0a 0%, #450a0a 100%)',
+                color: '#f1f5f9',
+                confirmButtonColor: '#dc2626'
             });
         };
         

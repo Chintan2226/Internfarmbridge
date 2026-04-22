@@ -1,4 +1,4 @@
-﻿@{
+@{
     Layout = "_FieldOfficerLayout";
     ViewData["Title"] = "Inspection History";
 }
@@ -46,13 +46,7 @@
 
             window.downloadReport = function (id) {
                 if (!id) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Invalid inspection ID',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#28a745'
-                    });
+                    foError('Invalid ID', 'Invalid inspection ID');
                     return;
                 }
                 foOpenAuthorizedWindow("/inspection-report/" + id);

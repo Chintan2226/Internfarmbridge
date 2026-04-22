@@ -36,7 +36,7 @@ namespace API.BAL
 
                 // 1. Check if user already exists
                 var checkCmd = new NpgsqlCommand(
-                    "SELECT c_id, c_role FROM t_users WHERE c_email = @email",
+                    "SELECT c_id, c_role, c_profile_image_url FROM t_users WHERE c_email = @email",
                     _conn, tran);
 
                 checkCmd.Parameters.AddWithValue("email", dto.Email);
@@ -50,13 +50,14 @@ namespace API.BAL
                     // 2. Insert User
                     var insertCmd = new NpgsqlCommand(@"
                 INSERT INTO t_users
-                (c_email, c_role, c_is_active, c_is_approved, c_is_first_login)
-                VALUES (@email, @role, true, true, true)
+                (c_email, c_role, c_is_active, c_is_approved, c_is_first_login, c_profile_image_url)
+                VALUES (@email, @role, true, true, true, @pic)
                 RETURNING c_id, c_role",
                         _conn, tran);
 
                     insertCmd.Parameters.AddWithValue("email", dto.Email);
                     insertCmd.Parameters.AddWithValue("role", dto.Role ?? "farmer");
+                    insertCmd.Parameters.AddWithValue("pic", dto.PictureUrl ?? (object)DBNull.Value);
 
                     using var insertReader = await insertCmd.ExecuteReaderAsync();
                     await insertReader.ReadAsync();
@@ -127,7 +128,8 @@ namespace API.BAL
                 var additionalClaims = new Dictionary<string, string>
         {
             { "login_provider", "google" },
-            { "farmer_id", farmerId.ToString() }
+            { "farmer_id", farmerId.ToString() },
+            { "profile_image_url", dto.PictureUrl ?? "" }
         };
 
                 var token = _jwtService.GenerateJwtToken(

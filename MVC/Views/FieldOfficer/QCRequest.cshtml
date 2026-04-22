@@ -54,13 +54,7 @@ $(document).ready(function () {
     }
     window.downloadReport = function (id) {
         if (!id) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Invalid inspection ID',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745'
-            });
+            foError('Invalid ID', 'Invalid inspection ID');
             return;
         }
         foOpenAuthorizedWindow(`/inspection-report/${id}`);
@@ -156,13 +150,7 @@ $(document).ready(function () {
             contentType: 'application/json',
             data: JSON.stringify({requestId: id}),
             success: function (res) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: res.message || 'Request accepted successfully',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#28a745'
-                });
+                foSuccess('Request Accepted', res.message || 'Request accepted successfully');
                 refreshQCGrid();
             },
             error: function (err) {
@@ -173,13 +161,7 @@ $(document).ready(function () {
                     err.responseText ||
                     "Something went wrong";
 
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: msg,
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#28a745'
-                });
+                foError('Error', msg);
             }
         });
     };
@@ -203,24 +185,12 @@ $(document).ready(function () {
         var end = $("#endTime").data("kendoTimePicker").value();
 
         if (!date || !start || !end) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Required Fields',
-                text: 'All fields are required',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745'
-            });
+            foWarning('Required Fields', 'All fields are required');
             return;
         }
 
         if (end <= start) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Time',
-                text: 'End time must be greater than start time',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745'
-            });
+            foWarning('Invalid Time', 'End time must be greater than start time');
             return;
         }
 
@@ -234,13 +204,7 @@ $(document).ready(function () {
                 endTime: kendo.toString(end, "HH:mm:ss")
             },
             success: function (res) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: res.message || 'Rescheduled successfully',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#28a745'
-                });
+                foSuccess('Rescheduled', res.message || 'Rescheduled successfully');
                 rescheduleWindow.close();
                 $("#qcGrid").data("kendoGrid").dataSource.read();
             },
@@ -252,13 +216,7 @@ $(document).ready(function () {
                     err.responseText ||
                     "Something went wrong";
 
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: msg,
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#28a745'
-                });
+                foError('Error', msg);
             }
         });
     };
@@ -268,34 +226,21 @@ $(document).ready(function () {
     };
 
     window.cancelRequest = function (id) {
-        Swal.fire({
-            title: 'Cancel request?',
-            text: 'The farmer will be notified by email.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, cancel',
-            cancelButtonText: 'No',
-            confirmButtonColor: '#6c757d'
-        }).then(function (r) {
-            if (!r.isConfirmed) return;
+        foConfirm('Cancel Request?', 'The farmer will be notified by email.', 'Yes, Cancel').then(function (confirmed) {
+            if (!confirmed) return;
             $.ajax({
                 url: foApiUrl('/cancel-request'),
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({requestId: id}),
                 success: function (res) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Cancelled',
-                        text: res.message || 'Request cancelled',
-                        confirmButtonColor: '#28a745'
-                    });
+                    foSuccess('Cancelled', res.message || 'Request cancelled');
                     refreshQCGrid();
                 },
                 error: function (err) {
                     if (handleFoUnauthorized(err)) return;
                     var msg = err.responseJSON?.message || err.responseText || 'Cancel failed';
-                    Swal.fire({ icon: 'error', title: 'Error', text: msg, confirmButtonColor: '#28a745' });
+                    foError('Error', msg);
                 }
             });
         });

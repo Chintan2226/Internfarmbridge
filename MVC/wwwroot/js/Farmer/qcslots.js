@@ -331,17 +331,7 @@ $(document).ready(function () {
 
             success: function (res) {
 
-                Swal.fire({
-
-                    title: "Confirmed!",
-
-                    text: res.message,
-
-                    icon: "success",
-
-                    confirmButtonColor: "#10b981"
-
-                });
+                fbSuccess("Confirmed!", res.message);
 
                 closeQCWindow();
 

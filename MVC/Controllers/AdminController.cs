@@ -53,7 +53,7 @@ namespace MVC.Controllers
             return View();
         }
 
-        // ─── API Proxy Methods (Called by JavaScript) ───
+        // API Proxy Methods (Called by JavaScript)
 
         // GET: /Admin/GetDashboardKpi
         [HttpGet]
@@ -115,7 +115,7 @@ namespace MVC.Controllers
             }
         }
 
-        // ─── Private Helper ───
+        // Private Helper
         private async Task<IActionResult> ProxyGetRequest(string url)
         {
             try
@@ -404,7 +404,7 @@ namespace MVC.Controllers
         public string State { get; set; }
     }
 
-    // ─── Result ViewModel returned from BAL ───────────────────────────────
+    // Result ViewModel returned from BAL
 
     public class CreateFOResult
     {

@@ -1,8 +1,10 @@
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<MVC.Controllers.LanguageController> Localizer
 @{
     Layout = null;
     var role = "Farmer";
     var title = (ViewData["Title"] ?? "Dashboard").ToString();
-    /* ── Detect current language from culture cookie ── */
+    // Lang cookie
     var currentLang = "en";
     var cultureCookie = Context.Request.Cookies[".AspNetCore.Culture"];
     if (!string.IsNullOrEmpty(cultureCookie)) {
@@ -13,6 +15,7 @@
 <!DOCTYPE html>
 <html lang="@currentLang">
 <head>
+    <link rel="icon" type="image/png" href="~/Logo/Logo_Without_Bg.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@title — FarmBridge</title>
@@ -35,6 +38,12 @@
 
     @RenderSection("Styles", required: false)
     <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
+    
+    <script>
+        window.fbServerTranslations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Localizer.GetAllStrings(includeParentCultures: true).ToDictionary(s => s.Name, s => s.Value)
+        ));
+    </script>
 </head>
 <body data-role="@role" data-title="@title">
 
@@ -53,15 +62,15 @@
         @{
             var path = Context.Request.Path.ToString().ToLower();
         }
-            <li><a href="/Farmer/Dashboard" class="fv-nav-link @(path.Contains("/farmer/dashboard") ? "active" : "")"><i class="fi fi-rr-apps"></i><span data-i18n="nav_dashboard">Dashboard</span></a></li>
-            <li><a href="/Farmer/Crops" class="fv-nav-link @(path.Contains("/farmer/crops") ? "active" : "")"><i class="fi fi-rr-leaf"></i><span data-i18n="nav_my_crops">My Crops</span></a></li>
-            <li><a href="/Farmer/QCSlots" class="fv-nav-link @(path.Contains("/farmer/qcslots") ? "active" : "")"><i class="fi fi-rr-calendar"></i><span data-i18n="nav_qc_slots">QC Slots</span></a></li>
-            <li><a href="/Farmer/Payments" class="fv-nav-link @(path.Contains("/farmer/payments") ? "active" : "")"><i class="fi fi-rr-credit-card"></i><span data-i18n="nav_payments">Payments</span></a></li>
-            <li><a href="/Farmer/Inquiries" class="fv-nav-link @(path.Contains("/farmer/inquiries") ? "active" : "")"><i class="fi fi-rr-envelope"></i><span data-i18n="nav_inquiries">Inquiries</span></a></li>
-            <li><a href="/Farmer/Profile" class="fv-nav-link @(path.Contains("/farmer/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span data-i18n="nav_profile">Profile</span></a></li>
+            <li><a href="/Farmer/Dashboard" title="Dashboard" class="fv-nav-link @(path.Contains("/farmer/dashboard") ? "active" : "")"><i class="fi fi-rr-apps"></i><span data-i18n="nav_dashboard">Dashboard</span></a></li>
+            <li><a href="/Farmer/Crops" title="My Crops" class="fv-nav-link @(path.Contains("/farmer/crops") ? "active" : "")"><i class="fi fi-rr-leaf"></i><span data-i18n="nav_my_crops">My Crops</span></a></li>
+            <li><a href="/Farmer/QCSlots" title="QC Slots" class="fv-nav-link @(path.Contains("/farmer/qcslots") ? "active" : "")"><i class="fi fi-rr-calendar"></i><span data-i18n="nav_qc_slots">QC Slots</span></a></li>
+            <li><a href="/Farmer/Payments" title="Payments" class="fv-nav-link @(path.Contains("/farmer/payments") ? "active" : "")"><i class="fi fi-rr-credit-card"></i><span data-i18n="nav_payments">Payments</span></a></li>
+            <li><a href="/Farmer/Inquiries" title="Inquiries" class="fv-nav-link @(path.Contains("/farmer/inquiries") ? "active" : "")"><i class="fi fi-rr-envelope"></i><span data-i18n="nav_inquiries">Inquiries</span></a></li>
+            <li><a href="/Farmer/Profile" title="Profile" class="fv-nav-link @(path.Contains("/farmer/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span data-i18n="nav_profile">Profile</span></a></li>
         </ul>
         <div class="fv-sidebar-foot">
-            <a href="javascript:void(0)" onclick="logout()" class="fv-drawer-link fv-logout-mobile">
+            <a href="javascript:void(0)" onclick="logout()" title="Logout" class="fv-drawer-link fv-logout-mobile">
                 <i class="fi fi-rr-exit"></i>
                 <span data-i18n="nav_logout">Logout</span>
             </a>
@@ -151,6 +160,13 @@
     </div>
 
     <div class="fv-toasts" id="fvToasts"></div>
+    
+    <div class="fb-loader-overlay" id="fbLoader">
+        <div class="fb-loader-box">
+            <div class="fb-loader-spinner"></div>
+            <p class="fb-loader-text" id="fbLoaderText">Processing...</p>
+        </div>
+    </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -188,13 +204,34 @@ var decoded = token ? parseJwt(token) : null;
 window.USER_ROLE = '@role';
 window.FARMER_ID = decoded ? parseInt(decoded.farmer_id || 0) : 0;
 window.FARMER_NAME = decoded && decoded.full_name ? decoded.full_name : "";
+window.PROFILE_IMAGE = decoded && decoded.profile_image_url ? decoded.profile_image_url : "";
 window.API_BASE = "http://localhost:5020/api/FarmerApp";
 window.CURRENT_LANG = '@currentLang';
 
 if (!window.FARMER_ID || window.FARMER_ID === 0) {
     window.location.href = "/Auth/Login";
 }
-console.log("Farmer ID:", window.FARMER_ID);
+
+// Global Avatar Display Logic
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarImg = document.getElementById('fvAvatarImg');
+    const avatarLetter = document.getElementById('fvAvatarLetter');
+    const fvAvatar = document.getElementById('fvAvatar');
+
+    if (window.PROFILE_IMAGE) {
+        if (avatarImg) {
+            avatarImg.src = window.PROFILE_IMAGE;
+            avatarImg.style.display = 'block';
+        }
+        if (avatarLetter) avatarLetter.style.display = 'none';
+    } else if (window.FARMER_NAME) {
+        if (avatarLetter) {
+            avatarLetter.textContent = window.FARMER_NAME.charAt(0).toUpperCase();
+            avatarLetter.style.display = 'block';
+        }
+        if (avatarImg) avatarImg.style.display = 'none';
+    }
+});
 </script>
 
 <script>
@@ -208,7 +245,7 @@ console.log("Farmer ID:", window.FARMER_ID);
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 1. Grab elements
+        // Elements
         const menuBtn = document.getElementById('fvMenuBtn');
         const drawer = document.getElementById('fvDrawer');
         const overlay = document.getElementById('fvOverlay');
@@ -217,33 +254,26 @@ console.log("Farmer ID:", window.FARMER_ID);
         const notifDrawer = document.getElementById('fvNotif');
         const notifCloseBtn = document.getElementById('fvNotifClose');
 
-        // 2. Drawer Toggle Logic
+        // Drawer
         const toggleDrawerSafe = function(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (drawer) drawer.classList.toggle('open');
             if (overlay) overlay.classList.toggle('open');
         };
 
-        // 3. Notification Toggle Logic
+        // Notif
         const toggleNotifSafe = function(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (notifDrawer) notifDrawer.classList.toggle('open');
         };
 
-        // 4. Attach safe listeners
+        // Listeners
         if (menuBtn) menuBtn.addEventListener('click', toggleDrawerSafe);
         if (overlay) overlay.addEventListener('click', toggleDrawerSafe);
         if (closeBtn) closeBtn.addEventListener('click', toggleDrawerSafe);
         
         if (notifBtn) notifBtn.addEventListener('click', toggleNotifSafe);
         if (notifCloseBtn) notifCloseBtn.addEventListener('click', toggleNotifSafe);
-
-        // 5. Update Avatar dynamically
-        const fvAvatar = document.getElementById('fvAvatar');
-        if (fvAvatar && window.FARMER_NAME) {
-            fvAvatar.textContent = window.FARMER_NAME.charAt(0).toUpperCase();
-            fvAvatar.title = window.FARMER_NAME;
-        }
     });
 </script>
 

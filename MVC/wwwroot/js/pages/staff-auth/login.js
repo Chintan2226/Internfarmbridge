@@ -1,7 +1,7 @@
 // FarmBridge — Staff Auth · Login
 // Moved from: wwwroot/js/staff-auth.js
 
-// ── Password visibility toggle ────────────────────────────
+// Password visibility toggle
 function togglePassword() {
     const input = document.getElementById('password');
     const icon  = document.getElementById('eyeIcon');
@@ -22,7 +22,7 @@ function togglePassword() {
     }
 }
 
-// ── Notification helper ────────────────────────────────────
+// Notification helper
 function showNotification(message, type) {
     const el = document.getElementById('notificationArea');
     el.textContent   = message;
@@ -31,7 +31,7 @@ function showNotification(message, type) {
     setTimeout(() => { el.style.display = 'none'; }, 4500);
 }
 
-// ── Login submit ──────────────────────────────────────────
+// Login submit
 // Role is NOT sent from the client.
 // The API reads role from t_users.c_role and encodes it in the JWT.
 function handleLogin(e) {
@@ -83,7 +83,7 @@ function handleLogin(e) {
     });
 }
 
-// ── Forgot-password link ───────────────────────────────────
+// Forgot-password link
 document.addEventListener('DOMContentLoaded', function () {
     const fpLink = document.getElementById('forgotPasswordLink');
     if (!fpLink) return;
