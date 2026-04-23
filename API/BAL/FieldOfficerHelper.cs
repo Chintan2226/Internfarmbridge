@@ -14,9 +14,11 @@ namespace API.BAL
     public class FieldOfficerHelper
     {
         private readonly NpgsqlConnection _conn;
-        public FieldOfficerHelper(NpgsqlConnection conn)
+        private readonly ElasticService _elasticService;
+        public FieldOfficerHelper(NpgsqlConnection conn, ElasticService elasticService)
         {
             _conn = conn;
+            _elasticService = elasticService;
         }
 
         public async Task<User> GetUserByEmailAsync(string email)
@@ -330,7 +332,7 @@ namespace API.BAL
                 {
                     Email = reader.IsDBNull(0) ? "" : reader.GetString(0),
                     FullName = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                    CropName = reader.IsDBNull(2) ? "" : reader.GetString(2), 
+                    CropName = reader.IsDBNull(2) ? "" : reader.GetString(2),
                     UserId = reader.GetInt32(3)
                 };
             }
@@ -530,6 +532,17 @@ namespace API.BAL
                 }
 
                 await transaction.CommitAsync();
+                // ✅ NEW CODE - Index to Elasticsearch
+                try
+                {
+                    await _elasticService.IndexQCRecordAsync(inspectionId);
+                    Console.WriteLine($"✅ QC Record {inspectionId} indexed to Elasticsearch");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ Elasticsearch indexing failed: {ex.Message}");
+                    // Don't rethrow - inspection is already saved successfully
+                }
                 return inspectionId;
             }
             catch (Exception ex)
@@ -1807,5 +1820,30 @@ namespace API.BAL
             }
             finally { await _conn.CloseAsync(); }
         }
+        // Get QC records count from database for specific FO
+        public async Task<int> GetQCRecordsCountAsync(int foId)
+        {
+            await _conn.OpenAsync();
+            try
+            {
+                var query = @"
+            SELECT COUNT(*) 
+            FROM t_quality_inspection_forms qif
+            JOIN t_procurement_requests pr ON qif.c_procurement_request_id = pr.c_id
+            WHERE pr.c_assigned_fo_id = @foId
+        ";
+
+                using var cmd = new NpgsqlCommand(query, _conn);
+                cmd.Parameters.AddWithValue("@foId", foId);
+
+                var result = await cmd.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+            finally
+            {
+                await _conn.CloseAsync();
+            }
+        }
     }
+
 }
