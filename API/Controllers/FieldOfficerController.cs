@@ -798,5 +798,95 @@ namespace API.Controllers
             var results = await _elasticService.SearchQCRecordsForMVCAsync(request);
             return Ok(results);
         }
+
+        // Add these methods inside your FieldOfficerController class (API)
+
+        [HttpGet("check-index")]
+        public async Task<IActionResult> CheckIndex([FromQuery] string index)
+        {
+            try
+            {
+                var exists = await _elasticService.CheckIndexExistsAsync(index);
+                var count = exists ? await _elasticService.GetTotalRecordsInIndexAsync(index) : 0;
+                return Ok(new
+                {
+                    index,
+                    exists,
+                    count,
+                    message = exists ? $"Index '{index}' exists with {count} records" : $"Index '{index}' does not exist"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("first-document")]
+        public async Task<IActionResult> GetFirstDocument()
+        {
+            try
+            {
+                var result = await _elasticService.GetFirstDocumentAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+
+        // ========== REINDEX & CHECK ELASTICSEARCH RECORDS ==========
+
+        [HttpGet("reindex-status")]
+        public async Task<IActionResult> GetReindexStatus()
+        {
+            try
+            {
+                var foId = await GetFieldOfficerProfileIdAsync();
+
+                // Get count from Database
+                var dbCount = await _helper.GetQCRecordsCountAsync(foId);
+
+                // Get count from Elasticsearch - Use _elasticService's client or add method
+                var elasticCount = await _elasticService.GetQCRecordsCountByFoIdAsync(foId);
+
+                return Ok(new
+                {
+                    success = true,
+                    elasticsearchCount = elasticCount,
+                    databaseCount = dbCount,
+                    isSynced = elasticCount == dbCount,
+                    message = elasticCount == dbCount
+                        ? "✅ Data is in sync"
+                        : $"⚠️ Sync needed: DB has {dbCount}, ES has {elasticCount}"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("reindex-qc")]
+        public async Task<IActionResult> ReindexQCRecords()
+        {
+            try
+            {
+                var foId = await GetFieldOfficerProfileIdAsync();
+                var result = await _elasticService.ReindexQCRecordsByFoIdAsync(foId);
+                return Ok(new
+                {
+                    success = true,
+                    message = $"Reindex completed. Indexed: {result} records",
+                    totalIndexed = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
