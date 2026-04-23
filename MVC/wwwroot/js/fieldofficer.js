@@ -217,59 +217,196 @@ function toggleFoNotif(e) {
     document.getElementById('foNotif')?.classList.toggle('open');
 }
 
+const FO_NOTIF_API_BASE = 'http://localhost:5020/api/Notification';
+
+async function getFoUnreadCount() {
+    try {
+        const response = await foFetch(`${FO_NOTIF_API_BASE}/UnreadCount`);
+        const data = await response.json();
+        if (data.success) {
+            updateFoBellBadge(data.count);
+            return data.count;
+        }
+        return 0;
+    } catch (error) {
+        return 0;
+    }
+}
+
+function updateFoBellBadge(count) {
+    const dot = document.getElementById('foBellDot');
+    if (dot) dot.hidden = count === 0;
+    
+    const badge = document.getElementById('foBellBadge');
+    if (badge) {
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    
+    const uel = document.getElementById('foUnread');
+    if (uel) uel.textContent = count;
+    
+    const ub = document.getElementById('foUnreadBadge');
+    if (ub) ub.textContent = count;
+}
+
 function loadFoNotifs() {
-    const base = window.API_BASE;
-    foFetch(base + '/GetNotifications')
+    foFetch(`${FO_NOTIF_API_BASE}/GetNotifications`)
         .then(r => r.json())
-        .then(res => { if (res?.success && res.data) { foNotifs = res.data || []; renderFoNotifs(); } })
+        .then(res => { 
+            if (res?.success && res.data) { 
+                foNotifs = res.data || []; 
+                renderFoNotifs(); 
+                const unreadCount = foNotifs.filter(n => !n.isRead).length;
+                updateFoBellBadge(unreadCount);
+            } 
+        })
         .catch(err => { console.log('Notifications load skipped'); });
 }
-function logout() {
 
-    // Remove JWT cookie
-    document.cookie =
-        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
-
-    // Clear storage (optional but recommended)
-    localStorage.clear();
-    sessionStorage.clear();
-
-    // Redirect to login
-    window.location.href = "/StaffAuth/Login";
+function foTab(tab, btn) {
+    foCurrentTab = tab;
+    document.querySelectorAll('.fo-notif-tabs button').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderFoNotifs();
 }
-function renderFoNotifs() {
-    const unread = foNotifs.filter(n => !n.isRead).length;
-    const dot = document.getElementById('foBellDot');
-    if (dot) dot.hidden = unread === 0;
-    const uel = document.getElementById('foUnread');
-    if (uel) uel.textContent = unread;
 
+function renderFoNotifs() {
+    const unreadCount = foNotifs.filter(n => !n.isRead).length;
+    updateFoBellBadge(unreadCount);
+
+    const filtered = foCurrentTab === 'unread' ? foNotifs.filter(n => !n.isRead) : foNotifs;
     const list = document.getElementById('foNotifList');
     if (!list) return;
 
-    if (!foNotifs.length) {
+    if (!filtered.length) {
         list.innerHTML = `<div style="padding:32px;text-align:center;font-size:13px;color:var(--fo-muted)">No notifications</div>`;
         return;
     }
-    list.innerHTML = foNotifs.map(n => `
-        <div class="fo-notif-item${n.isRead ? '' : ' unread'}" onclick="location.href='${n.redirectUrl || '#'}'">
-            <i class="fi fi-rr-bell" style="font-size:18px;color:#1a5c2a"></i>
-            <div><div style="font-size:13px;font-weight:600;">${esc(n.title)}</div>
-            <div style="font-size:12px;color:var(--fo-muted);">${esc(n.message || '')}</div></div>
+    
+    list.innerHTML = filtered.map(n => `
+        <div class="fo-notif-item${n.isRead ? '' : ' unread'}" data-id="${n.id}">
+            <div style="flex:1; display:flex; gap:10px; cursor:pointer;" onclick="handleFoNotificationClick(${n.id}, '${esc(n.redirectUrl || '')}')">
+                <i class="fi fi-rr-bell" style="font-size:18px;color:#1a5c2a"></i>
+                <div>
+                    <div style="font-size:13px;font-weight:600;">${esc(n.title)}</div>
+                    <div style="font-size:12px;color:var(--fo-muted);">${esc(n.message || '')}</div>
+                    <div style="font-size:10px;color:var(--fo-muted); margin-top:4px;">${formatFoDate(n.createdAt)}</div>
+                </div>
+            </div>
+            <div class="fo-notif-actions" style="padding:0; align-items:flex-start; gap:4px; display:flex;">
+                ${!n.isRead ? `
+                    <button onclick="event.stopPropagation(); foMarkNotificationAsRead(${n.id})" 
+                            style="background:none; border:none; color:var(--fo-blue); cursor:pointer; font-size:14px;" title="Mark as read">
+                        ✓
+                    </button>
+                ` : ''}
+                <button onclick="event.stopPropagation(); foDeleteNotification(${n.id})" 
+                        style="background:none; border:none; color:var(--fo-muted); cursor:pointer; font-size:14px;" title="Delete">
+                    ✕
+                </button>
+            </div>
         </div>`).join('');
+}
+
+async function handleFoNotificationClick(notificationId, redirectUrl) {
+    const notification = foNotifs.find(n => n.id == notificationId);
+    if (notification && !notification.isRead) {
+        await foMarkNotificationAsRead(notificationId);
+    }
+    if (redirectUrl && redirectUrl !== '#') {
+        window.location.href = redirectUrl;
+    }
+}
+
+async function foMarkNotificationAsRead(notificationId) {
+    try {
+        const response = await foFetch(`${FO_NOTIF_API_BASE}/MarkAsRead`, {
+            method: 'POST',
+            headers: getFoJsonHeaders(),
+            body: JSON.stringify(notificationId)
+        });
+        const data = await response.json();
+        if (data.success) {
+            const notification = foNotifs.find(n => n.id == notificationId);
+            if (notification) {
+                notification.isRead = true;
+                renderFoNotifs();
+                const unreadCount = foNotifs.filter(n => !n.isRead).length;
+                updateFoBellBadge(unreadCount);
+            }
+        }
+    } catch (error) {
+    }
+}
+
+async function foDeleteNotification(notificationId) {
+    if (!confirm('Delete this notification?')) return;
+    try {
+        const response = await foFetch(`${FO_NOTIF_API_BASE}/DeleteNotification`, {
+            method: 'POST',
+            headers: getFoJsonHeaders(),
+            body: JSON.stringify(notificationId)
+        });
+        const data = await response.json();
+        if (data.success) {
+            foNotifs = foNotifs.filter(n => n.id != notificationId);
+            renderFoNotifs();
+            const unreadCount = foNotifs.filter(n => !n.isRead).length;
+            updateFoBellBadge(unreadCount);
+            showFoToast('Notification deleted', 'success');
+        }
+    } catch (error) {
+        showFoToast('Failed to delete notification', 'error');
+    }
 }
 
 function foMarkAllRead() {
     foNotifs.forEach(n => n.isRead = true);
     renderFoNotifs();
-    foFetch(window.API_BASE + '/MarkAllNotificationsRead', { method: 'POST' }).catch(() => { });
+    updateFoBellBadge(0);
+    foFetch(`${FO_NOTIF_API_BASE}/MarkAllRead`, { method: 'POST', headers: getFoJsonHeaders(), body: JSON.stringify({}) })
+        .then(r => r.json())
+        .then(res => { if(res.success) showFoToast('All notifications marked as read', 'success'); })
+        .catch(() => { });
 }
 
 function foClearAll() {
+    if (!confirm('Clear all notifications? This action cannot be undone.')) return;
     foNotifs = [];
     renderFoNotifs();
-    foFetch(window.API_BASE + '/ClearAllNotifications', { method: 'POST' }).catch(() => { });
+    updateFoBellBadge(0);
+    foFetch(`${FO_NOTIF_API_BASE}/ClearAllNotifications`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => { if(res.success) showFoToast('All notifications cleared', 'success'); })
+        .catch(() => { });
 }
+
+function formatFoDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString();
+}
+
+window.foMarkAllRead = foMarkAllRead;
+window.foClearAll = foClearAll;
+window.foMarkNotificationAsRead = foMarkNotificationAsRead;
+window.foDeleteNotification = foDeleteNotification;
+window.foTab = foTab;
 
 window.showFoLoadFailedAlert = function (entityName) {
     Swal.fire({

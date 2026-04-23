@@ -489,6 +489,43 @@ ul {
     font-family: 'Inter', sans-serif;
 }
 
+.fo-notif-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px 16px 8px;
+}
+
+.fo-notif-tabs button {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fo-muted);
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fo-notif-tabs button.active {
+    background: var(--fo-blue-lt);
+    border-color: rgba(26, 92, 42, 0.25);
+    color: var(--fo-blue-dk);
+}
+
+.fo-notif-tabs button span {
+    background: var(--fo-blue-dk);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 10px;
+    padding: 1px 6px;
+    font-weight: 700;
+}
+
 .fo-notif-list {
     flex: 1;
     overflow-y: auto;
