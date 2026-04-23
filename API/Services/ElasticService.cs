@@ -754,27 +754,79 @@ namespace API.Services
             {
                 int from = (request.Page - 1) * request.PageSize;
 
+                // Build query with multiple field search
+                Query query;
+
+                if (!string.IsNullOrWhiteSpace(request.Query))
+                {
+                    // Multi-match search across multiple fields with fuzzy support
+                    query = new MultiMatchQuery
+                    {
+                        Query = request.Query,
+                        Fields = new[] { "FarmerName^3", "CropName^2", "Location", "Grade" },
+                        Fuzziness = new Fuzziness("AUTO"),  // For typo tolerance
+                        Operator = Operator.Or,
+                        MinimumShouldMatch = "2<70%"  // More flexible matching
+                    };
+                }
+                else
+                {
+                    query = new MatchAllQuery();
+                }
+
                 var searchRequest = new SearchRequest("qc_records")
                 {
                     From = from,
                     Size = request.PageSize,
-                    Query = BuildQCSearchQuery(request.Query, request.FoId, request.Passed, request.Grade)
+                    Query = query
                 };
 
                 var result = await _client.SearchAsync<object>(searchRequest);
 
+                Console.WriteLine($"=== SEARCH DEBUG ===");
+                Console.WriteLine($"Query: {request.Query}");
+                Console.WriteLine($"IsValid: {result.IsValidResponse}");
+                Console.WriteLine($"Total Records: {result.Total}");
+
                 if (result.IsValidResponse && result.Documents.Any())
                 {
-                    response.Results = MapToQCResults(result.Documents);
+                    foreach (var doc in result.Documents)
+                    {
+                        var json = System.Text.Json.JsonSerializer.Serialize(doc);
+                        using var document = System.Text.Json.JsonDocument.Parse(json);
+                        var root = document.RootElement;
+
+                        var qcResult = new QCSearchResult
+                        {
+                            Id = root.TryGetProperty("Id", out var id) ? id.GetInt32() : 0,
+                            ProcurementRequestId = root.TryGetProperty("ProcurementRequestId", out var prId) ? prId.GetInt32() : 0,
+                            FoId = root.TryGetProperty("FoId", out var foId) ? foId.GetInt32() : 0,
+                            FoName = root.TryGetProperty("FoName", out var foName) ? foName.GetString() : null,
+                            Grade = root.TryGetProperty("Grade", out var grade) ? grade.GetString() : null,
+                            AcceptedQuantity = root.TryGetProperty("AcceptedQuantity", out var accQty) ? accQty.GetDecimal() : 0,
+                            Passed = root.TryGetProperty("Passed", out var passed) ? passed.GetBoolean() : false,
+                            SubmittedAt = root.TryGetProperty("SubmittedAt", out var subAt) ? subAt.GetDateTime() : DateTime.MinValue,
+
+                            FarmerName = root.TryGetProperty("FarmerName", out var farmerName) ? farmerName.GetString() : null,
+                            CropType = root.TryGetProperty("CropName", out var cropName) ? cropName.GetString() : null,
+                            Quantity = root.TryGetProperty("AcceptedQuantity", out var qty) ? qty.GetDecimal() : 0,
+                            Location = root.TryGetProperty("Location", out var loc) ? loc.GetString() : null,
+                            Status = root.TryGetProperty("Status", out var status) ? status.GetString() : null
+                        };
+
+                        response.Results.Add(qcResult);
+                    }
+
                     response.TotalCount = result.Total;
                     response.Page = request.Page;
                     response.PageSize = request.PageSize;
-                    response.ProcessingTimeMs = result.Took;
-                    response.Query = request.Query;
                 }
+
+                Console.WriteLine($"Returning {response.Results.Count} results");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error searching QC records: {ex.Message}");
                 _logger.LogError(ex, "Error searching QC records");
             }
 
@@ -965,11 +1017,14 @@ namespace API.Services
 
             if (!string.IsNullOrWhiteSpace(query))
             {
+                // Use AND operator instead of OR for more precise matching
                 queries.Add(new MultiMatchQuery
                 {
                     Query = query,
-                    Fields = new[] { "foName^2", "farmerName^2", "grade" },
-                    Fuzziness = new Fuzziness("AUTO")
+                    Fields = new[] { "farmerName^3", "cropName^2", "location", "grade" },
+                    Fuzziness = new Fuzziness("AUTO"),
+                    Operator = Operator.And,  // Changed from Or to And
+                    MinimumShouldMatch = "100%"  // Require all terms to match
                 });
             }
 
@@ -1119,21 +1174,329 @@ namespace API.Services
                 var dict = doc as IDictionary<string, object>;
                 if (dict != null)
                 {
-                    results.Add(new QCSearchResult
+                    var result = new QCSearchResult
                     {
-                        Id = Convert.ToInt32(dict["id"]),
-                        ProcurementRequestId = Convert.ToInt32(dict["procurementRequestId"]),
-                        FoId = Convert.ToInt32(dict["foId"]),
-                        FoName = dict["foName"]?.ToString(),
-                        Grade = dict["grade"]?.ToString(),
-                        AcceptedQuantity = Convert.ToDecimal(dict["acceptedQuantity"]),
-                        Passed = Convert.ToBoolean(dict["passed"]),
-                        SubmittedAt = Convert.ToDateTime(dict["submittedAt"])
-                    });
+                        // Map exactly as they appear in Elasticsearch
+                        Id = Convert.ToInt32(dict["Id"]),
+                        ProcurementRequestId = Convert.ToInt32(dict["ProcurementRequestId"]),
+                        FoId = Convert.ToInt32(dict["FoId"]),
+                        FoName = dict["FoName"]?.ToString(),
+                        Grade = dict["Grade"]?.ToString(),
+                        AcceptedQuantity = Convert.ToDecimal(dict["AcceptedQuantity"]),
+                        Passed = Convert.ToBoolean(dict["Passed"]),
+                        SubmittedAt = Convert.ToDateTime(dict["SubmittedAt"]),
+
+                        // UI Display Fields - using actual field names from Elasticsearch
+                        FarmerName = dict["FarmerName"]?.ToString(),
+                        CropType = dict["CropName"]?.ToString(),
+                        Quantity = Convert.ToDecimal(dict["AcceptedQuantity"]),
+                        Location = dict["Location"]?.ToString(),
+                        Status = dict["Status"]?.ToString()
+                    };
+
+                    results.Add(result);
                 }
             }
 
             return results;
+        }
+        // ============== INDEX SINGLE QC RECORD (REAL-TIME) ==============
+
+        public async Task<bool> IndexQCRecordAsync(int inspectionId)
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+                using var conn = new NpgsqlConnection(connectionString);
+                await conn.OpenAsync();
+
+                var sql = @"
+            SELECT 
+                qif.c_id, 
+                qif.c_procurement_request_id, 
+                qif.c_fo_id, 
+                COALESCE(fop.c_full_name, '') as fo_name,
+                qif.c_grade, 
+                qif.c_accepted_quantity, 
+                qif.c_rejected_quantity,
+                qif.c_passed, 
+                qif.c_submitted_at,
+                pr.c_farmer_id, 
+                COALESCE(fp.c_full_name, '') as farmer_name,
+                qif.c_fo_assessed_price
+            FROM t_quality_inspection_forms qif
+            LEFT JOIN t_field_officer_profiles fop ON qif.c_fo_id = fop.c_id
+            LEFT JOIN t_procurement_requests pr ON qif.c_procurement_request_id = pr.c_id
+            LEFT JOIN t_farmer_profiles fp ON pr.c_farmer_id = fp.c_id
+            WHERE qif.c_id = @inspectionId";
+
+                using var cmd = new NpgsqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@inspectionId", inspectionId);
+
+                using var reader = await cmd.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    var doc = new Dictionary<string, object>
+                    {
+                        ["Id"] = reader.GetInt32(0),
+                        ["ProcurementRequestId"] = reader.GetInt32(1),
+                        ["FoId"] = reader.GetInt32(2),
+                        ["FoName"] = reader.GetString(3),
+                        ["Grade"] = reader.IsDBNull(4) ? null : reader.GetString(4),
+                        ["AcceptedQuantity"] = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5),
+                        ["RejectedQuantity"] = reader.IsDBNull(6) ? 0 : reader.GetDecimal(6),
+                        ["Passed"] = reader.GetBoolean(7),
+                        ["SubmittedAt"] = reader.GetDateTime(8),
+                        ["FarmerId"] = reader.GetInt32(9),
+                        ["FarmerName"] = reader.GetString(10),
+                        ["FoAssessedPrice"] = reader.IsDBNull(11) ? 0 : reader.GetDecimal(11),
+                        ["DocumentType"] = "qc_record",
+                        ["IndexedAt"] = DateTime.UtcNow
+                    };
+
+                    var response = await _client.IndexAsync(doc, idx => idx
+                        .Index("qc_records")
+                        .Id(reader.GetInt32(0).ToString())
+                    );
+
+                    if (response.IsValidResponse)
+                    {
+                        _logger.LogInformation($"✅ Indexed QC record {inspectionId} to Elasticsearch");
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogError($"❌ Failed to index QC record {inspectionId}: {response.DebugInformation}");
+                        return false;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"❌ Error indexing QC record {inspectionId}");
+                return false;
+            }
+        }
+
+
+        // ========== GET QC RECORDS COUNT BY FO ID ==========
+
+        public async Task<long> GetQCRecordsCountByFoIdAsync(int foId)
+        {
+            try
+            {
+                // Fix 1: Use Indices instead of Index
+                var allResponse = await _client.CountAsync<object>(c => c
+                    .Indices("qc_records")  // ✅ Fixed
+                    .Query(q => q.MatchAll())
+                );
+                Console.WriteLine($"Total records in qc_records index: {allResponse.Count}");
+
+                // Fix 2: Use Indices() method
+                var searchResponse = await _client.SearchAsync<object>(s => s
+                    .Indices("qc_records")  // ✅ Fixed - using Indices() method
+                    .Size(0)
+                    .Query(q => q
+                        .Term(t => t.Field("foId").Value(foId))
+                    )
+                );
+
+                Console.WriteLine($"Records with foId={foId}: {searchResponse.Total}");
+
+                if (searchResponse.Total == 0)
+                {
+                    var searchResponse2 = await _client.SearchAsync<object>(s => s
+                        .Indices("qc_records")  // ✅ Fixed
+                        .Size(0)
+                        .Query(q => q
+                            .Term(t => t.Field("FoId").Value(foId))
+                        )
+                    );
+                    Console.WriteLine($"Records with FoId={foId}: {searchResponse2.Total}");
+                    return searchResponse2.Total;
+                }
+
+                return searchResponse.Total;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting QC records count from Elasticsearch");
+                return 0;
+            }
+        }
+        public async Task<object> GetFirstDocumentAsync()
+        {
+            try
+            {
+                // Use the same working approach as SearchQCRecordsForMVCAsync
+                var searchRequest = new SearchRequest("qc_records")
+                {
+                    Size = 1,
+                    Query = new MatchAllQuery()
+                };
+
+                var response = await _client.SearchAsync<object>(searchRequest);
+
+                Console.WriteLine($"=== GetFirstDocumentAsync Debug ===");
+                Console.WriteLine($"IsValid: {response.IsValidResponse}");
+                Console.WriteLine($"Total: {response.Total}");
+                Console.WriteLine($"Documents Count: {response.Documents.Count}");
+
+                if (response.IsValidResponse && response.Documents.Any())
+                {
+                    var doc = response.Documents.First();
+
+                    // Try to convert to dictionary
+                    if (doc is IDictionary<string, object> dict)
+                    {
+                        return new
+                        {
+                            success = true,
+                            fieldNames = dict.Keys.ToList(),
+                            sampleData = dict
+                        };
+                    }
+                    else
+                    {
+                        // If not dictionary, return the raw object
+                        return new
+                        {
+                            success = true,
+                            type = doc.GetType().Name,
+                            rawDocument = doc
+                        };
+                    }
+                }
+
+                return new { success = false, message = "No documents found in qc_records index" };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetFirstDocumentAsync: {ex.Message}");
+                return new { success = false, error = ex.Message };
+            }
+        }
+
+        // ========== REINDEX QC RECORDS BY FO ID ==========
+
+        public async Task<int> ReindexQCRecordsByFoIdAsync(int foId)
+        {
+            int indexed = 0;
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+            Console.WriteLine($"=== REINDEX START for FO {foId} ===");
+
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            // First check how many records in DB
+            var countSql = @"
+        SELECT COUNT(*) 
+        FROM t_quality_inspection_forms qif
+        JOIN t_procurement_requests pr ON qif.c_procurement_request_id = pr.c_id
+        WHERE pr.c_assigned_fo_id = @foId";
+
+            using var countCmd = new NpgsqlCommand(countSql, conn);
+            countCmd.Parameters.AddWithValue("@foId", foId);
+            var dbCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
+            Console.WriteLine($"Records in DB for FO {foId}: {dbCount}");
+
+            // Get data to index
+            var sql = @"
+    SELECT 
+        qif.c_id, 
+        qif.c_procurement_request_id, 
+        qif.c_fo_id, 
+        COALESCE(fop.c_full_name, '') as fo_name,
+        qif.c_grade, 
+        qif.c_accepted_quantity, 
+        qif.c_rejected_quantity,
+        qif.c_passed, 
+        qif.c_submitted_at,
+        pr.c_farmer_id, 
+        COALESCE(fp.c_full_name, '') as farmer_name,
+        qif.c_fo_assessed_price,
+        COALESCE(cp.c_name, '') as crop_name,
+        COALESCE(fp.c_district, '') as location,
+        pr.c_status
+    FROM t_quality_inspection_forms qif
+    LEFT JOIN t_field_officer_profiles fop ON qif.c_fo_id = fop.c_id
+    LEFT JOIN t_procurement_requests pr ON qif.c_procurement_request_id = pr.c_id
+    LEFT JOIN t_farmer_profiles fp ON pr.c_farmer_id = fp.c_id
+    LEFT JOIN t_farmer_crop_listings fcl ON pr.c_crop_listing_id = fcl.c_id
+    LEFT JOIN t_catalog_products cp ON fcl.c_catalog_product_id = cp.c_id
+    WHERE qif.c_fo_id = @foId";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@foId", foId);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var doc = new Dictionary<string, object>
+                {
+                    ["Id"] = reader.GetInt32(0),
+                    ["ProcurementRequestId"] = reader.GetInt32(1),
+                    ["FoId"] = reader.GetInt32(2),
+                    ["FoName"] = reader.GetString(3),
+                    ["Grade"] = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    ["AcceptedQuantity"] = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5),
+                    ["RejectedQuantity"] = reader.IsDBNull(6) ? 0 : reader.GetDecimal(6),
+                    ["Passed"] = reader.GetBoolean(7),
+                    ["SubmittedAt"] = reader.GetDateTime(8),
+                    ["FarmerId"] = reader.GetInt32(9),
+                    ["FarmerName"] = reader.GetString(10),      // For UI FARMER column
+                    ["FoAssessedPrice"] = reader.IsDBNull(11) ? 0 : reader.GetDecimal(11),
+                    ["CropName"] = reader.GetString(12),         // For UI CROP column
+                    ["Location"] = reader.GetString(13),         // For UI LOCATION column
+                    ["Status"] = reader.GetString(14),           // For UI STATUS column
+                    ["DocumentType"] = "qc_record",
+                    ["IndexedAt"] = DateTime.UtcNow
+                };
+
+                Console.WriteLine($"Indexing record ID: {reader.GetInt32(0)}");
+
+                var response = await _client.IndexAsync(doc, idx => idx
+                    .Index("qc_records")  // Make sure index name is correct
+                    .Id(reader.GetInt32(0).ToString())
+                );
+
+                if (response.IsValidResponse)
+                {
+                    indexed++;
+                    Console.WriteLine($"✅ Indexed record {reader.GetInt32(0)}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Failed to index: {response.DebugInformation}");
+                }
+            }
+
+            // Verify after reindex
+            var verifyCount = await GetQCRecordsCountByFoIdAsync(foId);
+            Console.WriteLine($"After reindex - ES Count: {verifyCount}");
+
+            _logger.LogInformation($"Reindexed {indexed} QC records for FO {foId}");
+            return indexed;
+        }
+        public async Task<bool> CheckIndexExistsAsync(string indexName)
+        {
+            var response = await _client.Indices.ExistsAsync(indexName);
+            return response.Exists;
+        }
+
+        public async Task<long> GetTotalRecordsInIndexAsync(string indexName)
+        {
+            var response = await _client.CountAsync<object>(c => c
+                .Indices(indexName)  // ✅ Use Indices instead of Index
+                .Query(q => q.MatchAll())
+            );
+            return response.Count;
         }
     }
 }

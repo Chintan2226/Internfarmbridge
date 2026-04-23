@@ -104,14 +104,21 @@ namespace API.Models.Settings
         public int ProcurementRequestId { get; set; }
         public int FoId { get; set; }
         public string FoName { get; set; }
-        public int FarmerId { get; set; }
-        public string FarmerName { get; set; }
         public string Grade { get; set; }
         public decimal AcceptedQuantity { get; set; }
         public decimal RejectedQuantity { get; set; }
         public bool Passed { get; set; }
         public DateTime SubmittedAt { get; set; }
-        public decimal? FoAssessedPrice { get; set; }
+
+        // UI Display Fields
+        public string FarmerName { get; set; }
+        public string CropType { get; set; }
+        public decimal Quantity { get; set; }
+        public string Location { get; set; }
+        public string Status { get; set; }
+        public DateTime? SlotDate { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
     }
 
     public class UniversalSearchResult
@@ -223,5 +230,26 @@ namespace API.Models.Settings
         public bool IsActive { get; set; }
         public string DocumentType { get; set; } = "warehouse";
         public DateTime IndexedAt { get; set; } = DateTime.UtcNow;
+    }
+    // Add this class for Elasticsearch document mapping
+    public class QCRecordDocument
+    {
+        public int Id { get; set; }
+        public int ProcurementRequestId { get; set; }
+        public int FoId { get; set; }
+        public string FoName { get; set; }
+        public string Grade { get; set; }
+        public decimal AcceptedQuantity { get; set; }
+        public decimal RejectedQuantity { get; set; }
+        public bool Passed { get; set; }
+        public DateTime SubmittedAt { get; set; }
+        public int FarmerId { get; set; }
+        public string FarmerName { get; set; }
+        public string CropName { get; set; }
+        public string Location { get; set; }
+        public string Status { get; set; }
+        public decimal FoAssessedPrice { get; set; }
+        public string DocumentType { get; set; }
+        public DateTime IndexedAt { get; set; }
     }
 }
