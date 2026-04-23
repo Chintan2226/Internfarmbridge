@@ -624,5 +624,16 @@ namespace API.BAL
                 return false;
             }
         }
+
+        public async Task<int> GetFieldOfficerUserIdByWarehouseAsync(int warehouseId)
+        {
+            await using var _conn = CreateConnection();
+            await _conn.OpenAsync();
+            string sql = "SELECT c_user_id FROM t_field_officer_profiles WHERE c_warehouse_id = @wid LIMIT 1";
+            using var cmd = new NpgsqlCommand(sql, _conn);
+            cmd.Parameters.AddWithValue("@wid", warehouseId);
+            var result = await cmd.ExecuteScalarAsync();
+            return result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+        }
     }
 }

@@ -54,14 +54,13 @@ namespace API.Controllers
             var farmerId = int.Parse(User.FindFirst("farmer_id")?.Value);
             req.FarmerId = farmerId;
 
-
             bool success = await _helper.BookQcSlotAsync(req);
+            var profile = await _helper.GetFarmerProfileAsync(req.FarmerId);
 
             if (success)
             {
                 try
                 {
-                    var profile = await _helper.GetFarmerProfileAsync(req.FarmerId);
 
                     if (profile != null && !string.IsNullOrEmpty(profile.Email))
                     {
@@ -86,15 +85,19 @@ namespace API.Controllers
                     Console.WriteLine("Failed to send booking email: " + ex.Message);
                 }
 
-                await _rabbitMqService.PublishToUserAsync(req.FarmerId,
-                    "QC Slot Booked",
-                    $"Your QC slot has been booked successfully on {req.SlotDate:dd MMM yyyy}.",
-                    "qc_booking");
-
                 await _rabbitMqService.PublishToRoleAsync("admin",
                     "New QC Booking Request",
                     $"Farmer has requested a QC inspection.",
                     "qc_booking");
+
+                int foUserId = await _helper.GetFieldOfficerUserIdByWarehouseAsync(req.WarehouseId);
+                if (foUserId > 0) 
+                {
+                    await _rabbitMqService.PublishToUserAsync(foUserId,
+                        "New QC Booking Request",
+                        $"Farmer {profile.FullName} has requested  a QC inspection at your warehouse.",
+                        "qc_booking");
+                }
 
                 return Ok(new { success = true, message = "QC Slot booked successfully! You will receive an email confirmation." });
             }
@@ -281,7 +284,11 @@ namespace API.Controllers
         [HttpPost("listings")]
         public async Task<IActionResult> SaveListing([FromBody] vm_CropListingRequest req)
         {
-            if (!FarmerOwns(req.FarmerId)) return Forbid();
+            if (req == null) return BadRequest(new { success = false, message = "Invalid request payload." });
+            
+            req.FarmerId = GetTokenFarmerId();
+            if (req.FarmerId == 0) return Forbid();
+            
             bool success = await _helper.SaveCropListingAsync(req);
 
             if (success)
@@ -389,7 +396,11 @@ namespace API.Controllers
         [HttpPost("inquiries/submit")]
         public async Task<IActionResult> SubmitInquiry([FromBody] vm_SubmitInquiryRequest req)
         {
-            if (!FarmerOwns(req.FarmerId)) return Forbid();
+            if (req == null) return BadRequest(new { success = false, message = "Invalid request payload." });
+            
+            req.FarmerId = GetTokenFarmerId();
+            if (req.FarmerId == 0) return Forbid();
+            
             bool success = await _helper.SubmitInquiryAsync(req);
 
             if (success)
@@ -420,7 +431,11 @@ namespace API.Controllers
         [HttpPut("profile/update")]
         public async Task<IActionResult> UpdateProfile([FromBody] vm_UpdateProfileRequest req)
         {
-            if (!FarmerOwns(req.FarmerId)) return Forbid();
+            if (req == null) return BadRequest(new { success = false, message = "Invalid request payload." });
+            
+            req.FarmerId = GetTokenFarmerId();
+            if (req.FarmerId == 0) return Forbid();
+            
             bool success = await _helper.UpdateFarmerProfileAsync(req);
 
             if (success)
