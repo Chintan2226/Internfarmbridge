@@ -11,6 +11,7 @@ using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using Elastic.Transport;
 using Elastic.Clients.Elasticsearch.Core.Search;
+using System.Text.Json;
 
 namespace API.Services
 {
@@ -53,6 +54,7 @@ namespace API.Services
                 await CreateIndexIfNotExistsAsync("qc_records");
                 await CreateIndexIfNotExistsAsync("warehouses");
                 await CreateIndexIfNotExistsAsync("vendor_catalog");
+                await CreateIndexIfNotExistsAsync("procurement_requests");
 
                 _logger.LogInformation("ElasticSearch indexes initialized successfully");
             }
@@ -60,6 +62,178 @@ namespace API.Services
             {
                 _logger.LogError(ex, "Failed to initialize ElasticSearch indexes");
             }
+        }
+
+        // Naya reindex method add karo
+        public async Task<int> ReindexProcurementRequestsByFoIdAsync(int foId)
+        {
+            int indexed = 0;
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+        SELECT 
+            pr.c_id,
+            pr.c_farmer_id,
+            COALESCE(fp.c_full_name, '') as farmer_name,
+            COALESCE(cp.c_name, '') as crop_name,
+            pr.c_requested_quantity,
+            COALESCE(pr.c_unit, 'kg'),
+            COALESCE(fp.c_district, '') as location,
+            wsb.c_slot_date,
+            wsb.c_slot_time_start,
+            wsb.c_slot_time_end,
+            pr.c_status,
+            pr.c_assigned_fo_id
+        FROM t_procurement_requests pr
+        LEFT JOIN t_farmer_profiles fp ON pr.c_farmer_id = fp.c_id
+        LEFT JOIN t_farmer_crop_listings fcl ON pr.c_crop_listing_id = fcl.c_id
+        LEFT JOIN t_catalog_products cp ON fcl.c_catalog_product_id = cp.c_id
+        LEFT JOIN t_warehouse_slot_bookings wsb ON pr.c_slot_id = wsb.c_id
+        WHERE pr.c_assigned_fo_id = @foId
+          AND pr.c_status IN ('pending', 'scheduled')";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@foId", foId);
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var doc = new Dictionary<string, object>
+                {
+                    ["ProcurementRequestId"] = reader.GetInt32(0),
+                    ["FarmerId"] = reader.GetInt32(1),
+                    ["FarmerName"] = reader.GetString(2),
+                    ["CropName"] = reader.GetString(3),
+                    ["Quantity"] = reader.GetDecimal(4),
+                    ["Unit"] = reader.GetString(5),
+                    ["Location"] = reader.GetString(6),
+                    ["SlotDate"] = reader.IsDBNull(7) ? null : reader.GetDateTime(7),
+                    ["SlotTimeStart"] = reader.IsDBNull(8) ? null : reader.GetTimeSpan(8).ToString(@"hh\:mm"),
+                    ["SlotTimeEnd"] = reader.IsDBNull(9) ? null : reader.GetTimeSpan(9).ToString(@"hh\:mm"),
+                    ["Status"] = reader.GetString(10),
+                    ["FoId"] = reader.GetInt32(11),
+                    ["DocumentType"] = "procurement_request",
+                    ["IndexedAt"] = DateTime.UtcNow
+                };
+
+                var response = await _client.IndexAsync(doc, idx => idx
+                    .Index("procurement_requests")
+                    .Id(reader.GetInt32(0).ToString())
+                );
+
+                if (response.IsValidResponse) indexed++;
+            }
+
+            _logger.LogInformation($"Reindexed {indexed} procurement requests for FO {foId}");
+            return indexed;
+        }
+
+        // Search method add karo
+        public async Task<SearchResponseModel<QCSearchResult>> SearchProcurementRequestsAsync(SearchRequestModel request)
+        {
+            var response = new SearchResponseModel<QCSearchResult>();
+
+            try
+            {
+                int from = (request.Page - 1) * request.PageSize;
+
+                Query query;
+                if (!string.IsNullOrWhiteSpace(request.Query))
+                {
+                    query = new BoolQuery
+                    {
+                        Should = new List<Query>
+                {
+                    new WildcardQuery(new Field("FarmerName"))
+                    {
+                        Value = $"*{request.Query.ToLower()}*"
+                    },
+                    new WildcardQuery(new Field("CropName"))
+                    {
+                        Value = $"*{request.Query.ToLower()}*"
+                    },
+                    new WildcardQuery(new Field("Location"))
+                    {
+                        Value = $"*{request.Query.ToLower()}*"
+                    },
+                    new MultiMatchQuery
+                    {
+                        Query = request.Query,
+                        Fields = new[] { "FarmerName^3", "CropName^2", "Location" },
+                        Fuzziness = new Fuzziness("AUTO"),
+                        Operator = Operator.Or
+                    }
+                },
+                        MinimumShouldMatch = 1
+                    };
+                }
+                else
+                {
+                    query = new MatchAllQuery();
+                }
+
+                // FoId filter — hamesha apply karo
+                var finalQuery = new BoolQuery
+                {
+                    Must = new List<Query>
+            {
+                new TermQuery { Field = "FoId", Value = request.FoId ?? 0 },
+                query
+            }
+                };
+
+                var searchRequest = new SearchRequest("procurement_requests")
+                {
+                    From = from,
+                    Size = request.PageSize,
+                    Query = finalQuery
+                };
+
+                var result = await _client.SearchAsync<object>(searchRequest);
+
+                Console.WriteLine($"=== PROCUREMENT SEARCH DEBUG ===");
+                Console.WriteLine($"Query: {request.Query}, FoId: {request.FoId}, Total: {result.Total}");
+
+                if (result.IsValidResponse && result.Documents.Any())
+                {
+                    foreach (var doc in result.Documents)
+                    {
+                        var json = System.Text.Json.JsonSerializer.Serialize(doc);
+                        using var document = System.Text.Json.JsonDocument.Parse(json);
+                        var root = document.RootElement;
+
+                        response.Results.Add(new QCSearchResult
+                        {
+                            ProcurementRequestId = root.TryGetProperty("ProcurementRequestId", out var prId) ? prId.GetInt32() : 0,
+                            FarmerName = root.TryGetProperty("FarmerName", out var fn) ? fn.GetString() : null,
+                            CropType = root.TryGetProperty("CropName", out var cn) ? cn.GetString() : null,
+                            Quantity = root.TryGetProperty("Quantity", out var qty) ? qty.GetDecimal() : 0,
+                            Location = root.TryGetProperty("Location", out var loc) ? loc.GetString() : null,
+                            Status = root.TryGetProperty("Status", out var st) ? st.GetString() : null,
+                            FoId = root.TryGetProperty("FoId", out var foid) ? foid.GetInt32() : 0,
+                            SlotDate = root.TryGetProperty("SlotDate", out var sd) && sd.ValueKind != JsonValueKind.Null 
+                                    ? sd.GetDateTime() : null,
+                            StartTime = root.TryGetProperty("SlotTimeStart", out var st2) ? st2.GetString() : null,
+                            EndTime = root.TryGetProperty("SlotTimeEnd", out var et) ? et.GetString() : null,
+
+                        });
+                    }
+
+                    response.TotalCount = result.Total;
+                    response.Page = request.Page;
+                    response.PageSize = request.PageSize;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error searching procurement requests: {ex.Message}");
+                _logger.LogError(ex, "Error searching procurement requests");
+            }
+
+            return response;
         }
 
         private async Task CreateIndexIfNotExistsAsync(string indexName)
@@ -660,18 +834,55 @@ namespace API.Services
 
                 var result = await _client.SearchAsync<object>(searchRequest);
 
+                Console.WriteLine($"=== CROP SEARCH DEBUG ===");
+                Console.WriteLine($"Query: {request.Query}");
+                Console.WriteLine($"FarmerId: {request.FarmerId}");
+                Console.WriteLine($"Status: {request.Status}");
+                Console.WriteLine($"Total Records: {result.Total}");
+
                 if (result.IsValidResponse && result.Documents.Any())
                 {
-                    response.Results = MapToCropResults(result.Documents);
+                    foreach (var doc in result.Documents)
+                    {
+                        var json = System.Text.Json.JsonSerializer.Serialize(doc);
+                        using var document = System.Text.Json.JsonDocument.Parse(json);
+                        var root = document.RootElement;
+
+                        var cropResult = new CropSearchResult
+                        {
+                            Id = root.TryGetProperty("id", out var id) ? id.GetInt32() :
+                                 (root.TryGetProperty("Id", out var id2) ? id2.GetInt32() : 0),
+                            FarmerId = root.TryGetProperty("farmerId", out var fid) ? fid.GetInt32() :
+                                      (root.TryGetProperty("FarmerId", out var fid2) ? fid2.GetInt32() : 0),
+                            FarmerName = root.TryGetProperty("farmerName", out var fname) ? fname.GetString() :
+                                        (root.TryGetProperty("FarmerName", out var fname2) ? fname2.GetString() : null),
+                            CropName = root.TryGetProperty("cropName", out var cname) ? cname.GetString() :
+                                      (root.TryGetProperty("CropName", out var cname2) ? cname2.GetString() : null),
+                            QuantityAvailable = root.TryGetProperty("quantityAvailable", out var qty) ? qty.GetDecimal() :
+                                               (root.TryGetProperty("QuantityAvailable", out var qty2) ? qty2.GetDecimal() : 0),
+                            Unit = root.TryGetProperty("unit", out var unit) ? unit.GetString() :
+                                  (root.TryGetProperty("Unit", out var unit2) ? unit2.GetString() : "kg"),
+                            Variety = root.TryGetProperty("variety", out var varName) ? varName.GetString() :
+                                     (root.TryGetProperty("Variety", out var varName2) ? varName2.GetString() : null),
+                            AskingPrice = root.TryGetProperty("askingPrice", out var price) ? price.GetDecimal() :
+                                         (root.TryGetProperty("AskingPrice", out var price2) ? price2.GetDecimal() : 0),
+                            Status = root.TryGetProperty("status", out var stat) ? stat.GetString() :
+                                    (root.TryGetProperty("Status", out var stat2) ? stat2.GetString() : null)
+                        };
+
+                        response.Results.Add(cropResult);
+                    }
+
                     response.TotalCount = result.Total;
                     response.Page = request.Page;
                     response.PageSize = request.PageSize;
-                    response.ProcessingTimeMs = result.Took;
-                    response.Query = request.Query;
                 }
+
+                Console.WriteLine($"Returning {response.Results.Count} crop results");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error searching crops: {ex.Message}");
                 _logger.LogError(ex, "Error searching crops");
             }
 
@@ -762,13 +973,27 @@ namespace API.Services
                 if (!string.IsNullOrWhiteSpace(request.Query))
                 {
                     // Multi-match search across multiple fields with fuzzy support
-                    query = new MultiMatchQuery
+                    query = new BoolQuery
                     {
-                        Query = request.Query,
-                        Fields = new[] { "FarmerName^3", "CropName^2", "Location", "Grade" },
-                        Fuzziness = new Fuzziness("AUTO"),  // For typo tolerance
-                        Operator = Operator.Or,
-                        MinimumShouldMatch = "2<70%"  // More flexible matching
+                        Should = new List<Query>
+                        {
+                            new WildcardQuery(new Field("FarmerName"))
+                            {
+                                Value = $"*{request.Query.ToLower()}*"
+                            },
+                            new WildcardQuery(new Field("CropName"))
+                            {
+                                Value = $"*{request.Query.ToLower()}*"
+                            },
+                            new MultiMatchQuery
+                            {
+                                Query = request.Query,
+                                Fields = new[] { "FarmerName^3", "CropName^2", "Location", "Grade" },
+                                Fuzziness = new Fuzziness("AUTO"),
+                                Operator = Operator.Or
+                            }
+                        },
+                        MinimumShouldMatch = 1
                     };
                 }
                 else
@@ -776,11 +1001,20 @@ namespace API.Services
                     query = new MatchAllQuery();
                 }
 
+                var mustWrapper = new BoolQuery
+                {
+                    Must = new List<Query>
+                    {
+                        new TermQuery { Field = "FoId", Value = request.FoId ?? 0 },
+                        query  // upar wali search query
+                    }
+                };
+
                 var searchRequest = new SearchRequest("qc_records")
                 {
                     From = from,
                     Size = request.PageSize,
-                    Query = query
+                    Query = request.FoId.HasValue ? mustWrapper : query  // foId hai toh filter karo
                 };
 
                 var result = await _client.SearchAsync<object>(searchRequest);
@@ -892,49 +1126,69 @@ namespace API.Services
 
         private Query BuildCropSearchQuery(string query, int? farmerId, string status, string state)
         {
-            var queries = new List<Query>();
+            var mustQueries = new List<Query>();
 
+            // 1. Search query - strict matching
             if (!string.IsNullOrWhiteSpace(query))
             {
-                queries.Add(new MultiMatchQuery
+                var textSearch = new BoolQuery
                 {
-                    Query = query,
-                    Fields = new[] { "cropName^3", "variety^2", "farmerName^2", "farmAddress" },
-                    Fuzziness = new Fuzziness("AUTO")
-                });
+                    Should = new List<Query>
+                    {
+                        new WildcardQuery(new Field("cropName"))
+                        {
+                            Value = $"*{query.ToLower()}*"
+                        },
+                        new MultiMatchQuery
+                        {
+                            Query = query,
+                            Fields = new[] { "cropName^3", "variety^2", "farmerName" },
+                            Fuzziness = new Fuzziness("AUTO"),
+                            Operator = Operator.Or
+                        }
+                    },
+                    MinimumShouldMatch = 1
+                };
+                mustQueries.Add(textSearch);
             }
 
+            // 2. Farmer filter
             if (farmerId.HasValue)
             {
-                queries.Add(new TermQuery
+                mustQueries.Add(new TermQuery
                 {
                     Field = "farmerId",
                     Value = farmerId.Value
                 });
             }
 
+            // 3. Status filter
             if (!string.IsNullOrEmpty(status))
             {
-                queries.Add(new TermQuery
+                mustQueries.Add(new TermQuery
                 {
                     Field = "status",
-                    Value = status
+                    Value = status.ToLower()
                 });
             }
 
+            // 4. State filter
             if (!string.IsNullOrEmpty(state))
             {
-                queries.Add(new TermQuery
+                mustQueries.Add(new TermQuery
                 {
                     Field = "farmState",
                     Value = state
                 });
             }
 
-            if (queries.Count == 0)
+            if (mustQueries.Count == 0)
                 return new MatchAllQuery();
 
-            return new BoolQuery { Must = queries };
+            if (mustQueries.Count == 1)
+                return mustQueries[0];
+
+            return new BoolQuery { Must = mustQueries };
         }
 
         private Query BuildOrderSearchQuery(string query, int? vendorId, string status)
@@ -1097,26 +1351,45 @@ namespace API.Services
                 var dict = doc as IDictionary<string, object>;
                 if (dict != null)
                 {
-                    results.Add(new CropSearchResult
+                    // Debug: Print all keys
+                    Console.WriteLine("Document keys: " + string.Join(", ", dict.Keys));
+
+                    var result = new CropSearchResult
                     {
-                        Id = Convert.ToInt32(dict["id"]),
-                        FarmerId = Convert.ToInt32(dict["farmerId"]),
-                        FarmerName = dict["farmerName"]?.ToString(),
-                        CatalogProductId = Convert.ToInt32(dict["catalogProductId"]),
-                        CropName = dict["cropName"]?.ToString(),
-                        QuantityAvailable = Convert.ToDecimal(dict["quantityAvailable"]),
-                        Unit = dict["unit"]?.ToString(),
-                        Variety = dict["variety"]?.ToString(),
-                        AskingPrice = Convert.ToDecimal(dict["askingPrice"]),
-                        HarvestDate = Convert.ToDateTime(dict["harvestDate"]),
-                        FarmAddress = dict["farmAddress"]?.ToString(),
-                        FarmState = dict["farmState"]?.ToString(),
-                        FarmDistrict = dict["farmDistrict"]?.ToString(),
-                        Status = dict["status"]?.ToString()
-                    });
+                        // Try both PascalCase and lowercase field names
+                        Id = dict.ContainsKey("Id") ? Convert.ToInt32(dict["Id"]) :
+                             (dict.ContainsKey("id") ? Convert.ToInt32(dict["id"]) : 0),
+
+                        FarmerId = dict.ContainsKey("FarmerId") ? Convert.ToInt32(dict["FarmerId"]) :
+                                  (dict.ContainsKey("farmerId") ? Convert.ToInt32(dict["farmerId"]) : 0),
+
+                        FarmerName = dict.ContainsKey("FarmerName") ? dict["FarmerName"]?.ToString() :
+                                    (dict.ContainsKey("farmerName") ? dict["farmerName"]?.ToString() : null),
+
+                        CropName = dict.ContainsKey("CropName") ? dict["CropName"]?.ToString() :
+                                  (dict.ContainsKey("cropName") ? dict["cropName"]?.ToString() : null),
+
+                        QuantityAvailable = dict.ContainsKey("QuantityAvailable") ? Convert.ToDecimal(dict["QuantityAvailable"]) :
+                                           (dict.ContainsKey("quantityAvailable") ? Convert.ToDecimal(dict["quantityAvailable"]) : 0),
+
+                        Unit = dict.ContainsKey("Unit") ? dict["Unit"]?.ToString() :
+                              (dict.ContainsKey("unit") ? dict["unit"]?.ToString() : "kg"),
+
+                        Variety = dict.ContainsKey("Variety") ? dict["Variety"]?.ToString() :
+                                 (dict.ContainsKey("variety") ? dict["variety"]?.ToString() : null),
+
+                        AskingPrice = dict.ContainsKey("AskingPrice") ? Convert.ToDecimal(dict["AskingPrice"]) :
+                                     (dict.ContainsKey("askingPrice") ? Convert.ToDecimal(dict["askingPrice"]) : 0),
+
+                        Status = dict.ContainsKey("Status") ? dict["Status"]?.ToString() :
+                                (dict.ContainsKey("status") ? dict["status"]?.ToString() : null)
+                    };
+
+                    results.Add(result);
                 }
             }
 
+            Console.WriteLine($"Mapped {results.Count} crop results");
             return results;
         }
 

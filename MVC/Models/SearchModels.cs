@@ -62,8 +62,8 @@ namespace MVC.Models
         public string ImageUrl { get; set; }
         public bool IsActive { get; set; }
         public string Grade { get; set; }
-    public decimal Price { get; set; }           
-    public decimal QuantityAvailable { get; set; }
+        public decimal Price { get; set; }
+        public decimal QuantityAvailable { get; set; }
     }
 
     // Vendor - Order Search Result
@@ -102,6 +102,10 @@ namespace MVC.Models
         public decimal AcceptedQuantity { get; set; }
         public bool Passed { get; set; }
         public DateTime SubmittedAt { get; set; }
+        public string? CropType { get; set; }
+        public decimal Quantity { get; set; }
+        public string? Location { get; set; }
+        public string? Status { get; set; }
     }
     public class WarehouseDocument
     {
