@@ -2,6 +2,9 @@
     ViewData["Title"] = "Farmer Management";
     Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
 }
+
+<link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
+
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -195,8 +198,7 @@
     </div>
 
     <div id="f-grid" class="f-grid">
-        <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">Loading farmers...</div>
-    </div>
+        </div>
 
     <div class="pagination">
         <button class="btn btn-view" onclick="changePage(-1)" style="flex:none; padding:8px 16px;">&#8249; Previous</button>
@@ -336,6 +338,7 @@
 
 <div id="toast" class="toast"></div>
 
+@section Scripts {
 <script>
 (() => {
     const FARMER_API_BASE = 'http://localhost:5020/api/Admin';
@@ -372,16 +375,33 @@
     async function loadFarmers() {
         const query = document.getElementById('search-input').value;
         const container = document.getElementById('f-grid');
-        try {
-            const res = await fetch(`${FARMER_API_BASE}/list?searchTerm=${encodeURIComponent(query)}&pageNumber=${currentPage}`);
-            if (res.ok) {
-                const json = await res.json();
-                renderGrid(json.data || []);
-                document.getElementById('page-indicator').textContent = `Page ${currentPage}`;
-            }
-        } catch (e) {
-            container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:red;">Connection Error. Ensure Backend is running on port 5020.</div>';
+        
+        // 👉 STEP 1: TRIGGER SKELETON LOADER
+        if (typeof window.showCardSkeleton === 'function') {
+            console.log("SUCCESS: Drawing Card Skeleton!");
+            window.showCardSkeleton('#f-grid', 6); // Show 6 fake cards
+        } else {
+            console.error("ERROR: Skeleton function still missing. Check site.js!");
+            container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">Loading farmers...</div>';
         }
+
+        // 👉 ARTIFICIAL DELAY (Remove the setTimeout wrapper in production!)
+        setTimeout(async () => {
+            try {
+                const res = await fetch(`${FARMER_API_BASE}/list?searchTerm=${encodeURIComponent(query)}&pageNumber=${currentPage}`);
+                if (res.ok) {
+                    const json = await res.json();
+                    
+                    // 👉 STEP 2: CLEAR SKELETON
+                    container.innerHTML = ''; 
+                    
+                    renderGrid(json.data || []);
+                    document.getElementById('page-indicator').textContent = `Page ${currentPage}`;
+                }
+            } catch (e) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:red;">Connection Error. Ensure Backend is running on port 5020.</div>';
+            }
+        }, 1500); // 1.5s delay to see the animation
     }
 
     function renderGrid(farmers) {
@@ -390,6 +410,8 @@
             container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding: 40px; color:var(--text-muted);">No farmers found on this page.</div>';
             return;
         }
+        
+        // 👉 STEP 3: RENDER ACTUAL CARDS
         container.innerHTML = farmers.map(f => {
             const initials = (f.fullName || 'F').substring(0, 2).toUpperCase();
             const isAct = f.isActive;
@@ -649,3 +671,4 @@
     window.switchTab             = switchTab;
 })();
 </script>
+}

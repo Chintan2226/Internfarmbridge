@@ -43,6 +43,9 @@ namespace API.Models.Settings
         public string Description { get; set; }
         public string ImageUrl { get; set; }
         public bool IsActive { get; set; }
+        public string Grade { get; set; }
+        public decimal Price { get; set; }
+        public decimal QuantityAvailable { get; set; }
     }
 
     public class CropSearchResult
@@ -144,7 +147,10 @@ namespace API.Models.Settings
         public int Users { get; set; }
         public int QCRecords { get; set; }
         public int Warehouses { get; set; }
-        public int TotalIndexed => CatalogProducts + CropListings + Orders + Users + QCRecords + Warehouses;
+        public int VendorCatalog { get; set; }
+        public int TotalIndexed => CatalogProducts + CropListings +
+                               Orders + Users + QCRecords +
+                               Warehouses + VendorCatalog;
     }
     public class CatalogProductDocument
     {

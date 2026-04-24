@@ -1,106 +1,3 @@
-@* @{
-    ViewData["Title"] = "Farmer Dashboard";
-    ViewData["UserRole"] = "Farmer";
-    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
-}
-
-@section Styles {
-    <!-- Rely entirely on the platform's standardized dashboard shared styles -->
-    <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/Farmer/Dashboard.css" asp-append-version="true" />
-    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
-}
-
-<div class="db-wrap">
-
-    <div class="f-action-row">
-        <button class="f-btn" onclick="location.href='/Farmer/Crops'"><i class="ph-bold ph-plant"></i> List New Crop</button>
-        <button class="f-btn" onclick="location.href='/Farmer/QCSlots'"><i class="ph-bold ph-calendar-check"></i> Book QC Appointment</button>
-        <button class="f-btn" onclick="location.href='/Farmer/Inquiries'"><i class="ph-bold ph-headset"></i> Help & Support</button>
-    </div>
-
-    <!-- KPI PERFORMANCE ROW -->
-    <section>
-        <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
-
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Total Earnings</div>
-                    <div class="kpi-icon" style="background:var(--grad-rev);"><i class="ph-duotone ph-currency-inr" style="color:white; font-size: 26px;"></i></div>
-                    <i class="ph-duotone ph-currency-inr watermark"></i>
-                </div>
-                <div class="kpi-val" id="kpiEarnings">₹0</div>
-                <div class="kpi-sub"><span class="kpi-trend up"><i class="ph-bold ph-trend-up"></i> Collected</span> to your bank accounts</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Pending Payments</div>
-                    <div class="kpi-icon" style="background:var(--grad-vend);"><i class="ph-duotone ph-hourglass-high" style="color:white; font-size: 26px;"></i></div>
-                    <i class="ph-duotone ph-hourglass-high watermark"></i>
-                </div>
-                <div class="kpi-val" id="kpiPendingPay">₹0</div>
-                <div class="kpi-sub"><span class="kpi-trend neutral"><i class="ph-bold ph-minus"></i> Awaiting</span> buyer confirmation</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Active Crops Listed</div>
-                    <div class="kpi-icon" style="background:var(--grad-farm);"><i class="ph-duotone ph-plant" style="color:white; font-size: 26px;"></i></div>
-                    <i class="ph-duotone ph-plant watermark"></i>
-                </div>
-                <div class="kpi-val" id="kpiCrops">0</div>
-                <div class="kpi-sub"><span class="kpi-trend up"><i class="ph-bold ph-check-circle"></i> Verified</span> by FarmBridge</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Upcoming QC Slots</div>
-                    <div class="kpi-icon" style="background:var(--grad-fo);"><i class="ph-duotone ph-shield-check" style="color:white; font-size: 26px;"></i></div>
-                    <i class="ph-duotone ph-shield-check watermark"></i>
-                </div>
-                <div class="kpi-val" id="kpiQC">0</div>
-                <div class="kpi-sub"><span class="kpi-trend neutral"><i class="ph-bold ph-calendar"></i> Scheduled</span> for future dates</div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- ANALYTICS & RECENT PAYMENTS IN ONE ROW -->
-    <section>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            
-            <!-- Income History Left -->
-            <div class="chart-card" style="padding: 20px;">
-                <div class="chart-head" style="margin-bottom: 10px;">
-                    <div>
-                        <div class="chart-title">Income History</div>
-                        <div class="chart-sub">Your monthly earnings summary</div>
-                    </div>
-                </div>
-                <div class="kendo-widget-container"><div id="incomeChart" style="height: 200px;"></div></div>
-            </div>
-
-            <!-- Recent Payments Right -->
-            <div class="grid-card" style="padding: 20px; overflow: hidden; display: flex; flex-direction: column;">
-                <div class="grid-head" style="margin-bottom: 10px;">
-                    <div class="grid-title">Recent Payments & Clearances</div>
-                </div>
-                <div class="kendo-widget-container" style="flex: 1;">
-                    <div id="paymentsGrid" class="borderless-grid"></div>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-</div>
-
-@section Scripts {
-<script src="~/js/Farmer/dashboard.js"></script>
-} *@
-
-
 @{
     ViewData["Title"] = "Farmer Dashboard";
     ViewData["UserRole"] = "Farmer";
@@ -114,7 +11,6 @@
 }
 
 <div class="db-wrap">
-
     <div class="f-action-row">
         <button class="f-btn" onclick="location.href='/Farmer/Crops'"><i class="ph-bold ph-plant"></i> List New Crop</button>
         <button class="f-btn" onclick="location.href='/Farmer/QCSlots'"><i class="ph-bold ph-calendar-check"></i> Book QC Appointment</button>
@@ -123,7 +19,6 @@
 
     <section>
         <div class="kpi-grid dash-kpi-grid">
-
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Total Earnings</div>
@@ -133,7 +28,6 @@
                 <div class="kpi-val skeleton" id="kpiEarnings">₹0</div>
                 <div class="kpi-sub"><span class="kpi-trend up"><i class="ph-bold ph-trend-up"></i> Collected</span> to your bank accounts</div>
             </div>
-
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Pending Payments</div>
@@ -143,7 +37,6 @@
                 <div class="kpi-val skeleton" id="kpiPendingPay">₹0</div>
                 <div class="kpi-sub"><span class="kpi-trend neutral"><i class="ph-bold ph-minus"></i> Awaiting</span> buyer confirmation</div>
             </div>
-
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Active Crops Listed</div>
@@ -153,7 +46,6 @@
                 <div class="kpi-val skeleton" id="kpiCrops">0</div>
                 <div class="kpi-sub"><span class="kpi-trend up"><i class="ph-bold ph-check-circle"></i> Verified</span> by FarmBridge</div>
             </div>
-
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Upcoming QC Slots</div>
@@ -163,13 +55,11 @@
                 <div class="kpi-val skeleton" id="kpiQC">0</div>
                 <div class="kpi-sub"><span class="kpi-trend neutral"><i class="ph-bold ph-calendar"></i> Scheduled</span> for future dates</div>
             </div>
-
         </div>
     </section>
 
     <section>
         <div class="dash-split-layout">
-            
             <div class="chart-card" style="padding: 20px;">
                 <div class="chart-head" style="margin-bottom: 10px;">
                     <div>
@@ -192,10 +82,20 @@
                     <div id="paymentsGrid" class="borderless-grid" style="display: none;"></div>
                 </div>
             </div>
-
         </div>
     </section>
+</div>
 
+<div id="farmerWelcomeModal" class="fb-modal-overlay">
+    <div class="fb-modal-card">
+        <button type="button" class="fb-modal-close" onclick="closeWelcomeModal()">&times;</button>
+        <div class="fb-modal-icon">🌾</div>
+        <h2 class="fb-modal-title">Welcome to FarmBridge</h2>
+        <div class="fb-modal-divider"></div>
+        <p class="fb-modal-text">Get the latest fully verified prices and sell your crops directly to vendors. What would you like to do today?</p>
+        <a href="/Farmer/Crops" class="fb-btn-primary"><span class="fb-btn-icon">🌱</span> List a New Crop</a>
+        <a href="/Farmer/QCSlots" class="fb-btn-secondary"><span class="fb-btn-icon">📋</span> Book QC Appointment</a>
+    </div>
 </div>
 
 @section Scripts {

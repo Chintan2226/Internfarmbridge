@@ -52,6 +52,7 @@ namespace API.Services
                 await CreateIndexIfNotExistsAsync("users");
                 await CreateIndexIfNotExistsAsync("qc_records");
                 await CreateIndexIfNotExistsAsync("warehouses");
+                await CreateIndexIfNotExistsAsync("vendor_catalog");
 
                 _logger.LogInformation("ElasticSearch indexes initialized successfully");
             }
@@ -383,6 +384,7 @@ namespace API.Services
                 result.Users = await ReindexUsersAsync();
                 result.QCRecords = await ReindexQCRecordsAsync();
                 result.Warehouses = await ReindexWarehousesAsync();
+                result.VendorCatalog = await ReindexVendorCatalogAsync();
 
                 result.Success = true;
                 result.Message = $"Re-index completed. Indexed: {result.TotalIndexed} records";
@@ -1497,6 +1499,221 @@ namespace API.Services
                 .Query(q => q.MatchAll())
             );
             return response.Count;
+        }
+
+        //Vendor Module
+        // ========== REINDEX VENDOR CATALOG (FROM WAREHOUSE LOTS) ==========
+
+
+        public async Task<object> GetFirstVendorCatalogDocumentAsync()
+        {
+            try
+            {
+                var searchRequest = new SearchRequest("vendor_catalog")
+                {
+                    Size = 1,
+                    Query = new MatchAllQuery()
+                };
+
+                var response = await _client.SearchAsync<object>(searchRequest);
+
+                if (response.IsValidResponse && response.Documents.Any())
+                {
+                    var doc = response.Documents.First();
+                    var json = System.Text.Json.JsonSerializer.Serialize(doc);
+                    using var document = System.Text.Json.JsonDocument.Parse(json);
+                    var root = document.RootElement;
+
+                    return new
+                    {
+                        fieldNames = root.EnumerateObject().Select(p => p.Name).ToList(),
+                        sampleData = doc
+                    };
+                }
+
+                return new { message = "No documents found in vendor_catalog index" };
+            }
+            catch (Exception ex)
+            {
+                return new { error = ex.Message };
+            }
+        }
+        public async Task<int> ReindexVendorCatalogAsync()
+        {
+            int indexed = 0;
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+            using var conn = new NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"
+        SELECT 
+            wl.c_catalog_product_id,
+            cp.c_name,
+            cp.c_category,
+            cp.c_unit_of_measure,
+            cp.c_description,
+            cp.c_image_url,
+            wl.c_grade,
+            AVG(qif.c_fo_assessed_price * 1.10) AS Price,
+            SUM(wl.c_quantity_remaining) AS QuantityAvailable
+        FROM t_warehouse_lots wl
+        INNER JOIN t_catalog_products cp ON wl.c_catalog_product_id = cp.c_id
+        INNER JOIN t_quality_inspection_forms qif ON wl.c_quality_inspection_id = qif.c_id
+        WHERE LOWER(wl.c_status) = 'available'
+          AND qif.c_passed = true
+        GROUP BY 
+            wl.c_catalog_product_id, cp.c_name, cp.c_category, 
+            cp.c_unit_of_measure, cp.c_description, cp.c_image_url, wl.c_grade
+        ORDER BY cp.c_name
+    ";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var productId = reader.GetInt32(0);
+                var grade = reader.IsDBNull(6) ? "nograde" : reader.GetString(6);
+
+                // ✅ KEY FIX: "5_A", "5_B", "5_C" — alag alag ID
+                var compositeId = $"{productId}_{grade}";
+
+                var doc = new Dictionary<string, object>
+                {
+                    ["Id"] = productId,
+                    ["Name"] = reader.GetString(1),
+                    ["Category"] = reader.IsDBNull(2) ? null : reader.GetString(2),
+                    ["UnitOfMeasure"] = reader.IsDBNull(3) ? "kg" : reader.GetString(3),
+                    ["Description"] = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    ["ImageUrl"] = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    ["Grade"] = grade,
+                    ["Price"] = reader.IsDBNull(7) ? 0m : reader.GetDecimal(7),
+                    ["QuantityAvailable"] = reader.IsDBNull(8) ? 0m : reader.GetDecimal(8),
+                    ["IsActive"] = true,
+                    ["DocumentType"] = "vendor_catalog",
+                    ["IndexedAt"] = DateTime.UtcNow
+                };
+
+                var response = await _client.IndexAsync(doc, idx => idx
+                    .Index("vendor_catalog")
+                    .Id(compositeId)  // ✅ "5_A", "5_B", "5_C"
+                );
+
+                if (response.IsValidResponse)
+                {
+                    indexed++;
+                    Console.WriteLine($"✅ Indexed: {doc["Name"]} Grade {grade} → ID: {compositeId}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Failed: {response.DebugInformation}");
+                }
+            }
+
+            _logger.LogInformation($"Reindexed {indexed} vendor catalog products");
+            return indexed;
+        }
+
+        public async Task<SearchResponseModel<CatalogSearchResult>> SearchVendorCatalogForMVCAsync(SearchRequestModel request)
+        {
+            var response = new SearchResponseModel<CatalogSearchResult>();
+
+            try
+            {
+                int from = (request.Page - 1) * request.PageSize;
+
+                Query query;
+                if (!string.IsNullOrWhiteSpace(request.Query))
+                {
+                    query = new BoolQuery
+                    {
+                        Should = new List<Query>
+                        {
+                            // "ap" → "Apple" (partial prefix match)
+                            new MultiMatchQuery
+                            {
+                                Query = request.Query,
+                                Fields = new[] { "Name^3", "Category^2", "Grade" },
+                                Type = TextQueryType.PhrasePrefix,
+                                Operator = Operator.Or
+                            },
+                            // "aple" → "Apple" (typo/fuzzy match)
+                            new MultiMatchQuery
+                            {
+                                Query = request.Query,
+                                Fields = new[] { "Name^3", "Category^2", "Grade" },
+                                Fuzziness = new Fuzziness("AUTO"),
+                                Operator = Operator.Or
+                            },
+                            // "ap*" wildcard match
+                            new WildcardQuery(new Field("Name"))
+                            {
+                                Value = $"{request.Query.ToLower()}*"
+                            }
+                        },
+                        MinimumShouldMatch = 1
+                    };
+                }
+                else
+                {
+                    query = new MatchAllQuery();
+                }
+
+                var searchRequest = new SearchRequest("vendor_catalog")
+                {
+                    From = from,
+                    Size = request.PageSize,
+                    Query = query
+                };
+
+                var result = await _client.SearchAsync<object>(searchRequest);
+
+                Console.WriteLine($"=== SEARCH DEBUG ===");
+                Console.WriteLine($"Query: {request.Query}");
+                Console.WriteLine($"Total Records: {result.Total}");
+
+                if (result.IsValidResponse && result.Documents.Any())
+                {
+                    foreach (var doc in result.Documents)
+                    {
+                        var json = System.Text.Json.JsonSerializer.Serialize(doc);
+                        using var document = System.Text.Json.JsonDocument.Parse(json);
+                        var root = document.RootElement;
+
+                        var catalogResult = new CatalogSearchResult
+                        {
+                            Id = root.TryGetProperty("Id", out var id) ? id.GetInt32() : 0,
+                            Name = root.TryGetProperty("Name", out var name) ? name.GetString() : null,
+                            Category = root.TryGetProperty("Category", out var cat) ? cat.GetString() : null,
+                            UnitOfMeasure = root.TryGetProperty("UnitOfMeasure", out var unit) ? unit.GetString() : "kg",
+                            Description = root.TryGetProperty("Description", out var desc) ? desc.GetString() : null,
+                            ImageUrl = root.TryGetProperty("ImageUrl", out var img) ? img.GetString() : null,
+                            IsActive = root.TryGetProperty("IsActive", out var active) ? active.GetBoolean() : true,
+                            Grade = root.TryGetProperty("Grade", out var grade) ? grade.GetString() : null,
+                            Price = root.TryGetProperty("Price", out var price)
+                                        ? price.GetDecimal() : 0,
+                            QuantityAvailable = root.TryGetProperty("QuantityAvailable", out var qty)
+                                        ? qty.GetDecimal() : 0
+                        };
+
+                        response.Results.Add(catalogResult);
+                    }
+
+                    response.TotalCount = result.Total;
+                    response.Page = request.Page;
+                    response.PageSize = request.PageSize;
+                }
+
+                Console.WriteLine($"Returning {response.Results.Count} results");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error searching vendor catalog: {ex.Message}");
+                _logger.LogError(ex, "Error searching vendor catalog");
+            }
+
+            return response;
         }
     }
 }

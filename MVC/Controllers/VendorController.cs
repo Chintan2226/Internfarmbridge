@@ -15,7 +15,7 @@ namespace MVC.Controllers
         private readonly string _apiBase;
 
         public VendorController(
-            HttpClient httpClient, 
+            HttpClient httpClient,
             IConfiguration configuration,
             ILogger<VendorController> logger)
         {
@@ -205,17 +205,23 @@ namespace MVC.Controllers
 
         // ========== ELASTICSEARCH SEARCH METHODS ==========
 
+
         [HttpPost]
+        [Route("Vendor/SearchCatalog")]
         public async Task<IActionResult> SearchCatalog([FromBody] SearchRequestModel request)
         {
             try
             {
+                var token = Request.Cookies["authToken"]; // ✅ Cookie se token lo
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync($"{_apiBase}/api/Vendor/search/catalog", content);
-                var result = await response.Content.ReadAsStringAsync();
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
+                var response = await _httpClient.PostAsync(
+                    $"{_apiBase}/api/Vendor/search/vendor-catalog", content);
+                var result = await response.Content.ReadAsStringAsync();
                 return Content(result, "application/json");
             }
             catch (Exception ex)
@@ -244,5 +250,7 @@ namespace MVC.Controllers
                 return Json(new { success = false, results = new List<OrderSearchResult>() });
             }
         }
+
+
     }
 }

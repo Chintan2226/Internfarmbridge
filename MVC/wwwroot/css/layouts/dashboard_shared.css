@@ -140,6 +140,18 @@ body {
     box-shadow: 0 20px 40px rgba(21, 66, 18, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 1);
 }
 
+/* 👉 FIX: Keeps the dark green card green on hover! */
+.kpi-card.kpi-accent:hover {
+    background: #14532d !important; 
+    box-shadow: 0 20px 40px rgba(20, 83, 45, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+.kpi-card.kpi-accent:hover .kpi-lbl,
+.kpi-card.kpi-accent:hover .kpi-val,
+.kpi-card.kpi-accent:hover .kpi-sub {
+    color: #ffffff !important; 
+}
+
 .kpi-top {
     display: flex;
     justify-content: space-between;

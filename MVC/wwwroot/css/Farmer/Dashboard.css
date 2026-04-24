@@ -1,69 +1,19 @@
 /* Farmer-Specific Dashboard Overrides */
-
-.f-action-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
-}
-
-.f-btn {
-    padding: 10px 20px;
-    border-radius: 12px;
-    background: #fff;
-    border: 1px solid rgba(0,0,0,0.08);
-    font-weight: 600;
-    font-size: 14px;
-    color: #166534;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.f-btn:hover { 
-    background: #f0fdf4; 
-    border-color: #10b981;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
-}
-
-.f-btn i {
-    font-size: 18px;
-    color: #10b981;
-}
-
-.db-wrap { 
-    gap: 20px !important; 
-    padding-bottom: 20px !important; 
-}
+.f-action-row { display: flex; gap: 12px; margin-bottom: 24px; }
+.f-btn { padding: 10px 20px; border-radius: 12px; background: #fff; border: 1px solid rgba(0,0,0,0.08); font-weight: 600; font-size: 14px; color: #166534; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.f-btn:hover { background: #f0fdf4; border-color: #10b981; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1); }
+.f-btn i { font-size: 18px; color: #10b981; }
+.db-wrap { gap: 20px !important; padding-bottom: 20px !important; }
 
 /* --- RESPONSIVE FIXES --- */
-.dash-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.dash-split-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.kendo-widget-container {
-    border-radius: 12px;
-    overflow-x: auto;
-    width: 100%;
-}
+.dash-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.dash-split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.kendo-widget-container { border-radius: 12px; overflow-x: auto; width: 100%; }
 
 @media (max-width: 1024px) {
     .dash-kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .dash-split-layout { grid-template-columns: 1fr; }
 }
-
 @media (max-width: 768px) {
     .dash-kpi-grid { grid-template-columns: 1fr; }
     .f-action-row { flex-direction: column; }
