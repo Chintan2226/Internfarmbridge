@@ -177,78 +177,78 @@ $(document).ready(function () {
        3. RECENT PAYMENTS GRID
     ────────────────────────────────────────────── */
 
-   /* Section */
+    /* Section */
 
-$.ajax({
+    $.ajax({
 
-    url: `${window.API_BASE}/${window.FARMER_ID}/payments`,
-    type: "GET",
-    headers: authHeaders(),
+        url: `${window.API_BASE}/${window.FARMER_ID}/payments`,
+        type: "GET",
+        headers: authHeaders(),
 
-    success: function (response) {
+        success: function (response) {
 
-        console.log("Payments Response:", response);
+            console.log("Payments Response:", response);
 
-        var rows = (response.data || []).map(function (item) {
+            var rows = (response.data || []).map(function (item) {
 
-            return {
-                Date: new Date().toLocaleDateString("en-IN"), // fallback date
+                return {
+                    Date: new Date().toLocaleDateString("en-IN"), // fallback date
 
-                Crop: item.cropName || "Crop Payment",
+                    Crop: item.cropName || "Crop Payment",
 
-                Amount: item.amount || 0
-            };
-        });
+                    Amount: item.amount || 0
+                };
+            });
 
         $("#gridSkeleton").hide();
         $("#paymentsGrid").show().kendoGrid({
 
-            dataSource: {
-                data: rows,
-                pageSize: 5
-            },
-
-            pageable: true,
-            sortable: true,
-
-            columns: [
-
-                {
-                    field: "Date",
-                    title: "Date",
-                    width: "30%"
+                dataSource: {
+                    data: rows,
+                    pageSize: 5
                 },
 
-                {
-                    field: "Crop",
-                    title: "Crop Sold",
-                    width: "40%"
-                },
+                pageable: true,
+                sortable: true,
 
-                {
-    field: "Amount",
-    title: "Amount",
-    width: "30%",
-    template: function (dataItem) {
-        return "<span style='font-weight:600;color:#2e7d32;'>₹" +
-            kendo.toString(dataItem.Amount, "n0") +
-            "</span>";
-    }
-}
+                columns: [
 
-            ]
+                    {
+                        field: "Date",
+                        title: "Date",
+                        width: "30%"
+                    },
 
-        });
+                    {
+                        field: "Crop",
+                        title: "Crop Sold",
+                        width: "40%"
+                    },
 
-    },
+                    {
+                        field: "Amount",
+                        title: "Amount",
+                        width: "30%",
+                        template: function (dataItem) {
+                            return "<span style='font-weight:600;color:#2e7d32;'>₹" +
+                                kendo.toString(dataItem.Amount, "n0") +
+                                "</span>";
+                        }
+                    }
 
-    error: function (xhr) {
+                ]
 
-        if (handleUnauthorized(xhr)) return;
+            });
 
-        showLoadError("recent payments");
-    }
+        },
 
-});
+        error: function (xhr) {
+
+            if (handleUnauthorized(xhr)) return;
+
+            showLoadError("recent payments");
+        }
+
+    });
 
 });
