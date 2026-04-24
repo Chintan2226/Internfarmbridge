@@ -409,7 +409,7 @@ namespace API.Controllers
                     "A new delivery address has been added to your account.",
                     "address");
             }
-            
+
             return Ok(result);
         }
 
@@ -745,6 +745,50 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
             request.VendorId = vendorId;
             var results = await _elasticService.SearchOrdersForMVCAsync(request);
             return Ok(results);
+        }
+
+
+        //ElasticSearch
+        [HttpPost("search/vendor-catalog")]
+        public async Task<IActionResult> SearchVendorCatalog([FromBody] SearchRequestModel request)
+        {
+            try
+            {
+                var results = await _elasticService.SearchVendorCatalogForMVCAsync(request);
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "SearchVendorCatalog failed");
+                return Ok(new SearchResponseModel<CatalogSearchResult>());
+            }
+        }
+        [HttpGet("sample-vendor-catalog")]
+        public async Task<IActionResult> GetSampleVendorCatalog()
+        {
+            try
+            {
+                var result = await _elasticService.GetFirstVendorCatalogDocumentAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("reindex-vendor-catalog")]
+        public async Task<IActionResult> ReindexVendorCatalog()
+        {
+            try
+            {
+                var result = await _elasticService.ReindexVendorCatalogAsync();
+                return Ok(new { success = true, indexed = result, message = $"Reindexed {result} products" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
     }
 }

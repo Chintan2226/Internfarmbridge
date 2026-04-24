@@ -29,8 +29,8 @@
                     </div>
                 </div>
                 
-                <h3 id="farmerNameLabel" style="font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 4px 0;"></h3>
-                <p id="farmerMetaLabel" style="font-size: 13px; color: #64748b; margin: 0 0 16px 0;"></p>
+                <h3 id="farmerNameLabel" class="skeleton" style="font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 4px 0; min-width: 150px; min-height: 22px;"></h3>
+                <p id="farmerMetaLabel" class="skeleton" style="font-size: 13px; color: #64748b; margin: 0 0 16px 0; min-width: 100px; min-height: 16px;"></p>
 
                 <div style="margin-bottom: 16px; display: flex; justify-content: center; gap: 8px;">
                     <input type="file" id="photoInput" style="display: none;" accept="image/*" onchange="handlePhotoUpload(this)" />
@@ -42,11 +42,11 @@
                 <div style="text-align: left; padding-top: 16px; border-top: 1px solid #f1f5f9;">
                     <div class="kpi-stat-row">
                         <span class="kpi-stat-lbl" data-i18n="profile_active_listings">Active Listings</span>
-                        <span class="kpi-stat-val" id="statActiveListings">0</span>
+                        <span class="kpi-stat-val skeleton" id="statActiveListings" style="min-width: 20px; display: inline-block;">0</span>
                     </div>
                     <div class="kpi-stat-row" style="border-bottom: none;">
                         <span class="kpi-stat-lbl" data-i18n="profile_qc_passed">Quality Checks Passed</span>
-                        <span class="kpi-stat-val" id="statQCPassed">0</span>
+                        <span class="kpi-stat-val skeleton" id="statQCPassed" style="min-width: 20px; display: inline-block;">0</span>
                     </div>
                 </div>
 
@@ -68,29 +68,29 @@
                 <div class="row g-3" style="margin-bottom: 20px;">
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_full_name">Full Name</label>
-                        <input id="fullName" class="text-field" value="" />
+                        <input id="fullName" class="text-field skeleton" value="" />
                     </div>
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_mobile_number">Mobile Number</label>
-                        <input id="phoneNo" class="text-field" value="" disabled />
+                        <input id="phoneNo" class="text-field skeleton" value="" disabled />
                     </div>
                 </div>
                 
                 <div class="row g-3" style="margin-bottom: 20px;">
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_state">State</label>
-                        <input id="farmState" class="text-field" data-i18n-placeholder="profile_enter_state" />
+                        <input id="farmState" class="text-field skeleton" data-i18n-placeholder="profile_enter_state" />
                     </div>
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_district">District</label>
-                        <input id="farmDistrict" class="text-field" data-i18n-placeholder="profile_enter_district" />
+                        <input id="farmDistrict" class="text-field skeleton" data-i18n-placeholder="profile_enter_district" />
                     </div>
                 </div>
 
                 <div class="row g-3" style="margin-bottom: 32px;">
                     <div class="col-12 form-group">
                         <label class="premium-label" data-i18n="profile_farm_address">Farm Address</label>
-                        <input id="address" class="text-field" data-i18n-placeholder="profile_enter_address" />
+                        <input id="address" class="text-field skeleton" data-i18n-placeholder="profile_enter_address" />
                     </div>
                 </div>
 
@@ -102,22 +102,22 @@
                 <div class="row g-3" style="margin-bottom: 20px;">
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_bank_name">Bank Name</label>
-                        <input id="bankName" class="text-field" data-i18n-placeholder="profile_enter_bank" />
+                        <input id="bankName" class="text-field skeleton" data-i18n-placeholder="profile_enter_bank" />
                     </div>
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_branch_name">Branch Name</label>
-                        <input id="branchName" class="text-field" data-i18n-placeholder="profile_enter_branch" />
+                        <input id="branchName" class="text-field skeleton" data-i18n-placeholder="profile_enter_branch" />
                     </div>
                 </div>
 
                 <div class="row g-3" style="margin-bottom: 20px;">
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_account_holder_name">Account Holder Name</label>
-                        <input id="acctName" class="text-field" value="" />
+                        <input id="acctName" class="text-field skeleton" value="" />
                     </div>
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_account_type">Account Type</label>
-                        <select id="acctType" class="text-field" style="cursor: pointer;">
+                        <select id="acctType" class="text-field skeleton" style="cursor: pointer;">
                             <option value="" disabled selected hidden data-i18n="profile_select_acct_type">Select Account Type...</option>
                             <option value="savings" data-i18n="profile_savings">Savings</option>
                             <option value="current" data-i18n="profile_current">Current</option>
@@ -128,19 +128,19 @@
                 <div class="row g-3" style="margin-bottom: 20px;">
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_account_number">Account Number</label>
-                        <input id="acctNo" type="password" class="text-field" value="" />
+                        <input id="acctNo" type="password" class="text-field skeleton" value="" />
                         <div style="font-size: 11px; color:#94a3b8; margin-top:4px;" data-i18n="profile_hidden_for_security">Hidden for security.</div>
                     </div>
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_ifsc_code">IFSC Code</label>
-                        <input id="ifscCode" class="text-field" data-i18n-placeholder="profile_enter_ifsc" style="text-transform: uppercase;" />
+                        <input id="ifscCode" class="text-field skeleton" data-i18n-placeholder="profile_enter_ifsc" style="text-transform: uppercase;" />
                     </div>
                 </div>
 
                 <div class="row g-3" style="margin-bottom: 32px;">
                     <div class="col-md-6 form-group">
                         <label class="premium-label" data-i18n="profile_upi_id">UPI ID <span style="font-size:10px; color:#94a3b8; text-transform:none;" data-i18n="profile_optional">(Optional)</span></label>
-                        <input id="upiId" class="text-field" data-i18n-placeholder="profile_enter_upi" />
+                        <input id="upiId" class="text-field skeleton" data-i18n-placeholder="profile_enter_upi" />
                     </div>
                 </div>
 

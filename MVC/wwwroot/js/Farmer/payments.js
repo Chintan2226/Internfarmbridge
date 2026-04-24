@@ -87,11 +87,16 @@ $(document).ready(function () {
                 }
             });
 
-            $("#kpiLifetimeEarned").text(
+            $("#kpiLifetimeEarned").removeClass("skeleton").text(
                 "₹" + totalEarned.toLocaleString("en-IN")
             );
+<<<<<<< HEAD
 
             $("#kpiPendingPay").text(
+=======
+            
+            $("#kpiPendingPay").removeClass("skeleton").text(
+>>>>>>> dev
                 "₹" + totalPending.toLocaleString("en-IN")
             );
 
@@ -117,7 +122,8 @@ $(document).ready(function () {
             });
 
 
-            $("#paymentsGrid").kendoGrid({
+            $("#gridSkeleton").hide();
+            $("#paymentsGrid").show().kendoGrid({
 
                 toolbar: ["search"],
 
@@ -223,8 +229,8 @@ $(document).ready(function () {
 
 
             /* Empty grid fallback */
-
-            $("#paymentsGrid").kendoGrid({
+            $("#gridSkeleton").hide();
+            $("#paymentsGrid").show().kendoGrid({
 
                 dataSource: {
                     data: [],

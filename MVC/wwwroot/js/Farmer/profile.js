@@ -48,25 +48,26 @@ function loadProfile() {
 
             // Sidebar info
             var displayName = p.fullName || window.FARMER_NAME || "FarmBridge User";
-            $("#farmerNameLabel").text(displayName);
-            $("#farmerMetaLabel").text([p.district, p.state].filter(Boolean).join(", ") || fbT("profile_location_not_set"));
+            $("#farmerNameLabel").removeClass("skeleton").text(displayName);
+            $("#farmerMetaLabel").removeClass("skeleton").text([p.district, p.state].filter(Boolean).join(", ") || fbT("profile_location_not_set"));
 
             // Avatar placeholder
             var firstLetter = displayName.charAt(0).toUpperCase();
             $("#avatarPlaceholder").html(`<span style="font-size: 32px; color: #10b981; font-weight: 800;">${firstLetter}</span>`);
 
             // Bind fields
-            $("#fullName").val(p.fullName || "");
-            $("#phoneNo").val(p.phone || "");
-            $("#farmState").val(p.state || "");
-            $("#farmDistrict").val(p.district || "");
-            $("#address").val(p.address || "");
-            $("#bankName").val(p.bankName || "");
-            $("#branchName").val(p.branchName || "");
-            $("#acctName").val(p.accountHolderName || "");
-            $("#acctNo").val(p.accountNumber || "");
-            $("#ifscCode").val(p.ifscCode || "");
-            $("#upiId").val(p.upiId || "");
+            $("#fullName").removeClass("skeleton").val(p.fullName || "");
+            $("#phoneNo").removeClass("skeleton").val(p.phone || "");
+            $("#farmState").removeClass("skeleton").val(p.state || "");
+            $("#farmDistrict").removeClass("skeleton").val(p.district || "");
+            $("#address").removeClass("skeleton").val(p.address || "");
+            $("#bankName").removeClass("skeleton").val(p.bankName || "");
+            $("#branchName").removeClass("skeleton").val(p.branchName || "");
+            $("#acctName").removeClass("skeleton").val(p.accountHolderName || "");
+            $("#acctNo").removeClass("skeleton").val(p.accountNumber || "");
+            $("#ifscCode").removeClass("skeleton").val(p.ifscCode || "");
+            $("#upiId").removeClass("skeleton").val(p.upiId || "");
+            $("#acctType").removeClass("skeleton");
             if (p.accountType) $("#acctType").val(p.accountType);
 
             // Photo management
@@ -98,8 +99,8 @@ function loadProfileKpis() {
             if (!res.success || !res.data) return;
             var kpis = res.data.kpis;
             if (kpis) {
-                $("#statActiveListings").text(kpis.totalCropsListed || 0);
-                $("#statQCPassed").text(kpis.confirmedQcSlots || 0);
+                $("#statActiveListings").removeClass("skeleton").text(kpis.totalCropsListed || 0);
+                $("#statQCPassed").removeClass("skeleton").text(kpis.confirmedQcSlots || 0);
             }
         }
     });

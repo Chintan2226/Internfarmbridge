@@ -158,7 +158,7 @@ namespace API.Controllers
             await TryNotifyFarmerAsync(() => _emailService.SendFarmerRequestAcceptedEmailAsync(data));
 
             // ✅ NOTIFICATION: QC Request Accepted
-            await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+            await _rabbitMqService.PublishToUserAsync(data.FarmerId,
                 "QC Request Accepted ✅",
                 $"Your QC request has been accepted by Field Officer. Your slot is confirmed for {data.SlotDateFormatted}",
                 "qc_request");
@@ -194,10 +194,16 @@ namespace API.Controllers
                 await TryNotifyFarmerAsync(() => _emailService.SendFarmerSlotRescheduledEmailAsync(emailData));
 
                 // ✅ NOTIFICATION: QC Request Rescheduled
-                await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+                await _rabbitMqService.PublishToUserAsync(emailData.FarmerId,
                     "QC Slot Rescheduled 📅",
                     $"Your QC slot has been rescheduled to {date:dd MMM yyyy} at {start}.",
                     "qc_request");
+
+                await _rabbitMqService.PublishToRoleAsync("admin",
+                $"QC Slot Rescheduled for farmer {emailData.FarmerName}📅",
+                    $"QC slot has been rescheduled to {date:dd MMM yyyy} at {start} to {end}.",
+                    "qc_request");
+
 
                 return Ok(new { message = "Rescheduled successfully" });
             }
@@ -222,7 +228,7 @@ namespace API.Controllers
             await TryNotifyFarmerAsync(() => _emailService.SendFarmerRequestCancelledEmailAsync(data));
 
             // ✅ NOTIFICATION: QC Request Cancelled
-            await _rabbitMqService.PublishToUserAsync(GetCurrentUserId(),
+            await _rabbitMqService.PublishToUserAsync(data.FarmerId,
                 "QC Request Cancelled ❌",
                 $"Your QC request has been cancelled. Reason: {data.CancelReason ?? "No reason provided"}",
                 "qc_request");
@@ -421,7 +427,8 @@ namespace API.Controllers
                     $"Field Officer has initiated a payment request of ₹{advanceAmount:N2} for farmer.",
                     "payment");
 
-                return Ok(new { 
+                return Ok(new
+                {
                     message = "Payment request created successfully",
                     advanceAmount = advanceAmount
                 });
@@ -613,10 +620,13 @@ namespace API.Controllers
                 int inspectionId = request.inspectionId;
                 decimal advanceAmount = request.advanceAmount;
 
+                // Check existing payment
                 var hasPayment = await _helper.HasAdvancePayment(procurementRequestId);
                 if (hasPayment)
                     return BadRequest(new { message = "Payment already processed for this inspection" });
 
+                var farmerUserId = await _helper.GetFarmerNotifyInfo(farmerId);
+                // Process payment
                 var result = await _helper.ProcessAdvancePayment(
                     procurementRequestId,
                     farmerId,
@@ -624,44 +634,59 @@ namespace API.Controllers
                     advanceAmount
                 );
 
-                if (result?.success == false)
+                if (result == null || result.success == false)
                     return BadRequest(result);
 
-                // ✅ NOTIFICATION: Advance Payment Processed
-                await _rabbitMqService.PublishToUserAsync(farmerId,
+                string utr = Convert.ToString(result.utrReference);
+                int paymentId = Convert.ToInt32(result.paymentId);
+
+                // ============================
+                // FARMER NOTIFICATION
+                // ============================
+                _logger.LogInformation("Sending farmer notification for FarmerId: {FarmerId}", farmerId);
+
+                await _rabbitMqService.PublishToUserAsync(
+                    farmerUserId.UserId,
                     "Advance Payment Processed 💰",
-                    $"Your advance payment of ₹{advanceAmount:N2} has been processed. UTR: {result?.utrReference}",
-                    "payment");
+                    $"Your 30% advance payment of ₹{advanceAmount:N2} has been processed. UTR: {utr}",
+                    "payment",
+                    "payment",
+                    paymentId
+                );
 
-                // ✅ NOTIFICATION to Admin
-                await _rabbitMqService.PublishToRoleAsync("admin",
-                    "Advance Payment Processed",
-                    $"Advance payment of ₹{advanceAmount:N2} has been processed for farmer.",
-                    "payment");
+                // ============================
+                // ADMIN NOTIFICATION
+                // ============================
+                await _rabbitMqService.PublishToRoleAsync(
+                    "admin",
+                    "Advance Payment Processed 💰",
+                    $"Advance payment of ₹{advanceAmount:N2} has been processed for farmer ID {farmerId}.",
+                    "payment",
+                    "payment",
+                    paymentId
+                );
 
+                // ============================
+                // EMAIL NOTIFICATION
+                // ============================
                 await TryNotifyFarmerAsync(async () =>
                 {
                     var farmer = await _helper.GetFarmerNotifyInfo(procurementRequestId);
                     var detail = await _helper.GetInspectionDetail(procurementRequestId);
+
                     if (farmer == null || detail == null || string.IsNullOrWhiteSpace(farmer.Email))
                     {
                         _logger.LogWarning(
-                            "Payment email skipped: farmer/detail missing or no email for procurement {ProcurementRequestId}",
+                            "Payment email skipped for procurement {ProcurementRequestId}",
                             procurementRequestId);
                         return;
                     }
 
-                    var utr = result != null ? Convert.ToString(result.utrReference) : null;
                     var farmerNm = Convert.ToString(detail.farmerName) ?? farmer.FullName;
                     var cropNm = Convert.ToString(detail.cropName) ?? farmer.CropName;
+
                     var totalVal = Convert.ToDecimal(detail.totalValue);
                     var remainingVal = Convert.ToDecimal(detail.remainingAmount);
-                    var paymentId = 0;
-                    if (result != null)
-                    {
-                        try { paymentId = Convert.ToInt32(result.paymentId); }
-                        catch { /* dynamic payload */ }
-                    }
 
                     await _emailService.SendFarmerAdvancePaymentEmailAsync(
                         farmer.Email,
@@ -671,18 +696,18 @@ namespace API.Controllers
                         advanceAmount,
                         remainingVal,
                         utr,
-                        paymentId);
+                        paymentId
+                    );
                 });
 
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ProcessAdvancePayment ERROR: {ex.Message}");
+                _logger.LogError(ex, "ProcessAdvancePayment ERROR");
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-
         // ── GET FARMER PAYMENT HISTORY ─────────────────────────────────
         [HttpGet("payment-history/{farmerId}")]
         public async Task<IActionResult> GetPaymentHistory(int farmerId)
@@ -772,6 +797,96 @@ namespace API.Controllers
             request.FoId = foId;
             var results = await _elasticService.SearchQCRecordsForMVCAsync(request);
             return Ok(results);
+        }
+
+        // Add these methods inside your FieldOfficerController class (API)
+
+        [HttpGet("check-index")]
+        public async Task<IActionResult> CheckIndex([FromQuery] string index)
+        {
+            try
+            {
+                var exists = await _elasticService.CheckIndexExistsAsync(index);
+                var count = exists ? await _elasticService.GetTotalRecordsInIndexAsync(index) : 0;
+                return Ok(new
+                {
+                    index,
+                    exists,
+                    count,
+                    message = exists ? $"Index '{index}' exists with {count} records" : $"Index '{index}' does not exist"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("first-document")]
+        public async Task<IActionResult> GetFirstDocument()
+        {
+            try
+            {
+                var result = await _elasticService.GetFirstDocumentAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+
+        // ========== REINDEX & CHECK ELASTICSEARCH RECORDS ==========
+
+        [HttpGet("reindex-status")]
+        public async Task<IActionResult> GetReindexStatus()
+        {
+            try
+            {
+                var foId = await GetFieldOfficerProfileIdAsync();
+
+                // Get count from Database
+                var dbCount = await _helper.GetQCRecordsCountAsync(foId);
+
+                // Get count from Elasticsearch - Use _elasticService's client or add method
+                var elasticCount = await _elasticService.GetQCRecordsCountByFoIdAsync(foId);
+
+                return Ok(new
+                {
+                    success = true,
+                    elasticsearchCount = elasticCount,
+                    databaseCount = dbCount,
+                    isSynced = elasticCount == dbCount,
+                    message = elasticCount == dbCount
+                        ? "✅ Data is in sync"
+                        : $"⚠️ Sync needed: DB has {dbCount}, ES has {elasticCount}"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("reindex-qc")]
+        public async Task<IActionResult> ReindexQCRecords()
+        {
+            try
+            {
+                var foId = await GetFieldOfficerProfileIdAsync();
+                var result = await _elasticService.ReindexQCRecordsByFoIdAsync(foId);
+                return Ok(new
+                {
+                    success = true,
+                    message = $"Reindex completed. Indexed: {result} records",
+                    totalIndexed = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
     }
 }

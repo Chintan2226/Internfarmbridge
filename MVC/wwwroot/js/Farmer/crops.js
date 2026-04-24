@@ -74,10 +74,10 @@ function updateStatsBar(rows) {
         else if (s === "sold") counts.sold++;
     });
 
-    $("#statActive").text(counts.active);
-    $("#statDraft").text(counts.draft);
-    $("#statQC").text(counts.qc);
-    $("#statSold").text(counts.sold);
+    $("#statActive").removeClass("skeleton").text(counts.active);
+    $("#statDraft").removeClass("skeleton").text(counts.draft);
+    $("#statQC").removeClass("skeleton").text(counts.qc);
+    $("#statSold").removeClass("skeleton").text(counts.sold);
 
     if (rows.length > 0) {
         $("#cropsStatsBar").show();
@@ -106,6 +106,9 @@ $(document).ready(function () {
         success: function (response) {
             var rows = (response.data || []).map(mapListingToRow);
 
+            $("#gridSkeleton").hide();
+            updateStatsBar(rows);
+
             if (rows.length === 0) {
                 $("#cropsEmpty").show();
                 return;
@@ -118,15 +121,14 @@ $(document).ready(function () {
                 return;
             }
 
-            $("#cropsGrid").kendoListView({
+            $("#gridSkeleton").hide();
+            $("#cropsGrid").show().kendoListView({
                 dataSource: {
                     data: rows,
                     pageSize: 12
                 },
                 template: kendo.template(templateHtml)
             });
-
-            updateStatsBar(rows);
         },
 
         error: function (xhr) {
@@ -383,6 +385,9 @@ function reloadListings() {
         success: function (response) {
             var rows = (response.data || []).map(mapListingToRow);
 
+            $("#gridSkeleton").hide();
+            updateStatsBar(rows);
+
             if (rows.length === 0) {
                 $("#cropsEmpty").show();
                 var lv = $("#cropsGrid").data("kendoListView");
@@ -392,12 +397,11 @@ function reloadListings() {
 
             $("#cropsEmpty").hide();
 
-            var lv = $("#cropsGrid").data("kendoListView");
+            $("#gridSkeleton").hide();
+            var lv = $("#cropsGrid").show().data("kendoListView");
             if (lv) {
                 lv.dataSource.data(rows);
             }
-
-            updateStatsBar(rows);
         },
 
         error: function (xhr) {

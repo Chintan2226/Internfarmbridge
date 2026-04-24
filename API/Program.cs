@@ -33,11 +33,13 @@ builder.Services.AddScoped<RabbitMqService>();
 builder.Services.AddHostedService<NotificationConsumer>();
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<ElasticService>();
+builder.Services.AddHttpClient<AiInventoryService>();
 
 
 //Email
 builder.Services.Configure<API.Models.Settings.EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<API.Services.EmailService>();
+builder.Services.AddHttpClient<SerpApiService>();
 
 
 // JWT services add

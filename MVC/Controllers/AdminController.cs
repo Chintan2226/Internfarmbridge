@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MVC.Filters;
 using MVC.Models;
+using Newtonsoft.Json.Linq;
 
 
 namespace MVC.Controllers
@@ -34,6 +35,43 @@ namespace MVC.Controllers
             // It is better to pull this from appsettings.json
             // Defaulting to your provided port 5020
             _apiBase = (config["ApiBaseUrl"] ?? "http://localhost:5020").TrimEnd('/');
+        }
+
+        public async Task<IActionResult> News(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+                query = "Indian Agriculture";
+
+            var apiUrl = $"http://localhost:5020/api/GoogleSearch?query={query}";
+
+            var response = await _http.GetStringAsync(apiUrl);
+
+            var json = JObject.Parse(response);
+
+            // Get thumbnails from AI Overview
+            var thumbnails = json["ai_overview"]?["references"]
+                ?.Where(x => x["thumbnail"] != null)
+                ?.Select(x => x["thumbnail"]?.ToString())
+                ?.ToList();
+
+            int index = 0;
+
+            var results = json["organic_results"]
+                .Select(x => new GoogleSearchViewModel
+                {
+                    Title = x["title"]?.ToString(),
+                    Link = x["link"]?.ToString(),
+                    Snippet = x["snippet"]?.ToString(),
+                    Source = x["source"]?.ToString(),
+
+                    Thumbnail =
+                        x["thumbnail"]?.ToString() ??
+                        (thumbnails != null && index < thumbnails.Count
+                            ? thumbnails[index++]
+                            : x["favicon"]?.ToString())
+                }).ToList();
+
+            return View(results);
         }
 
         // 1. Render the Dashboard Page

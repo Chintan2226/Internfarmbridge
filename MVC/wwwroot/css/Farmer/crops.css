@@ -684,3 +684,43 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
+/* - PREMIUM KENDO POPUP DROPDOWN LIST --------------------- */
+.k-animation-container .k-popup {
+    border-radius: 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    padding: 6px !important;
+    background-color: #ffffff !important;
+}
+
+.k-popup .k-list .k-item,
+.k-popup .k-list-content .k-item {
+    border-radius: 6px !important;
+    padding: 10px 14px !important;
+    margin-bottom: 2px !important;
+    font-size: 14px !important;
+    color: #334155 !important;
+    transition: all 0.15s ease !important;
+    border: none !important;
+}
+
+.k-popup .k-list .k-item:hover,
+.k-popup .k-list .k-state-hover,
+.k-popup .k-list-content .k-state-hover {
+    background-color: #f0fdf4 !important;
+    color: #059669 !important;
+}
+
+.k-popup .k-list .k-state-selected,
+.k-popup .k-list-content .k-state-selected,
+.k-popup .k-list .k-item.k-state-selected {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+.k-popup .k-list .k-state-focused,
+.k-popup .k-list-content .k-state-focused {
+    box-shadow: none !important;
+}

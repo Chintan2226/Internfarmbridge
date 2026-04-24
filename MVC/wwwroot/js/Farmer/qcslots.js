@@ -133,13 +133,14 @@ $(document).ready(function () {
 
                 var d = res.data;
 
-                $("#kpiUpcoming").text(d.upcomingAppts);
-                $("#kpiAwaiting").text(d.awaitingResults);
-                $("#kpiTotalPassed").text(d.totalQcPassed);
-                $("#kpiGradeRate").text(d.premiumGradeRate + "%");
+                $("#kpiUpcoming").removeClass("skeleton").text(d.upcomingAppts);
+                $("#kpiAwaiting").removeClass("skeleton").text(d.awaitingResults);
+                $("#kpiTotalPassed").removeClass("skeleton").text(d.totalQcPassed);
+                $("#kpiGradeRate").removeClass("skeleton").text(d.premiumGradeRate + "%");
 
 
-                $("#historyGrid").kendoGrid({
+                $("#gridSkeleton").hide();
+                $("#historyGrid").show().kendoGrid({
 
                     dataSource: {
 
@@ -296,25 +297,25 @@ $(document).ready(function () {
 
         var payload = {
 
-            FarmerId: window.FARMER_ID,
+    FarmerId: parseInt(window.FARMER_ID),
 
-            WarehouseId: $("#warehouseLocation").val(),
+    WarehouseId: parseInt($("#warehouseLocation").val()),
 
-            CropListingId: $("#cropListing").val(),
+    CropListingId: parseInt($("#cropListing").val()),
 
-            SlotId: window.SELECTED_SLOT_ID,
+    SlotId: window.SELECTED_SLOT_ID,
 
-            SlotDate: kendo.toString(
-                $("#slotDate")
-                    .data("kendoDatePicker")
-                    .value(),
-                "yyyy-MM-dd"
-            ),
+    SlotDate: kendo.toString(
+        $("#slotDate")
+            .data("kendoDatePicker")
+            .value(),
+        "yyyy-MM-dd"
+    ),
 
-            TimeStart: window.SELECTED_SLOT_START,
+    TimeStart: window.SELECTED_SLOT_START,
 
-            TimeEnd: window.SELECTED_SLOT_END
-        };
+    TimeEnd: window.SELECTED_SLOT_END
+};
 
 
         $.ajax({

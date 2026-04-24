@@ -61,6 +61,9 @@ namespace MVC.Models
         public string Description { get; set; }
         public string ImageUrl { get; set; }
         public bool IsActive { get; set; }
+        public string Grade { get; set; }
+    public decimal Price { get; set; }           
+    public decimal QuantityAvailable { get; set; }
     }
 
     // Vendor - Order Search Result
@@ -99,5 +102,17 @@ namespace MVC.Models
         public decimal AcceptedQuantity { get; set; }
         public bool Passed { get; set; }
         public DateTime SubmittedAt { get; set; }
+    }
+    public class WarehouseDocument
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string State { get; set; }
+        public string District { get; set; }
+        public int DailyCapacity { get; set; }
+        public bool IsActive { get; set; }
+        public string DocumentType { get; set; } = "warehouse";
+        public DateTime IndexedAt { get; set; } = DateTime.UtcNow;
     }
 }

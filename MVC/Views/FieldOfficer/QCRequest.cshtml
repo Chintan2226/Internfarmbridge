@@ -12,6 +12,73 @@
                 <span class="hdr-badge hdr-complete" id="inProgressCount">0 In Progress</span>
             </div>
         </div>
+        
+        <!-- 🔍 SEARCH SECTION -->
+        <div class="search-section" style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control"
+                               placeholder="🔍 Search by farmer name, crop, location, grade, status..."
+                               style="border-radius: 8px 0 0 8px;" />
+                        <button class="btn btn-primary" id="searchBtn" style="border-radius: 0 8px 8px 0;">
+                            <i class="fa fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-secondary" id="toggleFilters" style="width: 100%; border-radius: 8px;">
+                        <i class="fa fa-filter"></i> Show Advanced Filters
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Advanced Filters -->
+            <div id="advancedFilters" style="display: none; margin-top: 15px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Grade</label>
+                        <select id="gradeFilter" class="form-control">
+                            <option value="">All Grades</option>
+                            <option value="A">A Grade</option>
+                            <option value="B">B Grade</option>
+                            <option value="C">C Grade</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select id="statusFilter" class="form-control">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="scheduled">Scheduled / In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">QC Result</label>
+                        <select id="passedFilter" class="form-control">
+                            <option value="">All</option>
+                            <option value="true">Passed ✓</option>
+                            <option value="false">Failed ✗</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-outline-secondary form-control" id="clearFilters">
+                            <i class="fa fa-times"></i> Clear All Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Results Info -->
+            <div id="searchResultsInfo" style="margin-top: 10px; font-size: 12px; color: #6c757d; display: none;">
+                <i class="fa fa-info-circle"></i> Showing search results for: <span id="searchQueryText"></span>
+                <button class="btn btn-link btn-sm" id="clearSearch"
+                        style="padding: 0; margin-left: 10px;">Clear</button>
+            </div>
+        </div>
+        
         <div id="qcGrid"></div>
         <div id="rescheduleWindow" style="display:none;">
             <div class="reschedule-modal-body">
@@ -37,335 +104,432 @@
                     <button class="k-button" onclick="closeReschedule()">Cancel</button>
                     <button class="k-button k-primary" onclick="submitReschedule()">Submit</button>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-<script>
-$(document).ready(function () {
-    function refreshQCGrid() {
-        $("#qcGrid").data("kendoGrid").dataSource.read();
-    }
-    function normalizeStatus(status) {
-        return (status || "").toLowerCase();
-    }
-    window.downloadReport = function (id) {
-        if (!id) {
-            foError('Invalid ID', 'Invalid inspection ID');
-            return;
-        }
-        foOpenAuthorizedWindow(`/inspection-report/${id}`);
-    };
-    function statusPill(status) {
-        const s = normalizeStatus(status);
-
-        var map = {
-            "pending": "pill-pending",
-            "scheduled": "pill-progress",
-            "completed": "pill-completed"
-        };
-
-        let text =
-            s === "pending" ? "Pending" :
-            s === "scheduled" ? "In Progress" :
-            s === "completed" ? "Completed" :
-            status;
-
-        return "<span class='status-pill " + (map[s] || "") + "'>" + text + "</span>";
-    }
-
-
-
-    // 🪟 Window
-    var rescheduleWindow = $("#rescheduleWindow").kendoWindow({
-        title: "Reschedule Slot",
-        modal: true,
-        visible: false,
-        width: "350px"
-    }).data("kendoWindow");
-
-    // 📅 Date Picker
-    $("#rescheduleDate").kendoDatePicker({
-        format: "yyyy-MM-dd",
-        min: new Date()
-    });
-
-    // ⏰ Time Pickers
-    $("#startTime").kendoTimePicker({
-        format: "HH:mm",
-        min: new Date(0, 0, 0, 10, 0),
-        max: new Date(0, 0, 0, 18, 0),
-        interval: 30
-    });
-
-    $("#endTime").kendoTimePicker({
-        format: "HH:mm",
-        min: new Date(0, 0, 0, 10, 0),
-        max: new Date(0, 0, 0, 18, 0),
-        interval: 30
-    });
-
-    // ✅ MAKE ENTIRE KENDO PICKER CLICKABLE (not just the icon)
-    // Attach to dynamically created pickers after they're initialized
-    setTimeout(function() {
-        // Date picker - click anywhere to open
-        $("#rescheduleDate").closest('.k-datepicker').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $("#rescheduleDate").data("kendoDatePicker").open();
-        });
-
-        // Start time picker - click anywhere to open
-        $("#startTime").closest('.k-timepicker').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $("#startTime").data("kendoTimePicker").open();
-        });
-
-        // End time picker - click anywhere to open
-        $("#endTime").closest('.k-timepicker').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $("#endTime").data("kendoTimePicker").open();
-        });
-    }, 100);
-
-    // ✅ Change cursor to pointer on hover for entire picker wrapper
-    $(document).on('mouseenter', '#rescheduleDate, #startTime, #endTime', function() {
-        $(this).closest('.k-datepicker, .k-timepicker').css('cursor', 'pointer');
-    });
-
-    $(document).on('mouseleave', '#rescheduleDate, #startTime, #endTime', function() {
-        $(this).closest('.k-datepicker, .k-timepicker').css('cursor', 'auto');
-    });
-
-    // ✅ ACCEPT
-    window.acceptRequest = function (id) {
-        $.ajax({
-            url: foApiUrl('/accept-request'),
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({requestId: id}),
-            success: function (res) {
-                foSuccess('Request Accepted', res.message || 'Request accepted successfully');
-                refreshQCGrid();
-            },
-            error: function (err) {
-                if (handleFoUnauthorized(err)) return;
-                let msg =
-                    err.responseJSON?.title ||
-                    err.responseJSON?.message ||
-                    err.responseText ||
-                    "Something went wrong";
-
-                foError('Error', msg);
+    <script>
+        $(document).ready(function () {
+    
+            // ========== GLOBAL VARIABLES ==========
+            var isSearchMode = false;
+            var currentSearchData = [];
+    
+            // ========== EXISTING FUNCTIONS ==========
+            function refreshQCGrid() {
+                var grid = $("#qcGrid").data("kendoGrid");
+                if (grid) {
+                    grid.dataSource.read();
+                }
             }
-        });
-    };
-
-    // 🟡 OPEN RESCHEDULE
-    window.openReschedule = function (requestId) {
-        $("#rescheduleId").val(requestId);
-
-        $("#rescheduleDate").data("kendoDatePicker").value(null);
-        $("#startTime").data("kendoTimePicker").value(null);
-        $("#endTime").data("kendoTimePicker").value(null);
-
-        rescheduleWindow.center().open();
-    };
-
-    // 🔥 SUBMIT RESCHEDULE
-    window.submitReschedule = function () {
-        var requestId = parseInt($("#rescheduleId").val());
-        var date = $("#rescheduleDate").data("kendoDatePicker").value();
-        var start = $("#startTime").data("kendoTimePicker").value();
-        var end = $("#endTime").data("kendoTimePicker").value();
-
-        if (!date || !start || !end) {
-            foWarning('Required Fields', 'All fields are required');
-            return;
-        }
-
-        if (end <= start) {
-            foWarning('Invalid Time', 'End time must be greater than start time');
-            return;
-        }
-
-        $.ajax({
-            url: foApiUrl('/reschedule-request'),
-            type: 'POST',
-            data: {
-                requestId: requestId,
-                slotDate: kendo.toString(date, "yyyy-MM-dd"),
-                startTime: kendo.toString(start, "HH:mm:ss"),
-                endTime: kendo.toString(end, "HH:mm:ss")
-            },
-            success: function (res) {
-                foSuccess('Rescheduled', res.message || 'Rescheduled successfully');
-                rescheduleWindow.close();
-                $("#qcGrid").data("kendoGrid").dataSource.read();
-            },
-            error: function (err) {
-                if (handleFoUnauthorized(err)) return;
-                let msg =
-                    err.responseJSON?.title ||
-                    err.responseJSON?.message ||
-                    err.responseText ||
-                    "Something went wrong";
-
-                foError('Error', msg);
+    
+            function normalizeStatus(status) {
+                return (status || "").toLowerCase();
             }
-        });
-    };
+    
+            window.downloadReport = function (id) {
+                if (!id) {
+                    foError('Invalid ID', 'Invalid inspection ID');
+                    return;
+                }
+                foOpenAuthorizedWindow(`/inspection-report/${id}`);
+            };
+    
+            function statusPill(status) {
+                const s = normalizeStatus(status);
+                var map = {
+                    "pending": "pill-pending",
+                    "scheduled": "pill-progress",
+                    "in progress": "pill-progress",
+                    "completed": "pill-completed"
+                };
+                let text = s === "pending" ? "Pending" :
+                    (s === "scheduled" || s === "in progress") ? "In Progress" :
+                        s === "completed" ? "Completed" : status;
+                return "<span class='status-pill " + (map[s] || map["pending"]) + "'>" + text + "</span>";
+            }
+    
+            // Update counts function
+            function updateCounts(data) {
+                var pending = data.filter(function (i) {
+                    var s = normalizeStatus(i.status);
+                    return s === "pending";
+                }).length;
+                var inProgress = data.filter(function (i) {
+                    var s = normalizeStatus(i.status);
+                    return s === "scheduled" || s === "in progress";
+                }).length;
+        
+                $("#pendingCount").text(pending + " Pending");
+                $("#inProgressCount").text(inProgress + " In Progress");
+            }
+    
+            // ========== ELASTICSEARCH FUNCTION ==========
+            function performElasticSearch(searchQuery, grade, status, passed, callback) {
+                // Always filter by pending/scheduled status (same as grid)
+                var requestData = {
+                    Query: searchQuery || '',
+                    Page: 1,
+                    PageSize: 100,
+                    Grade: grade || '',
+                    Status: 'pending,scheduled',  // Only search in these statuses
+                    Passed: passed === 'true' ? true : (passed === 'false' ? false : null)
+                };
+    
+                $.ajax({
+                    url: '/FieldOfficer/SearchQCRecords',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(requestData),
+                    success: function (response) {
+                        if (response && response.results) {
+                            callback(response.results);
+                        } else {
+                            callback([]);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Search error:", error);
+                        callback([]);
+                    }
+                });
+            }
+    
+            // ========== SEARCH EVENT HANDLERS ==========
+            var searchTimeout;
 
-    window.closeReschedule = function () {
-        rescheduleWindow.close();
-    };
+            $('#searchInput').on('input', function () {
+                clearTimeout(searchTimeout);
+    
+                var searchQuery = $(this).val().trim();
+                var grade = $('#gradeFilter').val();
+                var status = $('#statusFilter').val();
+                var passed = $('#passedFilter').val();
+    
+                // Debounce: Wait 300ms after user stops typing
+                searchTimeout = setTimeout(function () {
+                    if (searchQuery || grade || status || passed) {
+                        isSearchMode = true;
+            
+                        performElasticSearch(searchQuery, grade, status, passed, function (results) {
+                            currentSearchData = results;
+                            var grid = $("#qcGrid").data("kendoGrid");
+                            grid.dataSource.data(results);
+                            grid.dataSource.total(results.length);
+                            updateCounts(results);
+                
+                            if (searchQuery) {
+                                $('#searchResultsInfo').show();
+                                $('#searchQueryText').text(searchQuery);
+                            } else {
+                                $('#searchResultsInfo').hide();
+                            }
+                        });
+                    } else {
+                        // Clear search when input is empty
+                        isSearchMode = false;
+                        currentSearchData = [];
+                        $('#searchResultsInfo').hide();
+                        var grid = $("#qcGrid").data("kendoGrid");
+                        grid.dataSource.read();
+                    }
+                }, 300);
+            });
 
-    window.cancelRequest = function (id) {
-        foConfirm('Cancel Request?', 'The farmer will be notified by email.', 'Yes, Cancel').then(function (confirmed) {
-            if (!confirmed) return;
-            $.ajax({
-                url: foApiUrl('/cancel-request'),
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({requestId: id}),
-                success: function (res) {
-                    foSuccess('Cancelled', res.message || 'Request cancelled');
-                    refreshQCGrid();
-                },
-                error: function (err) {
-                    if (handleFoUnauthorized(err)) return;
-                    var msg = err.responseJSON?.message || err.responseText || 'Cancel failed';
-                    foError('Error', msg);
+            // Search button also works
+            $('#searchBtn').click(function () {
+                $('#searchInput').trigger('input');
+            });
+    
+            @* $('#searchInput').keypress(function (e) {
+                if (e.which === 13) {
+                    $('#searchBtn').click();
+                }
+            }); *@
+    
+                $('#gradeFilter, #statusFilter, #passedFilter').change(function () {
+                    if ($('#searchInput').val().trim() || $(this).val()) {
+                        $('#searchBtn').click();
+                    }
+                });
+    
+            $('#toggleFilters').click(function () {
+                $('#advancedFilters').slideToggle();
+                var btn = $(this);
+                if (btn.text().includes('Show')) {
+                    btn.html('<i class="fa fa-filter"></i> Hide Advanced Filters');
+                } else {
+                    btn.html('<i class="fa fa-filter"></i> Show Advanced Filters');
                 }
             });
-        });
-    };
-
-    // 🔥 VIEW INSPECTION DETAILS
-    window.viewInspectionDetails = function (procurementRequestId) {
-        window.location.href = `/FieldOfficer/InspectionDetail?id=${procurementRequestId}`;
-    };
-
-    // 📊 GRID
-    $("#qcGrid").kendoGrid({
-        dataSource: {
-            transport: {
-                read: {
-                    url: foApiUrl("/qc-requests"),
-                    type: "GET",
-                    dataType: "json"
+    
+            $('#clearFilters').click(function () {
+                $('#searchInput').val('');
+                $('#gradeFilter').val('');
+                $('#statusFilter').val('');
+                $('#passedFilter').val('');
+                isSearchMode = false;
+                currentSearchData = [];
+                $('#searchResultsInfo').hide();
+                var grid = $("#qcGrid").data("kendoGrid");
+                grid.dataSource.read();
+            });
+    
+            $('#clearSearch').click(function () {
+                $('#clearFilters').click();
+            });
+    
+            // ========== WINDOW FUNCTIONS ==========
+            var rescheduleWindow = $("#rescheduleWindow").kendoWindow({
+                title: "Reschedule Slot",
+                modal: true,
+                visible: false,
+                width: "350px"
+            }).data("kendoWindow");
+    
+            $("#rescheduleDate").kendoDatePicker({
+                format: "yyyy-MM-dd",
+                min: new Date()
+            });
+    
+            $("#startTime").kendoTimePicker({
+                format: "HH:mm",
+                min: new Date(0, 0, 0, 10, 0),
+                max: new Date(0, 0, 0, 18, 0),
+                interval: 30
+            });
+    
+            $("#endTime").kendoTimePicker({
+                format: "HH:mm",
+                min: new Date(0, 0, 0, 10, 0),
+                max: new Date(0, 0, 0, 18, 0),
+                interval: 30
+            });
+    
+            setTimeout(function () {
+                $("#rescheduleDate").closest('.k-datepicker').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $("#rescheduleDate").data("kendoDatePicker").open();
+                });
+                $("#startTime").closest('.k-timepicker').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $("#startTime").data("kendoTimePicker").open();
+                });
+                $("#endTime").closest('.k-timepicker').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $("#endTime").data("kendoTimePicker").open();
+                });
+            }, 100);
+    
+            window.acceptRequest = function (id) {
+                $.ajax({
+                    url: foApiUrl('/accept-request'),
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ requestId: id }),
+                    success: function (res) {
+                        foSuccess('Request Accepted', res.message || 'Request accepted successfully');
+                        refreshQCGrid();
+                    },
+                    error: function (err) {
+                        if (handleFoUnauthorized(err)) return;
+                        foError('Error', err.responseJSON?.message || err.responseText || "Something went wrong");
+                    }
+                });
+            };
+    
+            window.openReschedule = function (requestId) {
+                $("#rescheduleId").val(requestId);
+                $("#rescheduleDate").data("kendoDatePicker").value(null);
+                $("#startTime").data("kendoTimePicker").value(null);
+                $("#endTime").data("kendoTimePicker").value(null);
+                rescheduleWindow.center().open();
+            };
+    
+            window.submitReschedule = function () {
+                var requestId = parseInt($("#rescheduleId").val());
+                var date = $("#rescheduleDate").data("kendoDatePicker").value();
+                var start = $("#startTime").data("kendoTimePicker").value();
+                var end = $("#endTime").data("kendoTimePicker").value();
+        
+                if (!date || !start || !end) {
+                    foWarning('Required Fields', 'All fields are required');
+                    return;
                 }
-            },
-            error: function (xhr) {
-                if (handleFoUnauthorized(xhr)) return;
-                showFoLoadFailedAlert("QC requests");
-            },
-            schema: {
-                parse: function (response) {
-                    var rows = Array.isArray(response) ? response : [];
-                    return rows.filter(function (item) {
-                        var s = normalizeStatus(item.status);
-                        return s === "pending" || s === "scheduled";
+                if (end <= start) {
+                    foWarning('Invalid Time', 'End time must be greater than start time');
+                    return;
+                }
+        
+                $.ajax({
+                    url: foApiUrl('/reschedule-request'),
+                    type: 'POST',
+                    data: {
+                        requestId: requestId,
+                        slotDate: kendo.toString(date, "yyyy-MM-dd"),
+                        startTime: kendo.toString(start, "HH:mm:ss"),
+                        endTime: kendo.toString(end, "HH:mm:ss")
+                    },
+                    success: function (res) {
+                        foSuccess('Rescheduled', res.message || 'Rescheduled successfully');
+                        rescheduleWindow.close();
+                        refreshQCGrid();
+                    },
+                    error: function (err) {
+                        if (handleFoUnauthorized(err)) return;
+                        foError('Error', err.responseJSON?.message || err.responseText || "Something went wrong");
+                    }
+                });
+            };
+    
+            window.closeReschedule = function () {
+                rescheduleWindow.close();
+            };
+    
+            window.cancelRequest = function (id) {
+                foConfirm('Cancel Request?', 'The farmer will be notified by email.', 'Yes, Cancel').then(function (confirmed) {
+                    if (!confirmed) return;
+                    $.ajax({
+                        url: foApiUrl('/cancel-request'),
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ requestId: id }),
+                        success: function (res) {
+                            foSuccess('Cancelled', res.message || 'Request cancelled');
+                            refreshQCGrid();
+                        },
+                        error: function (err) {
+                            if (handleFoUnauthorized(err)) return;
+                            foError('Error', err.responseJSON?.message || err.responseText || 'Cancel failed');
+                        }
                     });
-                }
-            },
-            pageSize: 5
-        },
-
-        pageable: true,
-
-        dataBound: function () {
-            var data = this.dataSource.data();
-
-            let pending = data.filter(i => normalizeStatus(i.status) === "pending").length;
-            let inProgress = data.filter(i => normalizeStatus(i.status) === "scheduled").length;
-
-            $("#pendingCount").text(pending + " Pending");
-            $("#inProgressCount").text(inProgress + " In Progress");
-        },
-
-        columns: [
-            { field: "farmerName", title: "FARMER", attributes: { "data-label": "Farmer" } },
-            { field: "cropType", title: "CROP", attributes: { "data-label": "Crop" } },
-            { field: "quantity", title: "QTY", attributes: { "data-label": "Qty" } },
-            { field: "location", title: "LOCATION", attributes: { "data-label": "Location" } },
-
-            {
-                title: "SLOT",
-                attributes: { "data-label": "Date & Time" },
-                template: function (d) {
-                    if (!d.slotDate) return "<span>Not Scheduled</span>";
-
-                    return `
-                        <div style="background:#f0faf2;padding:8px;border-radius:8px;">
-                            <div>${kendo.toString(new Date(d.slotDate), 'dd MMM')}</div>
-                            <div style="font-size:12px;">
-                                ${d.startTime} - ${d.endTime}
-                            </div>
-                        </div>
-                    `;
-                }
-            },
-
-            {
-                field: "status",
-                title: "STATUS",
-                attributes: { "data-label": "Status" },
-                template: d => statusPill(d.status)
-            },
-
-            {
-                title: "ACTION",
-                attributes: { "data-label": "Action" },
-                template: function (d) {
-
-                    const status = normalizeStatus(d.status);
-
-                    // ✅ Pending → Accept & Reschedule buttons
-                    if (status === "pending") {
-                        return `
-                            <button class="btn-assess" onclick="acceptRequest(${d.procurementRequestId})">
-                                Accept
-                            </button>
-
-                            <button class="btn-view" onclick="openReschedule(${d.procurementRequestId})">
-                                Reschedule
-                            </button>
-                            <button class="btn-view" style="background:#6c757d;color:#fff;border-color:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">
-                                Cancel
-                            </button>
-                        `;
+                });
+            };
+    
+            window.viewInspectionDetails = function (procurementRequestId) {
+                window.location.href = `/FieldOfficer/InspectionDetail?id=${procurementRequestId}`;
+            };
+    
+            // ========== KENDO GRID INITIALIZATION ==========
+            $("#qcGrid").kendoGrid({
+                dataSource: {
+                    transport: {
+                        read: function (options) {
+                            $.ajax({
+                                url: foApiUrl("/qc-requests"),
+                                type: "GET",
+                                dataType: "json",
+                                success: function (response) {
+                                    var rows = Array.isArray(response) ? response : [];
+                                    // Filter only pending and scheduled for normal view
+                                    var filteredRows = rows.filter(function (item) {
+                                        var s = normalizeStatus(item.status);
+                                        return s === "pending" || s === "scheduled";
+                                    });
+                                    options.success(filteredRows);
+                                    updateCounts(filteredRows);
+                                },
+                                error: function (xhr) {
+                                    if (handleFoUnauthorized(xhr)) return;
+                                    showFoLoadFailedAlert("QC requests");
+                                    options.error(xhr);
+                                }
+                            });
+                        }
+                    },
+                    schema: {
+                        model: {
+                            id: "procurementRequestId",
+                            fields: {
+                                procurementRequestId: { type: "number" },
+                                farmerName: { type: "string" },
+                                cropType: { type: "string" },
+                                quantity: { type: "number" },
+                                location: { type: "string" },
+                                slotDate: { type: "date" },
+                                startTime: { type: "string" },
+                                endTime: { type: "string" },
+                                status: { type: "string" },
+                                grade: { type: "string" }
+                            }
+                        }
+                    },
+                    pageSize: 10,
+                    serverPaging: false,
+                    serverFiltering: false
+                },
+                pageable: {
+                    refresh: true,
+                    pageSizes: [5, 10, 20, 50],
+                    buttonCount: 5
+                },
+                sortable: true,
+                columns: [
+                    { field: "farmerName", title: "FARMER", width: 150 },
+                    { field: "cropType", title: "CROP", width: 120 },
+                    { field: "quantity", title: "QTY", width: 100, template: function (d) { return d.quantity + " kg"; } },
+                    { field: "location", title: "LOCATION", width: 150 },
+                    {
+                        title: "SLOT",
+                        width: 180,
+                        template: function (d) {
+                            if (!d.slotDate) return "<span>Not Scheduled</span>";
+                            return `<div style="background:#f0faf2;padding:8px;border-radius:8px;">
+                                                <div>${kendo.toString(new Date(d.slotDate), 'dd MMM yyyy')}</div>
+                                                <div style="font-size:12px;">${d.startTime || ''} - ${d.endTime || ''}</div>
+                                            </div>`;
+                        }
+                    },
+                    {
+                        field: "status",
+                        title: "STATUS",
+                        width: 120,
+                        template: function (d) { return statusPill(d.status); }
+                    },
+                    {
+                        field: "grade",
+                        title: "GRADE",
+                        width: 80,
+                        template: function (d) {
+                            if (!d.grade) return "<span>-</span>";
+                            var gradeClass = d.grade === 'A' ? 'success' : (d.grade === 'B' ? 'warning' : 'danger');
+                            return `<span class="badge badge-${gradeClass}">${d.grade}</span>`;
+                        }
+                    },
+                    {
+                        title: "ACTION",
+                        width: 250,
+                        template: function (d) {
+                            var status = normalizeStatus(d.status);
+                            if (status === "pending") {
+                                return `<button class="btn-assess" onclick="acceptRequest(${d.procurementRequestId})">Accept</button>
+                                                <button class="btn-view" onclick="openReschedule(${d.procurementRequestId})">Reschedule</button>
+                                                <button class="btn-view" style="background:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">Cancel</button>`;
+                            }
+                            if (status === "scheduled" || status === "in progress") {
+                                return `<button class="btn-view" style="background:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">Cancel</button>`;
+                            }
+                            if (status === "completed") {
+                                return `<button class="btn-view" onclick="viewInspectionDetails(${d.procurementRequestId})">View Details</button>
+                                                <button class="btn-view" onclick="downloadReport(${d.procurementRequestId})">Download</button>`;
+                            }
+                            return "<span>-</span>";
+                        }
                     }
-
-                    if (status === "scheduled") {
-                        return `
-                            <button class="btn-view" style="background:#6c757d;color:#fff;border-color:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">
-                                Cancel
-                            </button>
-                        `;
+                ],
+                dataBound: function (e) {
+                    if (!isSearchMode) {
+                        var data = e.sender.dataSource.data();
+                        updateCounts(data);
                     }
-
-                    // ✅ Completed → View Details button
-                    if (status === "completed") {
-                        return `
-                            <button class="btn-view" onclick="viewInspectionDetails(${d.procurementRequestId})">
-                                View Details
-                            </button>
-                            <button class="btn-view" onclick="downloadReport(${d.procurementRequestId})">Download Report</button>
-                        `;
-                    }
-
-                    return "<span style='color:gray;'>-</span>";
                 }
-            }
-        ]
-    });
-
-});
-</script>
+            });
+    
+        });
+    </script>
 }

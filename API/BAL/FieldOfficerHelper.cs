@@ -14,9 +14,11 @@ namespace API.BAL
     public class FieldOfficerHelper
     {
         private readonly NpgsqlConnection _conn;
-        public FieldOfficerHelper(NpgsqlConnection conn)
+        private readonly ElasticService _elasticService;
+        public FieldOfficerHelper(NpgsqlConnection conn, ElasticService elasticService)
         {
             _conn = conn;
+            _elasticService = elasticService;
         }
 
         public async Task<User> GetUserByEmailAsync(string email)
@@ -310,7 +312,7 @@ namespace API.BAL
             try
             {
                 var query = @"
-                    SELECT u.c_email, fp.c_full_name, cp.c_name
+                    SELECT u.c_email, fp.c_full_name, cp.c_name, fp.c_user_id
                     FROM t_procurement_requests pr
                     JOIN t_farmer_profiles fp ON pr.c_farmer_id = fp.c_id
                     JOIN t_users u ON fp.c_user_id = u.c_id
@@ -330,7 +332,8 @@ namespace API.BAL
                 {
                     Email = reader.IsDBNull(0) ? "" : reader.GetString(0),
                     FullName = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                    CropName = reader.IsDBNull(2) ? "" : reader.GetString(2)
+                    CropName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    UserId = reader.GetInt32(3)
                 };
             }
             finally
@@ -529,6 +532,17 @@ namespace API.BAL
                 }
 
                 await transaction.CommitAsync();
+                // ✅ NEW CODE - Index to Elasticsearch
+                try
+                {
+                    await _elasticService.IndexQCRecordAsync(inspectionId);
+                    Console.WriteLine($"✅ QC Record {inspectionId} indexed to Elasticsearch");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ Elasticsearch indexing failed: {ex.Message}");
+                    // Don't rethrow - inspection is already saved successfully
+                }
                 return inspectionId;
             }
             catch (Exception ex)
@@ -623,7 +637,8 @@ namespace API.BAL
                            wsb.c_slot_date, wsb.c_slot_time_start, wsb.c_slot_time_end,
                            COALESCE(w.c_name, '—'),
                            pr.c_requested_quantity,
-                           COALESCE(pr.c_unit, 'kg')
+                           COALESCE(pr.c_unit, 'kg'),
+                           fp.c_user_id
                     FROM t_procurement_requests pr
                     JOIN t_farmer_profiles fp ON pr.c_farmer_id = fp.c_id
                     JOIN t_users u ON fp.c_user_id = u.c_id
@@ -652,9 +667,11 @@ namespace API.BAL
                         var whName = reader.IsDBNull(6) ? "—" : reader.GetString(6);
                         var qty = reader.IsDBNull(7) ? 0m : reader.GetDecimal(7);
                         var unit = reader.IsDBNull(8) ? "kg" : reader.GetString(8);
+                        var farmerId = reader.GetInt32(9);
 
                         data = new AcceptEmailData
                         {
+                            FarmerId = farmerId,
                             ProcurementRequestId = requestId,
                             FarmerEmail = email,
                             FarmerName = name,
@@ -695,6 +712,7 @@ namespace API.BAL
                 int? oldSlotId = null;
                 int farmerId = 0;
                 int cropListingId = 0;
+                int userId;
                 RescheduleEmailData? emailData = null;
 
                 var getQuery = @"
@@ -708,7 +726,8 @@ namespace API.BAL
                         wsb.c_slot_date,
                         wsb.c_slot_time_start,
                         wsb.c_slot_time_end,
-                        COALESCE(wh.c_name, '—')
+                        COALESCE(wh.c_name, '—'),
+                        fp.c_user_id
                     FROM t_procurement_requests pr
                     JOIN t_farmer_profiles fp ON pr.c_farmer_id = fp.c_id
                     JOIN t_users u ON fp.c_user_id = u.c_id
@@ -737,9 +756,11 @@ namespace API.BAL
                     var oldStart = reader.IsDBNull(7) ? (TimeSpan?)null : reader.GetTimeSpan(7);
                     var oldEnd = reader.IsDBNull(8) ? (TimeSpan?)null : reader.GetTimeSpan(8);
                     var whName = reader.IsDBNull(9) ? "—" : reader.GetString(9);
+                    userId = reader.GetInt32(10);
 
                     emailData = new RescheduleEmailData
                     {
+                        FarmerId = userId,
                         ProcurementRequestId = requestId,
                         FarmerEmail = email,
                         FarmerName = name,
@@ -853,7 +874,7 @@ namespace API.BAL
                 var loadSql = @"
                     SELECT pr.c_status, pr.c_slot_id, u.c_email, fp.c_full_name, cp.c_name,
                            wsb.c_slot_date, wsb.c_slot_time_start, wsb.c_slot_time_end,
-                           COALESCE(w.c_name, '—')
+                           COALESCE(w.c_name, '—'),fp.c_user_id
                     FROM t_procurement_requests pr
                     JOIN t_farmer_profiles fp ON pr.c_farmer_id = fp.c_id
                     JOIN t_users u ON fp.c_user_id = u.c_id
@@ -867,6 +888,7 @@ namespace API.BAL
 
                 string status = "";
                 int? slotId = null;
+                int farmerId;
                 string email = "";
                 string name = "Farmer";
                 string crop = "";
@@ -891,6 +913,7 @@ namespace API.BAL
                     slotStart = reader.IsDBNull(6) ? null : reader.GetTimeSpan(6);
                     slotEnd = reader.IsDBNull(7) ? null : reader.GetTimeSpan(7);
                     warehouseName = reader.IsDBNull(8) ? "—" : reader.GetString(8);
+                    farmerId = reader.GetInt32(9);
                 }
 
                 if (string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase))
@@ -967,6 +990,7 @@ namespace API.BAL
                 return new CancelEmailData
                 {
                     ProcurementRequestId = requestId,
+                    FarmerId = farmerId,
                     FarmerEmail = email,
                     FarmerName = name,
                     CropName = crop,
@@ -1404,93 +1428,91 @@ namespace API.BAL
         // ── PROCESS ADVANCE PAYMENT (30%) ──────────────────────────────
         /// <summary>Automatically process 30% advance payment when inspection passes</summary>
         public async Task<dynamic?> ProcessAdvancePayment(
-            int procurementRequestId,
-            int farmerId,
-            int inspectionId,
-            decimal advanceAmount)
+     int procurementRequestId,
+     int farmerId,
+     int inspectionId,
+     decimal advanceAmount)
         {
             await _conn.OpenAsync();
-            using var transaction = await _conn.BeginTransactionAsync();
+
+            await using var transaction = await _conn.BeginTransactionAsync();
 
             try
             {
-                // Check if payment already exists
+                // Check existing payment
                 var checkQuery = @"
-                    SELECT c_id, c_status FROM t_payments_farmer
-                    WHERE c_procurement_request_id = @procReqId
-                      AND c_payment_number = 1
-                    LIMIT 1
-                ";
+        SELECT c_id, c_status 
+        FROM t_payments_farmer
+        WHERE c_procurement_request_id = @procReqId
+        AND c_payment_number = 1
+        LIMIT 1";
 
-                using (var cmd = new NpgsqlCommand(checkQuery, _conn, transaction))
+                await using (var cmd = new NpgsqlCommand(checkQuery, _conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@procReqId", procurementRequestId);
-                    using var reader = await cmd.ExecuteReaderAsync();
+
+                    await using var reader = await cmd.ExecuteReaderAsync();
+
                     if (await reader.ReadAsync())
                     {
-                        var existingId = reader.GetInt32(0);
-                        var status = reader.GetString(1);
                         return new
                         {
                             success = false,
-                            message = $"Payment already exists with status: {status}",
-                            paymentId = existingId,
-                            status = status
+                            message = $"Payment already exists with status: {reader.GetString(1)}",
+                            paymentId = reader.GetInt32(0)
                         };
                     }
                 }
 
-                // Create payment record
                 string utrRef = GenerateUtrReference();
 
                 var insertQuery = @"
-                    INSERT INTO t_payments_farmer (
-                        c_farmer_id,
-                        c_payment_request_id,
-                        c_procurement_request_id,
-                        c_lot_id,
-                        c_amount,
-                        c_payment_number,
-                        c_trigger_event,
-                        c_payment_mode,
-                        c_utr_reference,
-                        c_status,
-                        c_created_at
-                    ) VALUES (
-                        @farmerId,
-                        @paymentRequestId,
-                        @procReqId,
-                        @lotId,
-                        @amount,
-                        1,
-                        'qc_passed',
-                        'bank_transfer',
-                        @utrRef,
-                        'success',
-                        NOW()
-                    ) RETURNING c_id, c_utr_reference, c_created_at
-                ";
+        INSERT INTO t_payments_farmer (
+            c_farmer_id,
+            c_payment_request_id,
+            c_procurement_request_id,
+            c_lot_id,
+            c_amount,
+            c_payment_number,
+            c_trigger_event,
+            c_payment_mode,
+            c_utr_reference,
+            c_status,
+            c_created_at
+        )
+        VALUES (
+            @farmerId,
+            NULL,
+            @procReqId,
+            NULL,
+            @amount,
+            1,
+            'qc_passed',
+            'bank_transfer',
+            @utrRef,
+            'success',
+            NOW()
+        )
+        RETURNING c_id, c_utr_reference, c_created_at";
 
                 int paymentId = 0;
                 string utrid = "";
-                DateTime createdAt = DateTime.UtcNow;
+                DateTime createdAt;
 
-                using (var cmd = new NpgsqlCommand(insertQuery, _conn, transaction))
+                await using (var cmd = new NpgsqlCommand(insertQuery, _conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@farmerId", farmerId);
-                    cmd.Parameters.AddWithValue("@paymentRequestId", DBNull.Value);
                     cmd.Parameters.AddWithValue("@procReqId", procurementRequestId);
-                    cmd.Parameters.AddWithValue("@lotId", DBNull.Value);
                     cmd.Parameters.AddWithValue("@amount", advanceAmount);
                     cmd.Parameters.AddWithValue("@utrRef", utrRef);
 
-                    using var reader = await cmd.ExecuteReaderAsync();
-                    if (await reader.ReadAsync())
-                    {
-                        paymentId = reader.GetInt32(0);
-                        utrid = reader.GetString(1);
-                        createdAt = reader.GetDateTime(2);
-                    }
+                    await using var reader = await cmd.ExecuteReaderAsync();
+
+                    await reader.ReadAsync();
+
+                    paymentId = reader.GetInt32(0);
+                    utrid = reader.GetString(1);
+                    createdAt = reader.GetDateTime(2);
                 }
 
                 await transaction.CommitAsync();
@@ -1499,22 +1521,21 @@ namespace API.BAL
                 {
                     success = true,
                     message = "Payment processed successfully",
-                    paymentId = paymentId,
+                    paymentId,
                     utrReference = utrid,
                     amount = advanceAmount,
                     status = "success",
-                    createdAt = createdAt
+                    createdAt
                 };
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                Console.WriteLine($"ProcessAdvancePayment ERROR: {ex.Message}");
+
                 return new
                 {
                     success = false,
-                    message = $"Payment failed: {ex.Message}",
-                    error = ex.Message
+                    message = ex.Message
                 };
             }
             finally
@@ -1799,5 +1820,30 @@ namespace API.BAL
             }
             finally { await _conn.CloseAsync(); }
         }
+        // Get QC records count from database for specific FO
+        public async Task<int> GetQCRecordsCountAsync(int foId)
+        {
+            await _conn.OpenAsync();
+            try
+            {
+                var query = @"
+            SELECT COUNT(*) 
+            FROM t_quality_inspection_forms qif
+            JOIN t_procurement_requests pr ON qif.c_procurement_request_id = pr.c_id
+            WHERE pr.c_assigned_fo_id = @foId
+        ";
+
+                using var cmd = new NpgsqlCommand(query, _conn);
+                cmd.Parameters.AddWithValue("@foId", foId);
+
+                var result = await cmd.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+            finally
+            {
+                await _conn.CloseAsync();
+            }
+        }
     }
+
 }

@@ -23,27 +23,37 @@
 </div>
 
 <!-- Stats Bar -->
-<div class="crops-stats-bar" id="cropsStatsBar" style="display:none;">
+<div class="crops-stats-bar" id="cropsStatsBar">
     <div class="stat-chip chip-active">
         <span class="chip-dot"></span>
-        <span id="statActive">0</span> Active
+        <span id="statActive" class="skeleton" style="min-width: 20px; display: inline-block;"></span> Active
     </div>
     <div class="stat-chip chip-draft">
         <span class="chip-dot"></span>
-        <span id="statDraft">0</span> Draft
+        <span id="statDraft" class="skeleton" style="min-width: 20px; display: inline-block;"></span> Draft
     </div>
     <div class="stat-chip chip-qc">
         <span class="chip-dot"></span>
-        <span id="statQC">0</span> QC Scheduled
+        <span id="statQC" class="skeleton" style="min-width: 20px; display: inline-block;"></span> QC Scheduled
     </div>
     <div class="stat-chip chip-sold">
         <span class="chip-dot"></span>
-        <span id="statSold">0</span> Sold
+        <span id="statSold" class="skeleton" style="min-width: 20px; display: inline-block;"></span> Sold
     </div>
 </div>
 
 <!-- Card Grid -->
-<div id="cropsGrid"></div>
+<div id="gridSkeleton" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; padding: 24px 0;">
+    <div class="skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+    <div class="skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+    <div class="skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+    <div class="skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+    <div class="skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+    <div class="skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+    <div class="skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+    <div class="skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+</div>
+<div id="cropsGrid" style="display:none;"></div>
 
 <!-- Empty State -->
 <div id="cropsEmpty" class="crops-empty" style="display:none;">

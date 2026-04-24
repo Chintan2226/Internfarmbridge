@@ -140,6 +140,18 @@ body {
     box-shadow: 0 20px 40px rgba(21, 66, 18, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 1);
 }
 
+/* 👉 FIX: Keeps the dark green card green on hover! */
+.kpi-card.kpi-accent:hover {
+    background: #14532d !important; 
+    box-shadow: 0 20px 40px rgba(20, 83, 45, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+.kpi-card.kpi-accent:hover .kpi-lbl,
+.kpi-card.kpi-accent:hover .kpi-val,
+.kpi-card.kpi-accent:hover .kpi-sub {
+    color: #ffffff !important; 
+}
+
 .kpi-top {
     display: flex;
     justify-content: space-between;
@@ -525,3 +537,30 @@ body {
 
 
 /* End of Dashboard Shared Styles */
+/* --- SKELETON LOADER --- */
+.skeleton {
+    background: #e2e8f0;
+    background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    color: transparent !important;
+    border-radius: 4px;
+    display: inline-block;
+    min-height: 1em;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton * {
+    visibility: hidden;
+}
+
+/* Specific skeleton overrides */
+.chart-skeleton {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+}
