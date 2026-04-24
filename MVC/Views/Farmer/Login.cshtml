@@ -5,6 +5,7 @@
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="~/Logo/Logo_Without_Bg.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Login to your FarmBridge farmer account." />
@@ -121,6 +122,7 @@
     </div>
 
     <script>
+        // Notifications
         window.showToast = function(title, message, isError = false) {
             const container = document.getElementById('notificationArea');
             if (!container) return;
@@ -134,6 +136,7 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 500); }, 3500);
         };
 
+        // Password toggle
         window.togglePassword = function() {
             const input = document.getElementById('password');
             const icon  = document.getElementById('eyeIcon');
@@ -141,6 +144,7 @@
             else { input.type = 'password'; icon.textContent = 'visibility'; }
         };
 
+        // Login
         window.handleLogin = function(e) {
             if (e) e.preventDefault();
             const btn   = document.getElementById('submitBtn');

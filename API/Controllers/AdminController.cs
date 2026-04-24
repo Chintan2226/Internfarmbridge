@@ -176,6 +176,8 @@ namespace API.Controllers
 
             return StatusCode(500, new { success = false, message = "Failed to process payment." });
         }
+
+
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
@@ -905,6 +907,19 @@ namespace API.Controllers
         {
             var results = await _elasticService.UniversalSearchForMVCAsync(request.Query);
             return Ok(new { success = true, data = results });
+        }
+        [HttpPost("reindex-vendor-catalog")]
+        public async Task<IActionResult> ReindexVendorCatalog()
+        {
+            try
+            {
+                var result = await _elasticService.ReindexVendorCatalogAsync();
+                return Ok(new { success = true, indexed = result, message = $"Reindexed {result} products for vendor catalog" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
 
         [HttpPost("search/catalog")]

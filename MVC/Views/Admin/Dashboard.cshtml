@@ -8,6 +8,34 @@
 <link rel="stylesheet" href="https://kendo.cdn.telerik.com/themes/7.2.1/default/default-main.css" />
 
 <div class="db-wrap">
+    <!-- SEARCH BAR (ElasticSearch) -->
+<div class="search-wrapper mb-4">
+    <div class="search-box">
+        <div class="search-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <input type="text" id="globalSearchInput" class="search-input" 
+               placeholder="Search farmers, vendors, warehouses, crops, orders..." 
+               autocomplete="off">
+        <button id="globalSearchBtn" class="search-btn">
+            <i class="fas fa-arrow-right"></i> Search
+        </button>
+    </div>
+    <div id="globalSearchResults" class="search-results mt-3" style="display: none;">
+        <div class="results-header">
+            <span><i class="fas fa-search"></i> Search Results</span>
+            <button id="closeSearchResults" class="close-btn">&times;</button>
+        </div>
+        <div id="searchResultsList" class="results-list">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Searching...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- KPI ROW -->
     <div>
         <div class="section-label">Key Metrics</div>
         <div class="kpi-strip">
@@ -386,8 +414,139 @@
             if (result.isConfirmed) {
                 Swal.fire({ title: 'Discount Applied!', text: `Vendors have been notified about the ${cropName} discount.`, icon: 'success', confirmButtonColor: '#1B7A3E' });
             }
+
+            $("#pendingGrid").kendoGrid({
+                dataSource: new kendo.data.DataSource({
+                    data: gridData,
+                    pageSize: 6
+                }),
+                height: 280,
+                scrollable: true,
+                sortable: true,
+                pageable: {
+                    buttonCount: 3,
+                    info: false,
+                    input: false,
+                    previousNext: true
+                },
+                columns: [
+                    {
+                        field: "fullName",
+                        title: "User",
+                        width: "32%"
+                    },
+                    {
+                        field: "role",
+                        title: "Role",
+                        width: "22%",
+                        template: "<span style='font-family:Inter,monospace;font-size:11px;background:#fef9c3;color:#854d0e;border:1px solid #fde68a;padding:2px 8px;border-radius:6px;text-transform:capitalize;'>#: role #</span>"
+                    },
+                    {
+                        field: "appliedOn",
+                        title: "Applied",
+                        width: "28%"
+                    },
+                    {
+                        title: "",
+                        width: "18%",
+                        template: "<button class='btn-approve' onclick='approve(#=userId#)'>Approve</button>"
+                    }
+                ]
+            });
+
+        })
+        .fail(function (err) {
+            console.error("Pending Grid Error:", err);
         });
     }
+        // ========== ELASTICSEARCH GLOBAL SEARCH ==========
+    
+    var searchTimeout;
+    var currentQuery = '';
+    
+    function performGlobalSearch() {
+    var query = $('#globalSearchInput').val().trim();
+    if (query.length < 2) {
+        $('#globalSearchResults').hide();
+        return;
+    }
+    
+    currentQuery = query;
+    $('#globalSearchResults').show();
+    $('#searchResultsList').html('<div class="loading-state"><div class="spinner"></div><p>Searching...</p></div>');
+    
+    $.ajax({
+        url: '/Admin/UniversalSearch',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ query: query, page: 1, pageSize: 30 }),
+        success: function(response) {
+            if (response.success && response.data && response.data.length > 0) {
+                var html = '';
+                $.each(response.data, function(i, item) {
+                    var badgeClass = '';
+                    var badgeIcon = '';
+                    switch(item.type) {
+                        case 'catalog': badgeClass = 'catalog'; badgeIcon = '📦'; break;
+                        case 'warehouse': badgeClass = 'warehouse'; badgeIcon = '🏭'; break;
+                        case 'user': badgeClass = 'user'; badgeIcon = '👤'; break;
+                        case 'order': badgeClass = 'order'; badgeIcon = '📋'; break;
+                        default: badgeClass = 'catalog'; badgeIcon = '📦';
+                    }
+                    
+                    html += '<a href="' + item.url + '" class="result-item">';
+                    html += '<div class="result-badge ' + badgeClass + '">' + badgeIcon + '</div>';
+                    html += '<div class="result-content">';
+                    html += '<div class="result-title">' + escapeHtml(item.title) + '</div>';
+                    if (item.subtitle) {
+                        html += '<div class="result-subtitle">' + escapeHtml(item.subtitle) + '</div>';
+                    }
+                    html += '</div>';
+                    html += '<span class="result-status ' + (item.status === 'Active' ? 'active' : 'inactive') + '">' + (item.status || 'Active') + '</span>';
+                    html += '</a>';
+                });
+                html += '<div style="padding: 12px 20px; background: #f8fafc; text-align: center; font-size: 12px; color: #64748b;">';
+                html += 'Found ' + response.data.length + ' results for "' + escapeHtml(currentQuery) + '"';
+                html += '</div>';
+                $('#searchResultsList').html(html);
+            } else {
+                $('#searchResultsList').html('<div class="loading-state"><i class="fas fa-search fa-2x" style="color: #cbd5e1;"></i><p style="margin-top: 12px;">No results found for "' + escapeHtml(currentQuery) + '"</p></div>');
+            }
+        },
+        error: function() {
+            $('#searchResultsList').html('<div class="loading-state"><i class="fas fa-exclamation-triangle fa-2x" style="color: #ef4444;"></i><p style="margin-top: 12px;">Search failed. Please try again.</p></div>');
+        }
+    });
+}
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Bind search events
+    $(document).ready(function() {
+        $('#globalSearchInput').on('keyup', function(e) {
+            clearTimeout(searchTimeout);
+            if (e.key === 'Enter') {
+                performGlobalSearch();
+            } else {
+                searchTimeout = setTimeout(performGlobalSearch, 500);
+            }
+        });
+        
+        $('#globalSearchBtn').on('click', performGlobalSearch);
+        
+        $('#closeSearchResults').on('click', function() {
+            $('#globalSearchResults').hide();
+            $('#globalSearchInput').val('');
+        });
+    });
 
     function manageCrop(cropName) {
         Swal.fire({ title: 'Manage Inventory', text: `Opening management settings for ${cropName}.`, icon: 'info', confirmButtonColor: '#14532D', confirmButtonText: 'Open Settings' });
