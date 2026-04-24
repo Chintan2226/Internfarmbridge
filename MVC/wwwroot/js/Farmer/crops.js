@@ -2,18 +2,6 @@
  * Farmer Crops — crops.js
  * JWT Bearer token is read from cookie: "authToken"
  * Multi-farmer support enabled
- *
- * FIX LOG:
- *  1. FarmDistrict, FarmState, Notes added to rows map in BOTH load & reload
- *  2. getToken() defined once at module scope — no more duplicates
- *  3. Template uses #: (HTML-encode) not #= to avoid Razor hash issues
- *  4. Null-check on template element before kendoListView init
- *  5. saveCrop payload now includes FarmState, FarmDistrict, Notes
- *  6. Stats bar updated after every load
- *  7. FIX: HTML entities (&#8377;, &#9998;) removed from cshtml template —
- *     use literal Unicode characters (₹, ✎) instead. The browser decodes
- *     HTML entities before Kendo parses the template string, injecting raw
- *     & characters that break kendo.template()'s code generator.
  */
 
 // AUTH HELPERS (module scope)
@@ -53,8 +41,6 @@ function mapListingToRow(item) {
         Price: item.askingPrice || 0,
         HarvestDate: kendo.toString(new Date(item.createdAt), "dd MMM yyyy"),
         Status: item.status || "draft",
-
-        // FIX: these were missing and caused the ReferenceError
         FarmDistrict: item.farmDistrict || item.district || "—",
         FarmState: item.farmState || item.state || "—",
         Notes: item.notes || ""
@@ -114,14 +100,12 @@ $(document).ready(function () {
                 return;
             }
 
-            /* ✅ FIX: guard against missing template element */
             var templateHtml = $("#crop-card-template").html();
             if (!templateHtml) {
                 console.error("[crops.js] #crop-card-template not found in DOM.");
                 return;
             }
 
-            $("#gridSkeleton").hide();
             $("#cropsGrid").show().kendoListView({
                 dataSource: {
                     data: rows,
@@ -165,22 +149,14 @@ $(document).ready(function () {
         dataSource: ["kg", "quintal", "ton"]
     });
 
-    $("#cropQty").kendoNumericTextBox({
-        min: 1,
-        format: "n0"
-    });
-
-    $("#cropPrice").kendoNumericTextBox({
-        min: 1,
-        format: "n0"
-    });
+    $("#cropQty").kendoNumericTextBox({ min: 1, format: "n0" });
+    $("#cropPrice").kendoNumericTextBox({ min: 1, format: "n0" });
 
     $("#harvestDate").kendoDatePicker({
         format: "yyyy-MM-dd",
         max: new Date()
     });
 
-    /* Additional Premium Kendo Inputs */
     $("#cropVariety").kendoTextBox();
     $("#farmState").kendoTextBox();
     $("#farmDistrict").kendoTextBox();
@@ -194,6 +170,30 @@ $(document).ready(function () {
         modal: true
     });
 
+    /* 4. SEARCH EVENT LISTENERS — THIS WAS THE MISSING PIECE */
+
+    $("#cropSearchInput").on("input", function () {
+        clearTimeout(cropSearchTimeout);
+        var query = $(this).val().trim();
+        cropSearchTimeout = setTimeout(function () {
+            elasticSearchCrops(query);
+        }, 400);
+    });
+
+    $("#cropStatusFilter").on("change", function () {
+        var query = $("#cropSearchInput").val().trim();
+        if (query) {
+            elasticSearchCrops(query);
+        }
+    });
+
+    $("#clearCropSearchBtn, #clearCropSearch").on("click", function () {
+        $("#cropSearchInput").val("");
+        $("#searchResultsInfo").hide();
+        $("#clearCropSearchBtn").hide();
+        reloadListings();
+    });
+
 });
 
 // MODAL HELPERS
@@ -202,7 +202,6 @@ function openCropWindow() {
     $("#editListingId").val("");
     $("#cropForm")[0].reset();
 
-    // Reset Kendo widgets that don't reset with the form
     var qtyBox = $("#cropQty").data("kendoNumericTextBox");
     if (qtyBox) qtyBox.value(null);
 
@@ -231,7 +230,6 @@ function saveCrop(statusMode) {
 
     var editId = $("#editListingId").val();
 
-    // FIX: payload now includes FarmState, FarmDistrict, Notes
     var payload = {
         FarmerId: window.FARMER_ID,
         CatalogProductId: $("#cropType").val(),
@@ -279,7 +277,7 @@ function saveCrop(statusMode) {
     });
 }
 
-// EDIT CROP — load existing data into modal
+// EDIT CROP
 
 function editCrop(id) {
 
@@ -296,7 +294,6 @@ function editCrop(id) {
 
             $("#editListingId").val(item.listingId);
 
-            // Populate Kendo widgets
             var ddCrop = $("#cropType").data("kendoDropDownList");
             if (ddCrop) ddCrop.value(item.catalogProductId);
 
@@ -333,6 +330,7 @@ function editCrop(id) {
 }
 
 // DELETE / WITHDRAW CROP
+
 function deleteCrop(id) {
 
     fbConfirm("Withdraw Listing?", "This will remove the listing from the marketplace.", "Yes, Withdraw").then(function (confirmed) {
@@ -348,19 +346,15 @@ function deleteCrop(id) {
 
             success: function (res) {
                 fbSuccess("Withdrawn", res.message || "Listing removed successfully.");
-
                 reloadListings();
             },
 
             error: function (xhr) {
                 if (handleUnauthorized(xhr)) return;
-
                 fbError("Error", "Could not withdraw listing.");
-
                 console.error("[crops.js] delete error:", xhr.status, xhr.responseText);
             }
         });
-
     });
 }
 
@@ -370,7 +364,7 @@ function viewHistory(id) {
     window.location.href = "/Farmer/Listings/" + id;
 }
 
-// RELOAD LISTINGS — refreshes grid in-place
+// RELOAD LISTINGS
 
 function reloadListings() {
 
@@ -397,7 +391,6 @@ function reloadListings() {
 
             $("#cropsEmpty").hide();
 
-            $("#gridSkeleton").hide();
             var lv = $("#cropsGrid").show().data("kendoListView");
             if (lv) {
                 lv.dataSource.data(rows);
@@ -409,4 +402,147 @@ function reloadListings() {
             console.error("[crops.js] reloadListings error:", xhr.status);
         }
     });
+}
+
+// ========== ELASTICSEARCH SEARCH ==========
+
+let cropSearchTimeout;
+
+async function elasticSearchCrops(query) {
+    console.log("Searching for:", query);
+
+    if (!query || query.trim() === "") {
+        document.getElementById("searchResultsInfo").style.display = "none";
+        const clearBtn = document.getElementById("clearCropSearchBtn");
+        if (clearBtn) clearBtn.style.display = "none";
+        reloadListings();
+        return;
+    }
+
+    const clearBtn = document.getElementById("clearCropSearchBtn");
+    if (clearBtn) clearBtn.style.display = "inline-flex";
+
+    document.getElementById("searchResultsInfo").style.display = "block";
+    document.getElementById("searchQueryText").innerText = query;
+
+    try {
+        const status = document.getElementById("cropStatusFilter").value;
+
+        const response = await fetch("/Farmer/SearchMyCrops", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                Query: query,
+                Page: 1,
+                PageSize: 50,
+                Status: status || null
+            })
+        });
+
+        if (!response.ok) {
+            console.error("Search failed with status:", response.status);
+            displayNoResults();
+            return;
+        }
+
+        const text = await response.text();
+
+        if (!text || text.trim() === "") {
+            displayNoResults();
+            return;
+        }
+
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error("Failed to parse JSON:", e.message);
+            displayNoResults();
+            return;
+        }
+
+        console.log("Search results:", result);
+
+        if (result && result.results && result.results.length > 0) {
+            displaySearchResults(result.results);
+        } else {
+            displayNoResults();
+        }
+
+    } catch (error) {
+        console.error("Search error:", error);
+        displayNoResults();
+    }
+}
+
+function displaySearchResults(results) {
+    const skeleton = document.getElementById("gridSkeleton");
+    if (skeleton) skeleton.style.display = "none";
+
+    const empty = document.getElementById("cropsEmpty");
+    if (empty) empty.style.display = "none";
+
+    const rows = results.map(r => ({
+        Id:           r.id                 || 0,
+        Crop:         r.cropName           || "—",
+        Variety:      r.variety            || "Standard",
+        Qty:          r.quantityAvailable  || 0,
+        Unit:         r.unit               || "kg",
+        Price:        r.askingPrice        || 0,
+        HarvestDate:  "—",
+        Status:       r.status             || "draft",
+        FarmDistrict: r.farmDistrict       || "—",
+        FarmState:    r.farmState          || "—",
+        Notes:        r.notes              || ""
+    }));
+
+    const templateHtml = document.getElementById("crop-card-template").innerHTML;
+    if (!templateHtml) return;
+
+    const lv = $("#cropsGrid").show().data("kendoListView");
+    if (lv) {
+        lv.dataSource.data(rows);
+    } else {
+        $("#cropsGrid").show().kendoListView({
+            dataSource: { data: rows, pageSize: 12 },
+            template: kendo.template(templateHtml)
+        });
+    }
+}
+
+function displayNoResults() {
+    $("#gridSkeleton").hide();
+    $("#cropsEmpty").show();          // already exists in cshtml
+
+    var lv = $("#cropsGrid").data("kendoListView");
+    if (lv) {
+        lv.dataSource.data([]);       // widget safe rehta hai
+    }
+    $("#cropsGrid").hide();
+}
+
+function displaySearchResults(results) {
+    $("#gridSkeleton").hide();
+    $("#cropsEmpty").hide();
+
+    var rows = results.map(function(r) {
+        return {
+            Id:           r.id                || 0,
+            Crop:         r.cropName          || "—",
+            Variety:      r.variety           || "Standard",
+            Qty:          r.quantityAvailable || 0,
+            Unit:         r.unit              || "kg",
+            Price:        r.askingPrice       || 0,
+            HarvestDate:  r.harvestDate ? kendo.toString(new Date(r.harvestDate), "dd MMM yyyy") : "—", 
+            Status:       r.status            || "draft",
+            FarmDistrict: r.farmDistrict      || "—",
+            FarmState:    r.farmState         || "—",
+            Notes:        r.notes             || ""
+        };
+    });
+
+    var lv = $("#cropsGrid").show().data("kendoListView");
+    if (lv) {
+        lv.dataSource.data(rows);     // widget intact rehta hai
+    }
 }

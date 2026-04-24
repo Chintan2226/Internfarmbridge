@@ -112,13 +112,11 @@ namespace API.Models.Settings
         public decimal RejectedQuantity { get; set; }
         public bool Passed { get; set; }
         public DateTime SubmittedAt { get; set; }
-
-        // UI Display Fields
-        public string FarmerName { get; set; }
-        public string CropType { get; set; }
+        public string? FarmerName { get; set; }
+        public string? CropType { get; set; }
         public decimal Quantity { get; set; }
-        public string Location { get; set; }
-        public string Status { get; set; }
+        public string? Location { get; set; }
+        public string? Status { get; set; }
         public DateTime? SlotDate { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
