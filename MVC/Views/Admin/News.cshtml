@@ -1,0 +1,44 @@
+@model List<GoogleSearchViewModel>
+@{
+    ViewData["Title"] = "News";
+    ViewData["UserRole"] = "Admin";
+    Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
+}
+<h2>Google Search Results</h2>
+
+<form method="get">
+    <input type="text" name="query" class="form-control" placeholder="Search..." />
+    <br />
+    <button class="btn btn-primary">Search</button>
+</form>
+
+<hr />
+
+@foreach (var item in Model)
+{
+    <div class="card mb-3 p-3">
+        <div class="row">
+
+            @if (!string.IsNullOrEmpty(item.Thumbnail))
+            {
+                <div class="col-md-2">
+                    <img src="@item.Thumbnail"
+                         style="width:150px;height:150px;object-fit:cover;margin-top:8px;" />
+                </div>
+            }
+
+            <div class="col-md-10">
+                <h5>
+                    <a href="@item.Link" target="_blank">
+                        @item.Title
+                    </a>
+                </h5>
+
+                <p>@item.Snippet</p>
+
+                <small class="text-muted">@item.Source</small>
+            </div>
+
+        </div>
+    </div>
+}
