@@ -177,7 +177,7 @@ $(document).ready(function () {
         format: "yyyy-MM-dd",
         max: new Date()
     });
-    
+
     /* Additional Premium Kendo Inputs */
     $("#cropVariety").kendoTextBox();
     $("#farmState").kendoTextBox();

@@ -92,10 +92,10 @@ function submitInquiry() {
     }
 
     var payload = {
-        FarmerId:   window.FARMER_ID,
+        FarmerId: window.FARMER_ID,
         Department: $("#inquiryType").val(),
-        Subject:    $("#subject").val(),
-        Details:    $("#messageBody").val()
+        Subject: $("#subject").val(),
+        Details: $("#messageBody").val()
     };
 
     if (!payload.Department || !payload.Subject || !payload.Details) {

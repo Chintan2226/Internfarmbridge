@@ -217,7 +217,7 @@ function handlePhotoUpload(input) {
 
 function deletePhoto() {
     if (!window.CURRENT_PHOTO_URL) return;
-    fbConfirm(fbT("profile_delete_confirm_title"), fbT("profile_delete_confirm_msg"), function() {
+    fbConfirm(fbT("profile_delete_confirm_title"), fbT("profile_delete_confirm_msg"), function () {
         fbLoading(true, fbT("profile_delete_loading"));
         $.ajax({
             url: `${window.API_BASE}/profile/photo/delete?imageUrl=${encodeURIComponent(window.CURRENT_PHOTO_URL)}`,

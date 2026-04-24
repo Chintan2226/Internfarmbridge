@@ -90,7 +90,7 @@ $(document).ready(function () {
             $("#kpiLifetimeEarned").text(
                 "₹" + totalEarned.toLocaleString("en-IN")
             );
-            
+
             $("#kpiPendingPay").text(
                 "₹" + totalPending.toLocaleString("en-IN")
             );
@@ -109,7 +109,7 @@ $(document).ready(function () {
 
                     Amount: item.amount,
 
-                    PayMode: item.paymentMode ? item.paymentMode.split('_').map(function(word) { return word.charAt(0).toUpperCase() + word.slice(1); }).join(' ') : "Bank Transfer",
+                    PayMode: item.paymentMode ? item.paymentMode.split('_').map(function (word) { return word.charAt(0).toUpperCase() + word.slice(1); }).join(' ') : "Bank Transfer",
 
                     Status: item.status
                 };
@@ -144,7 +144,7 @@ $(document).ready(function () {
                         field: "CropType",
                         title: "Crop Request",
                         width: 180,
-                        template: 
+                        template:
                             "<div class='crop-name'>" +
                             "<div class='crop-image-wrapper'><img src='#:ImageUrl#' class='crop-image' onerror=\"this.src='/images/placeholder.png'\" /></div>" +
                             "#:CropType#" +
@@ -170,42 +170,42 @@ $(document).ready(function () {
                             var amt = d.Amount || 0;
                             var advance = Math.round(amt * 0.3);
                             var finalPay = amt - advance;
-                            
+
                             var isSuccess = d.Status === "success";
-                            
+
                             // Visual classes for steps based on status
                             var line1Class = "active";
                             var step2Class = "active";
                             var line2Class = isSuccess ? "settled" : "";
                             var step3Class = isSuccess ? "settled" : "";
-                            
+
                             var color1 = "#047857"; // Deep Emerald
                             var color2 = "#d97706"; // Rich Gold
                             var color3 = isSuccess ? "#047857" : "#94a3b8";
 
                             return "<div class='tracker-container'>" +
-                                       "<div class='pay-tracker'>" +
-                                           "<div class='tracker-step initiated'></div>" +
-                                           "<div class='tracker-line " + line1Class + "'></div>" +
-                                           "<div class='tracker-step " + step2Class + "'></div>" +
-                                           "<div class='tracker-line " + line2Class + "'></div>" +
-                                           "<div class='tracker-step " + step3Class + "'></div>" +
-                                       "</div>" +
-                                       "<div class='tracker-label'>" +
-                                           "<div class='t-lbl-col' style='color: " + color1 + ";'>" +
-                                              "<span class='t-stage'>Initiated</span>" +
-                                              "<span class='t-amt'>₹" + kendo.toString(amt, 'n0') + "</span>" +
-                                           "</div>" +
-                                           "<div class='t-lbl-col' style='color: " + color2 + ";'>" +
-                                              "<span class='t-stage'>30% Advance</span>" +
-                                              "<span class='t-amt'>₹" + kendo.toString(advance, 'n0') + "</span>" +
-                                           "</div>" +
-                                           "<div class='t-lbl-col' style='color: " + color3 + ";'>" +
-                                              "<span class='t-stage'>70% Balance</span>" +
-                                              "<span class='t-amt'>₹" + kendo.toString(finalPay, 'n0') + "</span>" +
-                                           "</div>" +
-                                       "</div>" +
-                                   "</div>";
+                                "<div class='pay-tracker'>" +
+                                "<div class='tracker-step initiated'></div>" +
+                                "<div class='tracker-line " + line1Class + "'></div>" +
+                                "<div class='tracker-step " + step2Class + "'></div>" +
+                                "<div class='tracker-line " + line2Class + "'></div>" +
+                                "<div class='tracker-step " + step3Class + "'></div>" +
+                                "</div>" +
+                                "<div class='tracker-label'>" +
+                                "<div class='t-lbl-col' style='color: " + color1 + ";'>" +
+                                "<span class='t-stage'>Initiated</span>" +
+                                "<span class='t-amt'>₹" + kendo.toString(amt, 'n0') + "</span>" +
+                                "</div>" +
+                                "<div class='t-lbl-col' style='color: " + color2 + ";'>" +
+                                "<span class='t-stage'>30% Advance</span>" +
+                                "<span class='t-amt'>₹" + kendo.toString(advance, 'n0') + "</span>" +
+                                "</div>" +
+                                "<div class='t-lbl-col' style='color: " + color3 + ";'>" +
+                                "<span class='t-stage'>70% Balance</span>" +
+                                "<span class='t-amt'>₹" + kendo.toString(finalPay, 'n0') + "</span>" +
+                                "</div>" +
+                                "</div>" +
+                                "</div>";
                         }
                     }
 
