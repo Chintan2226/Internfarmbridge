@@ -107,7 +107,6 @@ async function loadDashboardStats() {
         if (result.success && result.data) {
             const stats = result.data;
             
-            // Update KPI cards
             document.getElementById('totalOrders').innerText = stats.totalOrders || 0;
             document.getElementById('totalSpent').innerText = '₹' + (stats.totalSpent || 0).toLocaleString('en-IN');
             document.getElementById('totalQuantity').innerText = (stats.totalQuantity || 0) + ' kg';
@@ -115,6 +114,29 @@ async function loadDashboardStats() {
         }
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
+    }
+}
+
+// 👉 NEW: Example function of how to use the Card Skeleton on the Catalog Page!
+window.loadVendorCatalog = async function(containerId) {
+    // Show 8 shimmering cards before fetching
+    if (typeof window.showCardSkeleton === 'function') {
+        window.showCardSkeleton(containerId, 8); 
+    }
+    
+    try {
+        // Replace with your actual catalog fetch endpoint
+        const response = await fetch(`${API_BASE_URL}/catalog`); 
+        const result = await response.json();
+        
+        // Build your actual HTML and overwrite the skeleton
+        let catalogHtml = '';
+        // result.data.forEach(...) 
+        
+        $(containerId).html(catalogHtml);
+        
+    } catch(err) {
+        $(containerId).html('<p>Failed to load catalog.</p>');
     }
 }
 
@@ -151,10 +173,8 @@ function showToast(msg, type) {
 }
 window.showToast = showToast;
 
-// ============ Logout ============
 function logout() { if(confirm('Logout?')) { localStorage.removeItem('vendor_cart'); window.location.href = '/'; } }
 
-// ============ Wishlist Count Update ============
 async function updateWishlistCount() {
     try {
         const response = await fetch(`${API_BASE_URL}/wishlist`);
@@ -169,7 +189,6 @@ async function updateWishlistCount() {
     }
 }
 
-// ============ Initialize Kendo ============
 $(document).ready(function() {
     let vendorNav = [
         { icon: 'fa-tachometer-alt', text: 'Dashboard', url: '/Vendor/Dashboard' },
@@ -223,7 +242,6 @@ $(document).ready(function() {
     renderCart();
     renderNotifications();
     
-    // Load dashboard stats if on dashboard page
     if (window.location.pathname.includes('/Vendor/Dashboard')) {
         loadDashboardStats();
     }

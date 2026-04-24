@@ -1,75 +1,42 @@
 /* Farmer-Specific Dashboard Overrides */
-
-.f-action-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
-}
-
-.f-btn {
-    padding: 10px 20px;
-    border-radius: 12px;
-    background: #fff;
-    border: 1px solid rgba(0,0,0,0.08);
-    font-weight: 600;
-    font-size: 14px;
-    color: #166534;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.f-btn:hover { 
-    background: #f0fdf4; 
-    border-color: #10b981;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
-}
-
-.f-btn i {
-    font-size: 18px;
-    color: #10b981;
-}
-
-.db-wrap { 
-    gap: 20px !important; 
-    padding-bottom: 20px !important; 
-}
+.f-action-row { display: flex; gap: 12px; margin-bottom: 24px; }
+.f-btn { padding: 10px 20px; border-radius: 12px; background: #fff; border: 1px solid rgba(0,0,0,0.08); font-weight: 600; font-size: 14px; color: #166534; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.f-btn:hover { background: #f0fdf4; border-color: #10b981; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1); }
+.f-btn i { font-size: 18px; color: #10b981; }
+.db-wrap { gap: 20px !important; padding-bottom: 20px !important; }
 
 /* --- RESPONSIVE FIXES --- */
-.dash-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.dash-split-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.kendo-widget-container {
-    border-radius: 12px;
-    overflow-x: auto;
-    width: 100%;
-}
+.dash-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.dash-split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.kendo-widget-container { border-radius: 12px; overflow-x: auto; width: 100%; }
 
 @media (max-width: 1024px) {
     .dash-kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .dash-split-layout { grid-template-columns: 1fr; }
 }
-
 @media (max-width: 768px) {
     .dash-kpi-grid { grid-template-columns: 1fr; }
     .f-action-row { flex-direction: column; }
     .f-btn { width: 100%; justify-content: center; }
 }
+#incomeChart { margin-top: 10px; }
 
-#incomeChart {
-    margin-top: 10px;
-}
+
+/* ==================================================== */
+/* FARMER WELCOME MODAL STYLES                          */
+/* ==================================================== */
+.fb-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+.fb-modal-overlay.show { opacity: 1; visibility: visible; }
+.fb-modal-card { background: #ffffff; width: 90%; max-width: 480px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); padding: 40px 30px; position: relative; transform: translateY(20px) scale(0.95); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; }
+.fb-modal-overlay.show .fb-modal-card { transform: translateY(0) scale(1); }
+.fb-modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; color: #9CA3AF; cursor: pointer; transition: color 0.2s; }
+.fb-modal-close:hover { color: #1F2937; }
+.fb-modal-icon { font-size: 45px; margin-bottom: 10px; }
+.fb-modal-title { font-size: 26px; font-weight: 800; color: #14532D; margin-bottom: 10px; }
+.fb-modal-divider { width: 60px; height: 4px; background: #16A34A; margin: 0 auto 20px auto; border-radius: 2px; }
+.fb-modal-text { font-size: 15px; color: #4B5563; margin-bottom: 30px; line-height: 1.5; }
+.fb-btn-primary { display: block; width: 100%; background: #16A34A; color: #ffffff !important; padding: 16px; border-radius: 10px; text-decoration: none; font-size: 16px; font-weight: bold; margin-bottom: 15px; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2); }
+.fb-btn-primary:hover { background: #15803D; transform: translateY(-2px); }
+.fb-btn-secondary { display: block; width: 100%; background: #F9FAFB; color: #374151 !important; padding: 16px; border-radius: 10px; text-decoration: none; font-size: 16px; font-weight: bold; border: 2px solid #E5E7EB; transition: all 0.2s ease; }
+.fb-btn-secondary:hover { background: #F3F4F6; border-color: #D1D5DB; }
+.fb-btn-icon { margin-right: 10px; font-size: 20px; vertical-align: middle; }

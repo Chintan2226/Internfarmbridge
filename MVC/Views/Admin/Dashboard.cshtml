@@ -4,8 +4,9 @@
 }
 
 <link rel="stylesheet" href="~/css/pages/admin/dashboard.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
+<link rel="stylesheet" href="https://kendo.cdn.telerik.com/themes/7.2.1/default/default-main.css" />
 
-<!-- MAIN WRAP -->
 <div class="db-wrap">
     <!-- SEARCH BAR (ElasticSearch) -->
 <div class="search-wrapper mb-4">
@@ -38,7 +39,6 @@
     <div>
         <div class="section-label">Key Metrics</div>
         <div class="kpi-strip">
-
             <div class="kpi-card kpi-accent">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Total Revenue</div>
@@ -47,7 +47,6 @@
                 <div class="kpi-val" id="kpiRevenue">₹0</div>
                 <div class="kpi-sub">Today's earnings</div>
             </div>
-
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Farmers</div>
@@ -56,7 +55,6 @@
                 <div class="kpi-val" id="kpiFarmers">0</div>
                 <div class="kpi-sub">Registered</div>
             </div>
-
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Vendors</div>
@@ -65,7 +63,6 @@
                 <div class="kpi-val" id="kpiVendors">0</div>
                 <div class="kpi-sub">Active</div>
             </div>
-
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Field Officers</div>
@@ -74,7 +71,6 @@
                 <div class="kpi-val" id="kpiFOs">0</div>
                 <div class="kpi-sub">On ground</div>
             </div>
-
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="kpi-lbl">Today's Orders</div>
@@ -83,17 +79,12 @@
                 <div class="kpi-val" id="kpiOrders">0</div>
                 <div class="kpi-sub">New today</div>
             </div>
-
         </div>
     </div>
 
-
-    <!-- CHART ROW -->
     <div>
         <div class="section-label">Revenue & Analytics 📈</div>
         <div class="chart-row">
-
-            <!-- Revenue Chart -->
             <div class="chart-card">
                 <div class="chart-head">
                     <div>
@@ -109,7 +100,6 @@
                 <div id="revenueChart"></div>
             </div>
 
-            <!-- Order Volume Chart -->
             <div class="chart-card">
                 <div class="chart-head">
                     <div>
@@ -124,50 +114,34 @@
                 </div>
                 <div id="orderVolumeChart"></div>
             </div>
-
         </div>
     </div>
 
-
-    <!-- BOTTOM ROW -->
     <div>
-        <div class="section-label">Live Data</div>
+        <div class="section-label">Catalog Management</div>
         <div class="bottom-row">
-
-            <!-- Crop Listings -->
-            <div class="grid-card">
+            <div class="grid-card" style="grid-column: 1 / -1;">
                 <div class="grid-head">
-                    <div class="grid-title"><span style="font-size: 1.2em;">🌾</span> Today's Crop Listings</div>
+                    <div class="grid-title"><span style="font-size: 1.2em;">🌾</span> Active Crops Catalog</div>
                 </div>
-                <div id="cropListingsGrid"></div>
+                <div id="activeCatalogGrid"></div>
             </div>
-
-            <!-- Pending Approvals -->
-            <div class="grid-card">
-                <div class="grid-head">
-                    <div class="grid-title"><span style="font-size: 1.2em;">📌</span> Pending Approvals</div>
-                    <span class="count-badge" id="pendingCount">0</span>
-                </div>
-                <div id="pendingGrid"></div>
-            </div>
-
         </div>
     </div>
-
 </div>
 
-
 @section Scripts {
-<script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="~/js/layouts/site.js" asp-append-version="true"></script>
 
+<script>
     $.ajaxSetup({ cache: false });
 
     const API_URLS = {
         kpi:     '/Admin/GetDashboardKpi',
         revenue: '/Admin/GetRevenueChart',
         orders:  '/Admin/GetOrderVolumeChart',
-        crops:   '/Admin/GetTodayCropListings',
-        pending: '/Admin/GetPendingApprovals'
+        catalog: 'http://localhost:5020/api/Admin/GetCropsCatalog' 
     };
 
     let dashboardState = {
@@ -176,8 +150,7 @@
         refreshRate: 10000,
         revChartInit:   false,
         orderChartInit: false,
-        cropGridInit:   false,
-        pendGridInit:   false
+        catalogGridInit:   false 
     };
 
     $(window).on("load", startDashboard);
@@ -194,17 +167,13 @@
                 loadKPIs(ts),
                 loadRevenueChart(ts),
                 loadOrderChart(ts),
-                loadCropGrid(ts),
-                loadPendingGrid(ts)
+                loadCatalogGrid(ts) 
             ]);
-            // If top bar pulse logic exists in layout or somewhere else, update it here
         } catch(e) {
             console.error("Dashboard refresh error:", e);
         }
     }
 
-
-    /* -- KPIs -- */
     function loadKPIs(ts) {
         return $.getJSON(`${API_URLS.kpi}?_=${ts}`, res => {
             if (!res.success) return;
@@ -229,8 +198,6 @@
         }, 120);
     }
 
-
-    /* -- Revenue Chart -- */
     function loadRevenueChart(ts) {
         return $.getJSON(`${API_URLS.revenue}?period=${dashboardState.revPeriod}&_=${ts}`, res => {
             if (!res.success) return;
@@ -278,8 +245,6 @@
         });
     }
 
-
-    /* -- Order Chart -- */
     function loadOrderChart(ts) {
         return $.getJSON(`${API_URLS.orders}?period=${dashboardState.orderPeriod}&_=${ts}`, res => {
             if (!res.success) return;
@@ -326,8 +291,6 @@
         });
     }
 
-
-    /* -- Period Switches -- */
     function changeRevPeriod(p, btn) {
         dashboardState.revPeriod = p;
         dashboardState.revChartInit = false;
@@ -346,61 +309,110 @@
         loadOrderChart(Date.now());
     }
 
-
-    /* -- Crop Grid -- */
-    function loadCropGrid(ts) {
-        return $.getJSON(`${API_URLS.crops}?_=${ts}`, res => {
-            if (!res.success && !res.data) return;
-            if (dashboardState.cropGridInit) {
-                const grid = $("#cropListingsGrid").data("kendoGrid");
-                if (grid) { grid.dataSource.data(res.data); return; }
+    function loadCatalogGrid(ts) {
+        // 1. 👉 Check if function exists and show skeleton!
+        if (!dashboardState.catalogGridInit) {
+            if (typeof window.showGridSkeleton === 'function') {
+                console.log("SUCCESS: Drawing Skeleton for Admin Catalog!");
+                window.showGridSkeleton('#activeCatalogGrid', 5);
+            } else {
+                console.error("ERROR: showGridSkeleton not found. Please Hard Refresh (Cmd+Shift+R or Ctrl+F5)!");
+                $("#activeCatalogGrid").html("<div style='padding: 20px; color: gray;'>Loading Catalog...</div>");
             }
-            dashboardState.cropGridInit = true;
-            $("#cropListingsGrid").kendoGrid({
-                dataSource: { data: res.data, pageSize: 6 },
-                height: 280,
-                scrollable: true,
-                sortable: true,
-                pageable: { buttonCount: 3, info: false, input: false, previousNext: true },
-                columns: [
-                    { field: "farmerName", title: "Farmer", width: "35%" },
-                    { field: "cropType",   title: "Crop",   width: "35%" },
-                    {
-                        field: "quantity",
-                        title: "Qty",
-                        width: "35%",
-                        template: "<span style='font-family:var(--mono);font-size:12px;background:var(--g50);color:var(--g700);border:1px solid var(--border);padding:2px 8px;border-radius:6px;'>#= quantity # #= unit #</span>"
+        }
+
+        // 2. 👉 ARTIFICIAL DELAY: We force a 1.5 second wait so you can actually see the animation!
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                
+                $.getJSON(`${API_URLS.catalog}?_=${ts}`, res => {
+                    if (!res.success && !res.data) {
+                        resolve();
+                        return;
                     }
-                ]
-            });
+                    
+                    if (dashboardState.catalogGridInit) {
+                        const grid = $("#activeCatalogGrid").data("kendoGrid");
+                        if (grid) { grid.dataSource.data(res.data); }
+                        resolve();
+                        return;
+                    }
+                    
+                    dashboardState.catalogGridInit = true;
+                    
+                    $("#activeCatalogGrid").empty();
+
+                    // Kendo Grid overwrites the skeleton here
+                    $("#activeCatalogGrid").kendoGrid({
+                        dataSource: { 
+                            data: res.data, 
+                            pageSize: 5,
+                            schema: {
+                                model: {
+                                    fields: {
+                                        createdAt: { type: "date" },
+                                        askingPrice: { type: "number" },
+                                        quantityAvailable: { type: "number" }
+                                    }
+                                }
+                            }
+                        },
+                        scrollable: false, 
+                        sortable: true,
+                        pageable: { buttonCount: 3, info: false, input: false, previousNext: true },
+                        columns: [
+                            { 
+                                title: "Product", 
+                                width: "22%",
+                                template: "<div style='display:flex; align-items:center;'><div style='width:36px; height:36px; border-radius:8px; background:\\#EAF5EC; color:\\#1B7A3E; display:flex; align-items:center; justify-content:center; font-size:18px; margin-right:12px;'>🌾</div><div><div style='font-weight:800; color:\\#14532D;'>#: productName #</div><div style='font-size:11px; color:\\#6B7280; font-weight:600;'>Grade #: grade #</div></div></div>"
+                            },
+                            { 
+                                title: "Storage", 
+                                width: "14%",
+                                template: "<span style='font-weight:600;'>#: storageTemp #°C</span><br><span style='font-size:11px; color:\\#6B7280;'>#: humidity #% RH</span>"
+                            },
+                            { 
+                                title: "AI Prediction", 
+                                width: "20%",
+                                template: "<span style='font-weight:800; color:\\#14532D;'>#: predictedDaysLeft # Days Left</span><br><span style='font-size:11px; color:\\#6B7280;'>Stored for #: daysInStorage # days</span>"
+                            },
+                            { 
+                                title: "Status", 
+                                width: "12%",
+                                template: "# if (status === 'Optimal') { #<span style='background:\\#EAF5EC; color:\\#1B7A3E; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:800; display:inline-block;'>#: status #</span># } else if (status === 'Low Stock' || status === 'Discount Now') { #<span style='background:\\#FEF2F2; color:\\#991B1B; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:800; display:inline-block;'>#: status #</span># } else { #<span style='background:\\#F3F4F6; color:\\#4B5563; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:800; display:inline-block;'>#: status #</span># } #"
+                            },
+                            { 
+                                title: "Listed", 
+                                width: "12%",
+                                template: "<span style='color:\\#6B7280; font-weight:500;'>#= kendo.toString(kendo.parseDate(createdAt), 'dd MMM yy') #</span>"
+                            },
+                            {
+                                title: "Action",
+                                width: "20%",
+                                template: "# if (status === 'Discount Now' || status === 'Low Stock') { #<button style='background:\\#991B1B; color:white; padding:6px 16px; border-radius:6px; border:none; font-weight:bold; font-size: 11px; cursor:pointer; min-width: 110px; transition: 0.2s;' onclick='applyDiscount(\"#: productName #\")'>Apply Discount</button># } else { #<button style='background:\\#F3F4F6; color:\\#4B5563; padding:6px 16px; border-radius:6px; border:1px solid \\#E5E7EB; font-weight:bold; font-size: 11px; cursor:pointer; min-width: 110px; transition: 0.2s;' onclick='manageCrop(\"#: productName #\")'>Manage</button># } #"
+                            }
+                        ]
+                    });
+                    
+                    resolve();
+                });
+
+            }, 1500); // <-- 1500ms (1.5 seconds) delay
         });
     }
 
-
-    /* -- Pending Grid -- */
-    function formatPendingData(raw) {
-        return raw.map(function(r) {
-            var d = r.appliedOn ? new Date(r.appliedOn).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : '---';
-            return { userId: r.userId, fullName: r.fullName, role: r.role, appliedOn: d };
-        });
-    }
-
-  function loadPendingGrid(ts) {
-    return $.getJSON(API_URLS.pending + '?_=' + ts)
-        .done(function (res) {
-
-            if (!res || !res.success || !res.data) return;
-
-            $("#pendingCount").text(res.data.length);
-
-            var gridData = formatPendingData(res.data);
-
-            var grid = $("#pendingGrid").data("kendoGrid");
-
-            if (grid) {
-                grid.dataSource.data(gridData);
-                grid.refresh();
-                return;
+    function applyDiscount(cropName) {
+        Swal.fire({
+            title: 'Apply Discount?',
+            text: `Initiate automated discount protocol for ${cropName}? This will instantly notify all active vendors.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#991B1B', 
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Yes, apply discount!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'Discount Applied!', text: `Vendors have been notified about the ${cropName} discount.`, icon: 'success', confirmButtonColor: '#1B7A3E' });
             }
 
             $("#pendingGrid").kendoGrid({
@@ -446,12 +458,6 @@
         .fail(function (err) {
             console.error("Pending Grid Error:", err);
         });
-}
-    /* -- Approve -- */
-    function approve(id) {
-        if (confirm("Approve this user?")) {
-            $.post('/Admin/ApproveUser', { userId: id }, () => refreshAllData());
-        }
     }
         // ========== ELASTICSEARCH GLOBAL SEARCH ==========
     
@@ -542,5 +548,8 @@
         });
     });
 
+    function manageCrop(cropName) {
+        Swal.fire({ title: 'Manage Inventory', text: `Opening management settings for ${cropName}.`, icon: 'info', confirmButtonColor: '#14532D', confirmButtonText: 'Open Settings' });
+    }
 </script>
 }

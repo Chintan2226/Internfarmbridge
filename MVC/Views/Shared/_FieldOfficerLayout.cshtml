@@ -72,7 +72,7 @@
             <div class="fo-topbar-right">
                 <button class="fo-action-btn" id="foBellBtn" onclick="toggleFoNotif(event)" aria-label="Notifications">
                     <i class="fi fi-rr-bell"></i>
-                    <span class="fo-dot" id="foBellDot" hidden></span>
+                    <span id="foBellBadge" style="position: absolute; top: -4px; right: -4px; background: var(--fo-blue); color: white; border-radius: 10px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 18px; height: 18px; display: none; align-items: center; justify-content: center; border: 2px solid var(--fo-surface);">0</span>
                 </button>
                 <div class="fo-avatar" id="foAvatar" onclick="location.href='/FieldOfficer/Profile'" title="Profile" style="background: linear-gradient(135deg, #1a5c2a, #0d4620); cursor:pointer;">FO</div>
             </div>
@@ -107,17 +107,21 @@
     <nav class="fo-bottom-nav" id="foBottomNav" aria-label="Navigation"></nav>
 
     <!-- Notification drawer -->
-    <div class="fo-notif" id="foNotif" style="pointer-events: none;">
-        <div class="fo-notif-header" style="pointer-events: auto;">
-            <h3 style="margin:0; font-size:16px; font-weight:700; color:var(--fo-text);">Notifications</h3>
-            <button onclick="toggleFoNotif(event)" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--fo-muted);">âœ•</button>
+    <div class="fo-notif" id="foNotif">
+        <div class="fo-notif-header">
+            <h3 style="margin:0; font-size:16px; font-weight:700; color:var(--fo-text);">Notifications <span id="foUnreadBadge" style="background:var(--fo-blue); color:#fff; border-radius:10px; font-size:10px; padding:1px 6px; font-weight:700; display:none;">0</span></h3>
+            <button onclick="toggleFoNotif(event)" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--fo-muted);"><i class="fi fi-rr-cross-small"></i></button>
         </div>
-        <div id="foNotifList" style="flex:1; overflow-y:auto; padding:12px 0; pointer-events: auto;">
+        <div class="fo-notif-tabs">
+            <button class="active" onclick="foTab('all', this)">All</button>
+            <button onclick="foTab('unread', this)">Unread <span id="foUnread">0</span></button>
+        </div>
+        <div class="fo-notif-actions" style="display:flex; justify-content:flex-end; gap:12px; padding:8px 16px;">
+            <button onclick="foMarkAllRead()" style="border:none;background:none;color:var(--fo-blue);font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;">Mark all as read</button>
+            <button onclick="foClearAll()" style="border:none;background:none;color:#ff6b6b;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;">Clear all</button>
+        </div>
+        <div id="foNotifList" class="fo-notif-list" style="flex:1; overflow-y:auto; padding:12px 10px;">
             <div style="padding:32px;text-align:center;font-size:13px;color:var(--fo-muted)">No notifications</div>
-        </div>
-        <div class="fo-notif-actions" style="pointer-events: auto;">
-            <button onclick="foMarkAllRead()" style="flex:1;padding:8px;border:none;background:none;color:var(--fo-blue);font-size:12px;font-weight:600;cursor:pointer;">Mark all read</button>
-            <button onclick="foClearAll()" style="flex:1;padding:8px;border:none;background:none;color:var(--fo-blue);font-size:12px;font-weight:600;cursor:pointer;">Clear all</button>
         </div>
     </div>
 
