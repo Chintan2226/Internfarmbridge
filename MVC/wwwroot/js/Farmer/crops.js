@@ -371,6 +371,10 @@ function reloadListings() {
     var token = getToken();
     if (!token) { redirectToLogin(); return; }
 
+    $("#cropsGrid").hide();
+    $("#cropsEmpty").hide();
+    $("#gridSkeleton").show();
+
     $.ajax({
         url: window.API_BASE + "/" + window.FARMER_ID + "/listings",
         type: "GET",
@@ -424,6 +428,10 @@ async function elasticSearchCrops(query) {
 
     document.getElementById("searchResultsInfo").style.display = "block";
     document.getElementById("searchQueryText").innerText = query;
+
+    $("#cropsGrid").hide();
+    $("#cropsEmpty").hide();
+    $("#gridSkeleton").show();
 
     try {
         const status = document.getElementById("cropStatusFilter").value;

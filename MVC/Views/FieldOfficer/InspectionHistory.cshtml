@@ -11,7 +11,10 @@
                 <span class="hdr-badge hdr-complete" id="completedCount">0 Completed</span>
             </div>
         </div>
-        <div id="inspectionGridWrap">
+        <div id="inspectionSkeletonWrap">
+            <div class="skeleton chart-skeleton" style="height:320px;"></div>
+        </div>
+        <div id="inspectionGridWrap" style="display:none;">
             <table class="ih-table">
                 <thead>
                     <tr>
@@ -20,15 +23,11 @@
                         <th>Qty</th>
                         <th>Asking Price</th>
                         <th>Status</th>
-                        <th>Date & Time</th>
+                        <th>Date &amp; Time</th>
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody id="inspectionGrid">
-                    <tr>
-                        <td colspan="7" class="ih-empty">Loading inspection history...</td>
-                    </tr>
-                </tbody>
+                <tbody id="inspectionGrid"></tbody>
             </table>
         </div>
     </div>
@@ -120,11 +119,14 @@
                         ? data
                         : (data && Array.isArray(data.data) ? data.data : []);
                     const completed = rows.filter(x => normalizeStatus(x.status) === "completed");
-                    
                     $("#completedCount").text(completed.length + " Completed");
+                    $("#inspectionSkeletonWrap").hide();
+                    $("#inspectionGridWrap").show();
                     renderRows(completed);
                 },
                 error: function (xhr) {
+                    $("#inspectionSkeletonWrap").hide();
+                    $("#inspectionGridWrap").show();
                     if (handleFoUnauthorized(xhr)) return;
                     $("#inspectionGrid").html('<tr><td colspan="7" class="ih-empty">Failed to load inspection history</td></tr>');
                     showFoLoadFailedAlert("inspection history");

@@ -352,6 +352,30 @@
     color: #1e293b !important;
 }
 
+.btn-reorder {
+    flex: 1;
+    background: #ffffff !important;
+    color: var(--ord-primary) !important;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid var(--ord-primary);
+    font-weight: 700;
+    font-size: 14px;
+    font-family: var(--ord-font-display);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-reorder:hover {
+    background: #f0fdf4 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(21, 128, 61, 0.1);
+}
+
 .btn-cancel-order {
     width: 48px;
     height: 48px;

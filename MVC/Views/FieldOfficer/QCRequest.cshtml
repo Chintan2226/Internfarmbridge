@@ -79,7 +79,8 @@
             </div>
         </div>
         
-        <div id="qcGrid"></div>
+        <div id="qcGridSkeleton" class="skeleton chart-skeleton" style="height: 400px; margin: 0 16px 16px;"></div>
+        <div id="qcGrid" style="display:none;"></div>
         <div id="rescheduleWindow" style="display:none;">
             <div class="reschedule-modal-body">
                 <input type="hidden" id="slotId" />
@@ -455,6 +456,8 @@
                                 type: "GET",
                                 dataType: "json",
                                 success: function (response) {
+                                    $("#qcGridSkeleton").hide();
+                                    $("#qcGrid").show();
                                     var rows = Array.isArray(response) ? response : [];
                                     // Filter only pending and scheduled for normal view
                                     var filteredRows = rows.filter(function (item) {
@@ -465,6 +468,8 @@
                                     updateCounts(filteredRows);
                                 },
                                 error: function (xhr) {
+                                    $("#qcGridSkeleton").hide();
+                                    $("#qcGrid").show();
                                     if (handleFoUnauthorized(xhr)) return;
                                     showFoLoadFailedAlert("QC requests");
                                     options.error(xhr);

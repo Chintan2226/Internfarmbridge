@@ -246,6 +246,14 @@ namespace API.Controllers
              [FromQuery] string search = "",
              [FromQuery] string grade = "all")
         {
+            string cacheKey = $"vendor:catalog:{category}:{search}:{grade}";
+            var cachedData = await _redisService.GetAsync<List<VM_CatalogCropItem>>(cacheKey);
+
+            if (cachedData != null && cachedData.Any())
+            {
+                return Ok(new { success = true, data = cachedData, source = "cache" });
+            }
+
             var filter = new VM_CropFilter
             {
                 CropType = string.IsNullOrEmpty(search) ? null : search,
@@ -253,14 +261,25 @@ namespace API.Controllers
                 Grade = grade == "all" ? null : grade
             };
             var products = await _vendorHelper.GetFilteredCatalogAsync(filter);
-            return Ok(new { success = true, data = products });
+            
+            await _redisService.SetAsync(cacheKey, products, TimeSpan.FromMinutes(60));
+            return Ok(new { success = true, data = products, source = "db" });
         }
 
         [HttpPost("catalog/filter")]
         public async Task<IActionResult> FilterCatalog([FromBody] VM_CropFilter filter)
         {
+            string cacheKey = $"vendor:catalog:filter:{filter.Category ?? "all"}:{filter.CropType ?? ""}:{filter.Grade ?? "all"}";
+            var cachedData = await _redisService.GetAsync<List<VM_CatalogCropItem>>(cacheKey);
+
+            if (cachedData != null && cachedData.Any())
+            {
+                return Ok(new { success = true, data = cachedData, source = "cache" });
+            }
+
             var products = await _vendorHelper.GetFilteredCatalogAsync(filter);
-            return Ok(new { success = true, data = products });
+            await _redisService.SetAsync(cacheKey, products, TimeSpan.FromMinutes(60));
+            return Ok(new { success = true, data = products, source = "db" });
         }
 
         // ============ CART ============
@@ -606,7 +625,18 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
         [HttpGet("user/stats")]
         public async Task<IActionResult> GetUserStats()
         {
-            return Ok(new { success = true, data = await _vendorHelper.GetUserKpiStatsAsync(CurrentVendorId) });
+            string cacheKey = $"vendor:user:stats:{CurrentVendorId}";
+            var cachedData = await _redisService.GetAsync<VM_UserKpiStats>(cacheKey);
+
+            if (cachedData != null)
+            {
+                return Ok(new { success = true, data = cachedData, source = "cache" });
+            }
+
+            var stats = await _vendorHelper.GetUserKpiStatsAsync(CurrentVendorId);
+            await _redisService.SetAsync(cacheKey, stats, TimeSpan.FromMinutes(30));
+
+            return Ok(new { success = true, data = stats, source = "db" });
         }
 
         [HttpGet("user/recent-orders")]
@@ -619,7 +649,18 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
         [HttpGet("dashboard/stats")]
         public async Task<IActionResult> GetDashboardStats()
         {
-            return Ok(new { success = true, data = await _vendorHelper.GetDashboardStatsAsync(CurrentVendorId) });
+            string cacheKey = $"vendor:dashboard:stats:{CurrentVendorId}";
+            var cachedData = await _redisService.GetAsync<VM_DashboardStats>(cacheKey);
+
+            if (cachedData != null)
+            {
+                return Ok(new { success = true, data = cachedData, source = "cache" });
+            }
+
+            var stats = await _vendorHelper.GetDashboardStatsAsync(CurrentVendorId);
+            await _redisService.SetAsync(cacheKey, stats, TimeSpan.FromMinutes(30));
+
+            return Ok(new { success = true, data = stats, source = "db" });
         }
 
         [HttpGet("dashboard/kpi")]

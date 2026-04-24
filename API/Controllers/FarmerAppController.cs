@@ -23,18 +23,21 @@ namespace API.Controllers
         private readonly ElasticService _elasticService;
         private readonly RabbitMqService _rabbitMqService;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly RedisService _redisService;
 
         public FarmerAppController(IConfiguration configuration,
             EmailService emailService,
             ElasticService elasticService,
             RabbitMqService rabbitMqService,
-            CloudinaryService cloudinaryService)
+            CloudinaryService cloudinaryService,
+            RedisService redisService)
         {
             _helper = new FarmerAppHelper(configuration);
             _emailService = emailService;
             _elasticService = elasticService;
             _rabbitMqService = rabbitMqService;
             _cloudinaryService = cloudinaryService;
+            _redisService = redisService;
         }
 
         private int GetTokenFarmerId()
@@ -262,8 +265,15 @@ namespace API.Controllers
         public async Task<IActionResult> GetDashboard([FromRoute] int farmerId)
         {
             if (!FarmerOwns(farmerId)) return Forbid();
+            
+            string cacheKey = $"farmer:dashboard:{farmerId}";
+            var cachedData = await _redisService.GetAsync<vm_FarmerDashboard>(cacheKey);
+            if (cachedData != null)
+                return Ok(new { success = true, data = cachedData, source = "cache" });
+
             var data = await _helper.GetDashboardDataAsync(farmerId);
-            return Ok(new { success = true, data });
+            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
+            return Ok(new { success = true, data, source = "db" });
         }
 
         [HttpDelete("{farmerId}/crop/{listingId}")]
@@ -343,21 +353,42 @@ namespace API.Controllers
         public async Task<IActionResult> GetIncomeChart([FromRoute] int farmerId)
         {
             if (!FarmerOwns(farmerId)) return Forbid();
+
+            string cacheKey = $"farmer:incomechart:{farmerId}";
+            var cachedData = await _redisService.GetAsync<List<vm_IncomeChartPoint>>(cacheKey);
+            if (cachedData != null)
+                return Ok(new { success = true, data = cachedData, source = "cache" });
+
             var data = await _helper.GetIncomeChartAsync(farmerId);
-            return Ok(new { success = true, data });
+            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
+            return Ok(new { success = true, data, source = "db" });
         }
 
         // Dropdowns
         [HttpGet("dropdowns/catalog")]
         public async Task<IActionResult> GetCatalogDropdown()
         {
-            return Ok(new { success = true, data = await _helper.GetCatalogDropdownAsync() });
+            string cacheKey = "dropdown:catalog";
+            var cachedData = await _redisService.GetAsync<List<vm_DropdownItem>>(cacheKey);
+            if (cachedData != null)
+                return Ok(new { success = true, data = cachedData, source = "cache" });
+
+            var data = await _helper.GetCatalogDropdownAsync();
+            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
+            return Ok(new { success = true, data, source = "db" });
         }
 
         [HttpGet("dropdowns/warehouses")]
         public async Task<IActionResult> GetWarehousesDropdown()
         {
-            return Ok(new Dictionary<string, object> { { "success", true }, { "data", await _helper.GetWarehousesDropdownAsync() } });
+            string cacheKey = "dropdown:warehouses";
+            var cachedData = await _redisService.GetAsync<List<vm_DropdownItem>>(cacheKey);
+            if (cachedData != null)
+                return Ok(new Dictionary<string, object> { { "success", true }, { "data", cachedData }, { "source", "cache" } });
+
+            var data = await _helper.GetWarehousesDropdownAsync();
+            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
+            return Ok(new Dictionary<string, object> { { "success", true }, { "data", data }, { "source", "db" } });
         }
 
         [HttpGet("{farmerId:int}/dropdowns/active-listings")]
@@ -380,8 +411,15 @@ namespace API.Controllers
         public async Task<IActionResult> GetQcDashboard([FromRoute] int farmerId)
         {
             if (!FarmerOwns(farmerId)) return Forbid();
+
+            string cacheKey = $"farmer:qcdashboard:{farmerId}";
+            var cachedData = await _redisService.GetAsync<vm_QcDashboard>(cacheKey);
+            if (cachedData != null)
+                return Ok(new Dictionary<string, object> { { "success", true }, { "data", cachedData }, { "source", "cache" } });
+
             var data = await _helper.GetQcDashboardAsync(farmerId);
-            return Ok(new Dictionary<string, object> { { "success", true }, { "data", data } });
+            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
+            return Ok(new Dictionary<string, object> { { "success", true }, { "data", data }, { "source", "db" } });
         }
 
         // Inquiries

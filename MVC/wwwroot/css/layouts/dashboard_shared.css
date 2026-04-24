@@ -564,3 +564,20 @@ body {
     height: 200px;
     border-radius: 8px;
 }
+
+/* Grid Skeleton */
+.fb-skeleton-grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    width: 100%;
+}
+
+.fb-skeleton-card {
+    height: 220px;
+    background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}

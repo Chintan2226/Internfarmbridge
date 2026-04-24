@@ -13,7 +13,7 @@
                 <p class="stat-card-title">Pending Requests</p>
                 <div class="icon"><i class="fa fa-clipboard-list"></i></div>
             </div>
-            <h2 id="pendingCount">0</h2>
+            <h2><span id="pendingCount" class="skeleton" style="min-width: 40px; display: inline-block;">0</span></h2>
             <div class="stat-card-sub">
                 <span class="dot"></span>
                 <span>Awaiting action</span>
@@ -25,7 +25,7 @@
                 <p class="stat-card-title">In Progress</p>
                 <div class="icon"><i class="fa fa-sync-alt"></i></div>
             </div>
-            <h2 id="inProgressCount">0</h2>
+            <h2><span id="inProgressCount" class="skeleton" style="min-width: 40px; display: inline-block;">0</span></h2>
             <div class="stat-card-sub">
                 <span class="dot"></span>
                 <span>Inspections running</span>
@@ -37,7 +37,7 @@
                 <p class="stat-card-title">Completed</p>
                 <div class="icon"><i class="fa fa-check-circle"></i></div>
             </div>
-            <h2 id="completedCount">0</h2>
+            <h2><span id="completedCount" class="skeleton" style="min-width: 40px; display: inline-block;">0</span></h2>
             <div class="stat-card-sub">
                 <span class="dot"></span>
                 <span>Successfully closed</span>
@@ -49,7 +49,7 @@
                 <p class="stat-card-title">Total Requests</p>
                 <div class="icon"><i class="fa fa-layer-group"></i></div>
             </div>
-            <h2 id="totalCount">0</h2>
+            <h2><span id="totalCount" class="skeleton" style="min-width: 40px; display: inline-block;">0</span></h2>
             <div class="stat-card-sub">
                 <span class="dot"></span>
                 <span>Overall assigned</span>
@@ -68,7 +68,8 @@
             <button class="k-button k-primary" onclick="goToQC()">View All</button>
         </div>
 
-        <div id="recentGrid"></div>
+        <div id="gridSkeleton" class="skeleton chart-skeleton" style="height: 300px;"></div>
+        <div id="recentGrid" style="display:none;"></div>
     </div>
 
 </div>
@@ -131,14 +132,15 @@
                 let inProgress = rows.filter(x => normalizeStatus(x.status) === "scheduled").length;
                 let completed = rows.filter(x => normalizeStatus(x.status) === "completed").length;
 
-                $("#pendingCount").text(pending);
-                $("#inProgressCount").text(inProgress);
-                $("#completedCount").text(completed);
-                $("#totalCount").text(rows.length);
+                $("#pendingCount").removeClass('skeleton').text(pending);
+                $("#inProgressCount").removeClass('skeleton').text(inProgress);
+                $("#completedCount").removeClass('skeleton').text(completed);
+                $("#totalCount").removeClass('skeleton').text(rows.length);
                 renderHighDemandAlerts(rows);
             },
             error: function (xhr) {
                 if (handleFoUnauthorized(xhr)) return;
+                $("#pendingCount, #inProgressCount, #completedCount, #totalCount").removeClass('skeleton').text('—');
                 showFoLoadFailedAlert("dashboard counts");
             }
         });
@@ -151,10 +153,13 @@
             url: foApiUrl("/today-schedules"),
             type: "GET",
             success: function (data) {
-                $("#recentGrid").empty();
+                $("#gridSkeleton").hide();
+                $("#recentGrid").show().empty();
                 loadGrid(data);
             },
             error: function (xhr) {
+                $("#gridSkeleton").hide();
+                $("#recentGrid").show();
                 if (handleFoUnauthorized(xhr)) return;
                 showFoLoadFailedAlert("today schedules");
             }
