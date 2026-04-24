@@ -26,7 +26,7 @@ namespace API.Controllers
 
         public FarmerAppController(IConfiguration configuration,
             EmailService emailService,
-            ElasticService elasticService, 
+            ElasticService elasticService,
             RabbitMqService rabbitMqService,
             CloudinaryService cloudinaryService)
         {
@@ -64,19 +64,19 @@ namespace API.Controllers
 
                     if (profile != null && !string.IsNullOrEmpty(profile.Email))
                     {
-                        var emailData = new AcceptEmailData 
+                        var emailData = new AcceptEmailData
                         {
                             FarmerEmail = profile.Email,
                             FarmerName = profile.FullName ?? "Farmer",
                             ProcurementRequestId = 0,
-                            CropName = "Your Listed Crop", 
-                            WarehouseName = "Assigned Warehouse", 
+                            CropName = "Your Listed Crop",
+                            WarehouseName = "Assigned Warehouse",
                             QuantityDisplay = "Requested Quantity",
                             SlotDateFormatted = DateTime.Now.ToString("MMM dd, yyyy"),
                             TimeRange = "Standard Business Hours",
                             AcceptedAtFormatted = DateTime.Now.ToString("MMM dd, yyyy")
                         };
-                        
+
                         await _emailService.SendFarmerRequestAcceptedEmailAsync(emailData);
                     }
                 }
@@ -91,7 +91,7 @@ namespace API.Controllers
                     "qc_booking");
 
                 int foUserId = await _helper.GetFieldOfficerUserIdByWarehouseAsync(req.WarehouseId);
-                if (foUserId > 0) 
+                if (foUserId > 0)
                 {
                     await _rabbitMqService.PublishToUserAsync(foUserId,
                         "New QC Booking Request",
@@ -285,10 +285,10 @@ namespace API.Controllers
         public async Task<IActionResult> SaveListing([FromBody] vm_CropListingRequest req)
         {
             if (req == null) return BadRequest(new { success = false, message = "Invalid request payload." });
-            
+
             req.FarmerId = GetTokenFarmerId();
             if (req.FarmerId == 0) return Forbid();
-            
+
             bool success = await _helper.SaveCropListingAsync(req);
 
             if (success)
@@ -397,10 +397,10 @@ namespace API.Controllers
         public async Task<IActionResult> SubmitInquiry([FromBody] vm_SubmitInquiryRequest req)
         {
             if (req == null) return BadRequest(new { success = false, message = "Invalid request payload." });
-            
+
             req.FarmerId = GetTokenFarmerId();
             if (req.FarmerId == 0) return Forbid();
-            
+
             bool success = await _helper.SubmitInquiryAsync(req);
 
             if (success)
@@ -432,10 +432,10 @@ namespace API.Controllers
         public async Task<IActionResult> UpdateProfile([FromBody] vm_UpdateProfileRequest req)
         {
             if (req == null) return BadRequest(new { success = false, message = "Invalid request payload." });
-            
+
             req.FarmerId = GetTokenFarmerId();
             if (req.FarmerId == 0) return Forbid();
-            
+
             bool success = await _helper.UpdateFarmerProfileAsync(req);
 
             if (success)
@@ -449,16 +449,16 @@ namespace API.Controllers
             if (success) return Ok(new Dictionary<string, object> { { "success", true }, { "message", "Profile updated successfully." } });
             return StatusCode(500, new Dictionary<string, object> { { "success", false }, { "message", "Failed to update profile." } });
         }
-        
+
         [HttpPost("profile/photo/upload")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadPhoto([FromForm] PhotoUploadDto dto)
         {
             if (dto.File == null || dto.File.Length == 0) return BadRequest("No file uploaded.");
             var result = await _cloudinaryService.UploadImageAsync(dto.File, "farmbridge/profiles");
-            if (result.Success) 
+            if (result.Success)
                 return Ok(new Dictionary<string, object> { { "success", true }, { "imageUrl", result.SecureUrl } });
-            
+
             return StatusCode(500, new Dictionary<string, object> { { "success", false }, { "message", result.Error ?? "Unknown error" } });
         }
 
@@ -472,14 +472,33 @@ namespace API.Controllers
             return Ok(new Dictionary<string, object> { { "success", success } });
         }
 
-        // Search
+        // In API/Controllers/FarmerAppController.cs
         [HttpPost("search/my-crops")]
         public async Task<IActionResult> SearchMyCrops([FromBody] SearchRequestModel request)
         {
-            var farmerId = GetTokenFarmerId();
-            request.FarmerId = farmerId;
-            var results = await _elasticService.SearchCropsForMVCAsync(request);
-            return Ok(results);
+            try
+            {
+                var farmerId = GetTokenFarmerId();
+                request.FarmerId = farmerId;
+                var results = await _elasticService.SearchCropsForMVCAsync(request);
+                return Ok(results);  // This returns proper JSON
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SearchMyCrops error: {ex.Message}");
+                return Ok(new SearchResponseModel<CropSearchResult>());  // Return empty but valid JSON
+            }
+        }
+        [HttpPost("reindex-crops")]
+        [AllowAnonymous] // ya admin only
+        public async Task<IActionResult> ReindexCrops()
+        {
+            var result = await _elasticService.ReindexAllAsync();
+            return Ok(new
+            {
+                success = true,
+                cropListings = result.CropListings
+            });
         }
     }
 
