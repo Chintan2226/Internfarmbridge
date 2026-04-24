@@ -50,9 +50,9 @@ $(document).ready(function () {
         success: function (res) {
             if (res.success) {
                 var data = res.data || [];
-                $("#kpiTotal").text(data.length);
-                $("#kpiPending").text(data.filter(x => x.status === "open").length);
-                $("#kpiSolved").text(data.filter(x => x.status === "closed").length);
+                $("#kpiTotal").removeClass("skeleton").text(data.length);
+                $("#kpiPending").removeClass("skeleton").text(data.filter(x => x.status === "open").length);
+                $("#kpiSolved").removeClass("skeleton").text(data.filter(x => x.status === "closed").length);
             }
         },
 
@@ -147,9 +147,9 @@ function reloadInquiryKPIs() {
         success: function (res) {
             if (res.success) {
                 var data = res.data || [];
-                $("#kpiTotal").text(data.length);
-                $("#kpiPending").text(data.filter(x => x.status === "open").length);
-                $("#kpiSolved").text(data.filter(x => x.status === "closed").length);
+                $("#kpiTotal").removeClass("skeleton").text(data.length);
+                $("#kpiPending").removeClass("skeleton").text(data.filter(x => x.status === "open").length);
+                $("#kpiSolved").removeClass("skeleton").text(data.filter(x => x.status === "closed").length);
             }
         }
     });
