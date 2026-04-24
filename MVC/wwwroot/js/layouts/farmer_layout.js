@@ -291,11 +291,11 @@ function renderNotifs() {
         <div class="fv-notif-item ${n.isRead ? '' : 'unread'}" data-id="${n.id}">
             <div class="fv-notif-content" onclick="handleNotificationClick(${n.id}, '${escapeHtml(n.redirectUrl || '')}')">
                 <div class="fv-notif-icon">
-                    <i class="fi fi-rr-bell" style="font-size:18px;color:var(--fv-blue)"></i>
+                    <i class="fi fi-rr-bell" style="font-size:18px;color:var(--primary)"></i>
                 </div>
                 <div style="flex:1">
                     <div style="font-size:13px;font-weight:600;">${escapeHtml(n.title || 'Notification')}</div>
-                    <div style="font-size:12px;color:var(--fv-muted); margin-top:4px;">${escapeHtml(n.message || '')}</div>
+                    <div style="font-size:12px;color:var(--text-muted); margin-top:4px;">${escapeHtml(n.message || '')}</div>
                     <div style="font-size:10px;color:#9ca3af; margin-top:4px;">${formatDate(n.createdAt)}</div>
                 </div>
             </div>
@@ -467,6 +467,17 @@ window.fbConfirm = function(title, text = '', confirmLabel = 'Yes, Confirm') {
 
 function esc(s) {
     return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(s) {
+    if (!s) return '';
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // Backward compatibility for old toast function
