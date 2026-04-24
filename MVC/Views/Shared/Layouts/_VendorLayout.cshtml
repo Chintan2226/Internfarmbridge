@@ -4,7 +4,7 @@
     Layout = null;
     var role = "Vendor";
     var title = (ViewData["Title"] ?? "Dashboard").ToString();
-
+    // Lang cookie
     var currentLang = "en";
     var cultureCookie = Context.Request.Cookies[".AspNetCore.Culture"];
     if (!string.IsNullOrEmpty(cultureCookie)) {
@@ -15,195 +15,244 @@
 <!DOCTYPE html>
 <html lang="@currentLang">
 <head>
+    <link rel="icon" type="image/png" href="~/Logo/Logo_Without_Bg.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@title — FarmBridge</title>
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Baloo+2:wght@400;600;700;800&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css" />
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <!-- Bootstrap + Kendo -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://kendo.cdn.telerik.com/2023.1.117/styles/kendo.common.min.css" rel="stylesheet" />
     <link href="https://kendo.cdn.telerik.com/2023.1.117/styles/kendo.default.min.css" rel="stylesheet" />
 
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/layouts/vendor_layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/vendor/vendor_dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/vendor/vendor_dashboard.css" asp-append-version="true" />
 
     @RenderSection("Styles", required: false)
+    
+    
+<link rel="stylesheet" href="~/css/pages/shared/layouts__vendorlayout.css" asp-append-version="true" />
 
+
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
     <script>
-        window.API_BASE = 'http://localhost:5020/api/Vendor';
-        window.USER_ROLE = 'Vendor';
+        window.API_BASE_URL = 'http://localhost:5020/api/Vendor';
+        window.USER_ROLE = '@role';
+        window.API_BASE = `http://localhost:5020/api/@role`;
         window.CURRENT_LANG = '@currentLang';
+        window.fbServerTranslations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Localizer.GetAllStrings(includeParentCultures: true).ToDictionary(s => s.Name, s => s.Value)
+        ));
     </script>
+    <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
 </head>
+<body data-role="@role" data-title="@title">
 
-<body data-role="@role">
+    <div aria-hidden="true" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;">
+        <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(168,230,160,0.18) 0%,transparent 70%);top:-80px;left:-100px;filter:blur(40px);"></div>
+        <div style="position:absolute;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(181,221,245,0.12) 0%,transparent 70%);bottom:10%;right:-80px;filter:blur(40px);"></div>
+    </div>
 
-    <!-- Sidebar -->
     <nav class="fv-sidebar" id="fvSidebar">
         <div class="fv-sidebar-logo">
-            <img src="/Logo/Logo_Without_Bg.png" />
-            <span class="fv-sidebar-name">FarmBridge</span>
+            <img src="/Logo/Logo_Without_Bg.png" alt="FarmBridge" />
+            <span class="fv-sidebar-name"><span style="color: #1b5e19;">Farm</span><span style="color: #2b6f87;">Bridge</span></span>
         </div>
-
-        <div class="fv-role-badge">@role</div>
-
+        <div class="fv-role-badge" id="fvRoleBadge">@role</div>
+        <ul class="fv-nav" id="fvNav">
         @{
             var path = Context.Request.Path.ToString().ToLower();
         }
-
-        <ul class="fv-nav">
-            <li>
-                <a href="/Vendor/Catalog" class="fv-nav-link @(path.Contains("/vendor/catalog") ? "active" : "")">
-                    <i class="fi fi-rr-shop"></i>
-                    <span>Crops</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="/Vendor/Orders" class="fv-nav-link @(path.Contains("/vendor/orders") ? "active" : "")">
-                    <i class="fi fi-rr-box-alt"></i>
-                    <span>Orders</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="/Vendor/Dashboard" class="fv-nav-link @(path.Contains("/vendor/dashboard") ? "active" : "")">
-                    <i class="fi fi-rr-apps"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="/Vendor/Payments" class="fv-nav-link @(path.Contains("/vendor/payments") ? "active" : "")">
-                    <i class="fi fi-rr-credit-card"></i>
-                    <span>Payments</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="/Vendor/Profile" class="fv-nav-link @(path.Contains("/vendor/profile") ? "active" : "")">
-                    <i class="fi fi-rr-user"></i>
-                    <span>Profile</span>
-                </a>
-            </li>
+            <li><a href="/Vendor/Catalog" class="fv-nav-link @(path.Contains("/vendor/catalog") ? "active" : "")"><i class="fi fi-rr-shop"></i><span data-i18n="nav_crop_catalog">Crops</span></a></li>
+            <li><a href="/Vendor/Orders" class="fv-nav-link @(path.Contains("/vendor/orders") ? "active" : "")"><i class="fi fi-rr-box-alt"></i><span data-i18n="nav_my_orders">My Orders</span></a></li>
+            <li><a href="/Vendor/Dashboard" class="fv-nav-link @(path.Contains("/vendor/dashboard") ? "active" : "")"><i class="fi fi-rr-apps"></i><span data-i18n="nav_dashboard">Dashboard</span></a></li>
+            <li><a href="/Vendor/Payments" class="fv-nav-link @(path.Contains("/vendor/payments") ? "active" : "")"><i class="fi fi-rr-credit-card"></i><span data-i18n="nav_payments">Payments</span></a></li>
+             <li><a href="/Vendor/Profile" class="fv-nav-link @(path.Contains("/vendor/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span data-i18n="nav_profile">Profile</span></a></li>
         </ul>
-
         <div class="fv-sidebar-foot">
-            <a href="javascript:void(0)" onclick="logoutVendor()" class="fv-nav-link">
+            <a href="javascript:void(0)" class="fv-nav-link fv-logout" onclick="logoutVendor()">
                 <i class="fi fi-rr-exit"></i>
-                <span>Logout</span>
+                <span data-i18n="nav_logout">Logout</span>
             </a>
-        </div>
+</div>
     </nav>
 
-    <!-- Main -->
-    <div class="fv-main">
-
-        <!-- Topbar -->
-        <header class="fv-topbar">
+    <div class="fv-main" id="fvMain">
+        <header class="fv-topbar" id="fvTopbar">
             <div class="fv-topbar-left">
-                <button class="fv-menu-btn" onclick="toggleDrawer()">
+                <button class="fv-menu-btn" id="fvMenuBtn" onclick="toggleDrawer()" aria-label="Menu">
                     <i class="fi fi-rr-bars-staggered"></i>
                 </button>
-                <h1 class="fv-page-title">@title</h1>
+                <h1 class="fv-page-title" id="fvPageTitle">@title</h1>
             </div>
-
             <div class="fv-topbar-right">
-
-                <!-- Language -->
                 <div class="fb-lang-switcher">
-                    <button onclick="toggleLangDropdown(event)" class="fv-action-btn">
+                    <button class="fv-action-btn fb-lang-btn" onclick="toggleLangDropdown(event)" aria-label="Language">
                         <i class="fi fi-rr-globe"></i>
                     </button>
                     <div class="fb-lang-dropdown">
-                        <button onclick="switchLang('en')">English</button>
-                        <button onclick="switchLang('hi')">हिन्दी</button>
-                        <button onclick="switchLang('gu')">ગુજરાતી</button>
+                        <button class="fb-lang-option" data-lang="en" onclick="switchLang('en')">🇺🇸 English</button>
+                        <button class="fb-lang-option" data-lang="hi" onclick="switchLang('hi')">🇮🇳 हिन्दी</button>
+                        <button class="fb-lang-option" data-lang="gu" onclick="switchLang('gu')">🇮🇳 ગુજરાતી</button>
                     </div>
                 </div>
-
-                <!-- Notifications -->
-                <button class="fv-action-btn" onclick="toggleNotifDrawer(event)">
+                <button class="fv-action-btn" id="fvBellBtn" onclick="toggleNotifDrawer(event)" aria-label="Notifications">
                     <i class="fi fi-rr-bell"></i>
-                    <span id="fvBellCount" class="nav-badge" style="display: none;">0</span>
+                    <span class="fv-dot" id="fvBellDot" hidden></span>
                 </button>
 
-                <!-- Wishlist -->
-                <a href="/Vendor/Wishlist" class="fv-action-btn">
-                    <i class="fi fi-rr-heart"></i>
-                    <span id="globalWishlistCount" class="nav-badge">0</span>
-                </a>
+                @if (role == "Vendor") {
+                    <a href="/Vendor/Wishlist" class="fv-action-btn" aria-label="Wishlist">
+                        <i class="fi fi-rr-heart"></i>
+                        <span id="globalWishlistCount" class="nav-badge bg-wishlist">0</span>
+                    </a>
 
-                <!-- Cart -->
-                <a href="/Vendor/Checkout" class="fv-action-btn">
-                    <i class="fi fi-rr-shopping-cart"></i>
-                    <span id="globalCartCount" class="nav-badge">0</span>
-                </a>
-
-                <!-- Avatar -->
-                <div class="fv-avatar" id="fvAvatar">V</div>
-
+                    <a href="/Vendor/Checkout" class="fv-action-btn" aria-label="Cart">
+                        <i class="fi fi-rr-shopping-cart"></i>
+                        <span id="globalCartCount" class="nav-badge bg-cart">0</span>
+                    </a>
+                }
+                
+                <div class="fv-avatar" id="fvAvatar" onclick="location.href='/Vendor/Profile'" title="Profile">
+                    V
+                </div>
             </div>
         </header>
 
-        <!-- Content -->
         <main class="fv-content">
             @RenderBody()
         </main>
     </div>
 
-    <!-- Notification Drawer -->
+    <div class="cart-sidebar" id="cartSidebar">...</div>
+    <div class="wishlist-sidebar" id="wishlistSidebar">...</div>
+    <div class="fv-drawer" id="fvDrawer">...</div>
+    
     <div class="fv-notif" id="fvNotif">
         <div class="fv-notif-header">
-            <span>Notifications</span>
-            <button onclick="toggleNotifDrawer(event)">✕</button>
+            <span data-i18n="nav_notifications">Notifications</span>
+            <button onclick="toggleNotifDrawer(event)"><i class="fi fi-rr-cross-small"></i></button>
         </div>
-
         <div class="fv-notif-actions">
-            <small><span id="fvUnreadCountText">0</span> unread</small>
+            <small><span id="fvUnread">0</span> <span data-i18n="notif_unread">unread</span></small>
             <div style="display:flex; gap: 12px; align-items:center;">
-                <button onclick="fvMarkAllRead()">Mark all read</button>
-                <button onclick="fvClearAll()" style="color: #ff6b6b; text-decoration: none;">Clear all</button>
+                <button onclick="fvMarkAllRead()" data-i18n="notif_mark_all">Mark all read</button>
+                <button onclick="fvClearAll()" style="color: #ff6b6b; text-decoration: none;" data-i18n="notif_clear_all">Clear all</button>
             </div>
         </div>
-
-        <div class="fv-notif-tabs">
-            <button class="active" onclick="fvTab('all', this)">All</button>
-            <button onclick="fvTab('unread', this)">Unread <span id="fvUnreadBadgeNum">0</span></button>
-        </div>
-
-        <div id="fvNotifList" class="fv-notif-list"></div>
+        <div class="fv-notif-list" id="fvNotifList"></div>
     </div>
 
-    <!-- Overlay -->
     <div class="fv-overlay" id="fvOverlay" onclick="toggleDrawer()"></div>
+    <div class="fv-toasts" id="fvToasts"></div>
+    <div class="fb-toast-container" id="fbToastContainer"></div>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kendo.cdn.telerik.com/2023.1.117/js/kendo.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <script src="~/js/Vendor/vendor_dashboard.js" asp-append-version="true"></script>
     <script src="~/js/Vendor/vendor_dashboard.js" asp-append-version="true"></script>
     <script src="~/js/Vendor/vendor_layout.js" asp-append-version="true"></script>
     <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/site.js" asp-append-version="true"></script>
 
     <script>
+        
         function logoutVendor() {
-            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 UTC; path=/;";
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.href = "/Vendor/Login";
+    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+    // Clear storage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Redirect login
+    window.location.href = "/Vendor/Login";
+}
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
         }
+
+        // Badge Sync
+        function syncGlobalBadges() {
+            // Cart Badge
+            const cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+            const cartBadge = document.getElementById('globalCartCount');
+            if (cartBadge) {
+                if (cart.length > 0) {
+                    cartBadge.innerText = cart.length;
+                    cartBadge.style.display = 'flex';
+                } else {
+                    cartBadge.style.display = 'none';
+                }
+            }
+
+            // Wishlist Badge
+            const token = getCookie("authToken");
+            if (token && window.USER_ROLE === 'Vendor') {
+                fetch('http://localhost:5020/api/Vendor/wishlist', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(res => res.json())
+                .then(result => {
+                    const wishlistBadge = document.getElementById('globalWishlistCount');
+                    if (wishlistBadge && result.success && result.data) {
+                        const count = result.data.length;
+                        if (count > 0) {
+                            wishlistBadge.innerText = count;
+                            wishlistBadge.style.display = 'flex';
+                        } else {
+                            wishlistBadge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(err => console.warn("Wishlist sync silent fail:", err));
+            }
+        }
+
+        // Dynamic Avatar
+        function parseJwtVendor(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(atob(base64));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        $(document).ready(() => {
+            syncGlobalBadges();
+            window.addEventListener('storage', syncGlobalBadges);
+            
+            try {
+                const token = getCookie("authToken");
+                if(token) {
+                    const decoded = parseJwtVendor(token);
+                    if(decoded && decoded.full_name) {
+                        const fvAvatar = document.getElementById('fvAvatar');
+                        if (fvAvatar) {
+                            fvAvatar.textContent = decoded.full_name.charAt(0).toUpperCase();
+                            fvAvatar.title = decoded.full_name;
+                        }
+                    }
+                }
+            } catch(e) { console.warn("Avatar parsing fail", e); }
+        });
     </script>
 
     @RenderSection("Scripts", required: false)
-
 </body>
 </html>
+

@@ -124,7 +124,8 @@
                     grid.dataSource.read();
                 }
             }
-    
+
+            
             function normalizeStatus(status) {
                 return (status || "").toLowerCase();
             }
@@ -168,16 +169,15 @@
     
             // ========== ELASTICSEARCH FUNCTION ==========
             function performElasticSearch(searchQuery, grade, status, passed, callback) {
-                // Always filter by pending/scheduled status (same as grid)
                 var requestData = {
                     Query: searchQuery || '',
                     Page: 1,
                     PageSize: 100,
-                    Grade: grade || '',
-                    Status: 'pending,scheduled',  // Only search in these statuses
+                    Status: null,
+                    Grade: grade || null,
                     Passed: passed === 'true' ? true : (passed === 'false' ? false : null)
                 };
-    
+
                 $.ajax({
                     url: '/FieldOfficer/SearchQCRecords',
                     type: 'POST',
@@ -185,15 +185,27 @@
                     data: JSON.stringify(requestData),
                     success: function (response) {
                         if (response && response.results) {
-                            callback(response.results);
+                            // ES results ko grid ke schema ke saath map karo
+                            var mapped = response.results.map(function (r) {
+                                return {
+                                    procurementRequestId: r.procurementRequestId,
+                                    farmerName: r.farmerName,
+                                    cropType: r.cropType,
+                                    quantity: r.quantity,
+                                    location: r.location,
+                                    status: r.status,
+                                    slotDate: r.slotDate ? new Date(r.slotDate) : null,  // ✅
+                                    startTime: r.startTime || null,                        // ✅
+                                    endTime: r.endTime || null,                            // ✅
+                                    grade: r.grade || null
+                                };
+                            });
+                            callback(mapped);
                         } else {
                             callback([]);
                         }
                     },
-                    error: function (xhr, status, error) {
-                        console.error("Search error:", error);
-                        callback([]);
-                    }
+                    error: function () { callback([]); }
                 });
             }
     
@@ -214,11 +226,18 @@
                         isSearchMode = true;
             
                         performElasticSearch(searchQuery, grade, status, passed, function (results) {
-                            currentSearchData = results;
+                            // ✅ Client side mein only pending/scheduled filter karo
+                            var statusVal = $('#statusFilter').val();
+                            var filtered = statusVal
+                                ? results.filter(function (r) {
+                                    return (r.status || '').toLowerCase() === statusVal.toLowerCase();
+                                })
+                                : results;
+                        
+                            currentSearchData = filtered;
                             var grid = $("#qcGrid").data("kendoGrid");
-                            grid.dataSource.data(results);
-                            grid.dataSource.total(results.length);
-                            updateCounts(results);
+                            grid.dataSource.data(filtered);
+                            updateCounts(filtered);
                 
                             if (searchQuery) {
                                 $('#searchResultsInfo').show();
@@ -414,6 +433,17 @@
             window.viewInspectionDetails = function (procurementRequestId) {
                 window.location.href = `/FieldOfficer/InspectionDetail?id=${procurementRequestId}`;
             };
+            
+            $.ajax({
+                url: foApiUrl('/reindex-procurement'),
+                type: 'POST',
+                success: function (res) {
+                    console.log('✅ Reindex done:', res.totalIndexed, 'records indexed');
+                },
+                error: function (err) {
+                    console.log('⚠️ Reindex failed:', err);
+                }
+            });
     
             // ========== KENDO GRID INITIALIZATION ==========
             $("#qcGrid").kendoGrid({
@@ -480,9 +510,9 @@
                         template: function (d) {
                             if (!d.slotDate) return "<span>Not Scheduled</span>";
                             return `<div style="background:#f0faf2;padding:8px;border-radius:8px;">
-                                                <div>${kendo.toString(new Date(d.slotDate), 'dd MMM yyyy')}</div>
-                                                <div style="font-size:12px;">${d.startTime || ''} - ${d.endTime || ''}</div>
-                                            </div>`;
+                                                            <div>${kendo.toString(new Date(d.slotDate), 'dd MMM yyyy')}</div>
+                                                            <div style="font-size:12px;">${d.startTime || ''} - ${d.endTime || ''}</div>
+                                                        </div>`;
                         }
                     },
                     {
@@ -508,15 +538,15 @@
                             var status = normalizeStatus(d.status);
                             if (status === "pending") {
                                 return `<button class="btn-assess" onclick="acceptRequest(${d.procurementRequestId})">Accept</button>
-                                                <button class="btn-view" onclick="openReschedule(${d.procurementRequestId})">Reschedule</button>
-                                                <button class="btn-view" style="background:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">Cancel</button>`;
+                                                            <button class="btn-view" onclick="openReschedule(${d.procurementRequestId})">Reschedule</button>
+                                                            <button class="btn-view" style="background:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">Cancel</button>`;
                             }
                             if (status === "scheduled" || status === "in progress") {
                                 return `<button class="btn-view" style="background:#6c757d;" onclick="cancelRequest(${d.procurementRequestId})">Cancel</button>`;
                             }
                             if (status === "completed") {
                                 return `<button class="btn-view" onclick="viewInspectionDetails(${d.procurementRequestId})">View Details</button>
-                                                <button class="btn-view" onclick="downloadReport(${d.procurementRequestId})">Download</button>`;
+                                                            <button class="btn-view" onclick="downloadReport(${d.procurementRequestId})">Download</button>`;
                             }
                             return "<span>-</span>";
                         }

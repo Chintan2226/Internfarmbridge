@@ -8,22 +8,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MVC.Filters;
 using MVC.Services;
-using MVC.Models;      
+using MVC.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Text.Json;          
+using System.Text.Json;
 
 namespace MVC.Controllers
 {
     public class FarmerController : Controller
     {
-         private readonly HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly AuthApiService _authApi;
-        private readonly string _apiBase;                  
+        private readonly string _apiBase;
         private readonly ILogger<FarmerController> _logger;
 
- 
+
         public FarmerController(
             IConfiguration configuration,
             IHttpClientFactory httpClientFactory,
@@ -33,7 +33,7 @@ namespace MVC.Controllers
             _configuration = configuration;
             _httpClient = httpClientFactory.CreateClient();
             _authApi = authApi;
-            _logger = logger;                               
+            _logger = logger;
             _apiBase = (configuration["ApiBaseUrl"] ?? "http://localhost:5020").TrimEnd('/');
         }
 
@@ -81,27 +81,38 @@ namespace MVC.Controllers
         {
             try
             {
+                var token = Request.Cookies["authToken"];
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Json(new { success = false, results = new List<CropSearchResult>(), totalCount = 0 });
+                }
+
                 var json = System.Text.Json.JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // Add token to request
+                _httpClient.DefaultRequestHeaders.Clear();
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
                 var response = await _httpClient.PostAsync($"{_apiBase}/api/FarmerApp/search/my-crops", content);
                 var result = await response.Content.ReadAsStringAsync();
 
+                // Return the response even if empty
                 return Content(result, "application/json");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "SearchMyCrops failed");
-                return Json(new { success = false, results = new List<CropSearchResult>() });
+                return Json(new { success = false, error = ex.Message, results = new List<CropSearchResult>(), totalCount = 0 });
             }
         }
- 
+
         // GET /Farmer/Register
         public IActionResult Register()
         {
             return View();
         }
- 
+
         // POST /Farmer/Register
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] vm_FarmerRegister model)
@@ -110,25 +121,25 @@ namespace MVC.Controllers
             {
                 if (model == null)
                     return Json(new { success = false, message = "Invalid request data." });
- 
+
                 if (string.IsNullOrWhiteSpace(model.FullName))
                     return Json(new { success = false, message = "Full name is required." });
- 
+
                 if (string.IsNullOrWhiteSpace(model.Email) || !model.Email.Contains("@"))
                     return Json(new { success = false, message = "Valid email is required." });
- 
+
                 if (string.IsNullOrWhiteSpace(model.Phone))
                     return Json(new { success = false, message = "Mobile number is required." });
- 
+
                 if (string.IsNullOrWhiteSpace(model.Password) || model.Password.Length < 8)
                     return Json(new { success = false, message = "Password must be at least 8 characters." });
- 
+
                 if (model.Password != model.ConfirmPassword)
                     return Json(new { success = false, message = "Passwords do not match." });
- 
+
                 var apiUrl = _configuration["ApiSettings:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:5020";
                 var endpoint = $"{apiUrl}/api/auth/register";
- 
+
                 var json = JsonConvert.SerializeObject(new
                 {
                     FullName = model.FullName?.Trim(),
@@ -140,14 +151,14 @@ namespace MVC.Controllers
                     State = model.State?.Trim() ?? "",
                     District = model.District?.Trim() ?? ""
                 });
- 
+
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(endpoint, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
- 
+
                 if (response.IsSuccessStatusCode)
                     return Json(new { success = true, message = "Registration successful! Please log in." });
- 
+
                 try
                 {
                     dynamic? apiResponse = JsonConvert.DeserializeObject(responseContent);
@@ -164,9 +175,9 @@ namespace MVC.Controllers
                 return Json(new { success = false, message = "An error occurred. Please try again later." });
             }
         }
- 
+
         // GET /Farmer/Login
-         [HttpGet]
+        [HttpGet]
         public IActionResult Login()
         {
             // Already logged in? Skip to dashboard.
@@ -178,7 +189,7 @@ namespace MVC.Controllers
             return View();
         }
 
-         [HttpGet]
+        [HttpGet]
         public async Task<IActionResult> GoogleCallback(string? code, string? error)
         {
             // 1️⃣ Handle user cancellation or OAuth error
@@ -354,7 +365,7 @@ namespace MVC.Controllers
         {
             return View();
         }
- 
+
         // POST /Farmer/Login
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] vm_FarmerLogin model)
@@ -363,33 +374,33 @@ namespace MVC.Controllers
             {
                 if (model == null)
                     return Json(new { success = false, message = "Invalid request data." });
- 
+
                 if (string.IsNullOrWhiteSpace(model.EmailOrPhone))
                     return Json(new { success = false, message = "Email or phone is required." });
- 
+
                 if (string.IsNullOrWhiteSpace(model.Password))
                     return Json(new { success = false, message = "Password is required." });
- 
+
                 var apiUrl = _configuration["ApiSettings:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:5020";
                 var endpoint = $"{apiUrl}/api/auth/login";
- 
+
                 var json = JsonConvert.SerializeObject(new
                 {
                     EmailOrPhone = model.EmailOrPhone?.Trim(),
                     Password = model.Password
                 });
- 
+
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(endpoint, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
- 
+
                 if (response.IsSuccessStatusCode)
                 {
                     dynamic? apiResponse = JsonConvert.DeserializeObject(responseContent);
                     string token = apiResponse?.token ?? "";
                     string role = apiResponse?.role ?? "farmer";
                     string fullName = apiResponse?.fullName ?? "";
- 
+
                     return Json(new
                     {
                         success = true,
@@ -418,7 +429,7 @@ namespace MVC.Controllers
                 return Json(new { success = false, message = "An error occurred. Please try again later." });
             }
         }
- 
+
         // GET /Farmer/ForgotPassword
         public IActionResult ForgotPassword()
         {

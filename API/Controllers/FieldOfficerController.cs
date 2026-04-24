@@ -795,7 +795,7 @@ namespace API.Controllers
         {
             var foId = await GetFieldOfficerProfileIdAsync(); // Your existing method
             request.FoId = foId;
-            var results = await _elasticService.SearchQCRecordsForMVCAsync(request);
+            var results = await _elasticService.SearchProcurementRequestsAsync(request);
             return Ok(results);
         }
 
@@ -882,6 +882,23 @@ namespace API.Controllers
                     message = $"Reindex completed. Indexed: {result} records",
                     totalIndexed = result
                 });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+
+        // Reindex endpoint — page load pe ya manually call karo
+        [HttpPost("reindex-procurement")]
+        public async Task<IActionResult> ReindexProcurement()
+        {
+            try
+            {
+                var foId = await GetFieldOfficerProfileIdAsync();
+                var result = await _elasticService.ReindexProcurementRequestsByFoIdAsync(foId);
+                return Ok(new { success = true, totalIndexed = result });
             }
             catch (Exception ex)
             {
