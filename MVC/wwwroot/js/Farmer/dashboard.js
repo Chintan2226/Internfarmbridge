@@ -67,16 +67,18 @@ $(document).ready(function () {
 
                 var d = res.data;
 
-                $("#kpiEarnings").text(
-                    "₹" + (d.kpis.totalPaymentsReceived || 0)
-                        .toLocaleString("en-IN")
+                var earningsEl = $("#kpiEarnings");
+                earningsEl.removeClass("skeleton").text(
+                    "₹" + (d.kpis.totalPaymentsReceived || 0).toLocaleString("en-IN")
                 );
 
-                $("#kpiCrops").text(
+                var cropsEl = $("#kpiCrops");
+                cropsEl.removeClass("skeleton").text(
                     d.kpis.totalCropsListed || 0
                 );
 
-                $("#kpiPendingPay").text(
+                var pendingEl = $("#kpiPendingPay");
+                pendingEl.removeClass("skeleton").text(
                     "₹" + (
                         d.kpis.pendingPaymentsAmount ||
                         d.kpis.pendingQcRequests ||
@@ -84,7 +86,8 @@ $(document).ready(function () {
                     ).toLocaleString("en-IN")
                 );
 
-                $("#kpiQC").text(
+                var qcEl = $("#kpiQC");
+                qcEl.removeClass("skeleton").text(
                     d.kpis.confirmedQcSlots || 0
                 );
             }
@@ -108,8 +111,8 @@ $(document).ready(function () {
         headers: authHeaders(),
 
         success: function (res) {
-
-            $("#incomeChart").kendoChart({
+            $("#chartSkeleton").hide();
+            $("#incomeChart").show().kendoChart({
 
                 title: { visible: false },
                 legend: { visible: false },
@@ -197,8 +200,8 @@ $.ajax({
             };
         });
 
-
-        $("#paymentsGrid").kendoGrid({
+        $("#gridSkeleton").hide();
+        $("#paymentsGrid").show().kendoGrid({
 
             dataSource: {
                 data: rows,

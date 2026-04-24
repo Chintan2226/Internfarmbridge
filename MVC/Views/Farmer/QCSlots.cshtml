@@ -24,7 +24,7 @@
                     <div class="kpi-lbl">Upcoming Appts</div>
                     <div class="kpi-icon qc-icon-up"><i class="fi fi-rr-calendar text-white qc-lg-icon"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiUpcoming">0</div>
+                <div class="kpi-val skeleton" id="kpiUpcoming" style="min-width: 40px; display: inline-block;">0</div>
                 <div class="watermark"><i class="fi fi-rr-calendar"></i></div>
             </div>
             
@@ -33,7 +33,7 @@
                     <div class="kpi-lbl">Awaiting Results</div>
                     <div class="kpi-icon qc-icon-wait"><i class="fi fi-rr-hourglass-end text-white qc-lg-icon"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiAwaiting">0</div>
+                <div class="kpi-val skeleton" id="kpiAwaiting" style="min-width: 40px; display: inline-block;">0</div>
                 <div class="watermark"><i class="fi fi-rr-hourglass-end"></i></div>
             </div>
  
@@ -42,7 +42,7 @@
                     <div class="kpi-lbl">Total QC Passed</div>
                     <div class="kpi-icon qc-icon-pass"><i class="fi fi-rr-badge-check text-white qc-lg-icon"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiTotalPassed">0</div>
+                <div class="kpi-val skeleton" id="kpiTotalPassed" style="min-width: 40px; display: inline-block;">0</div>
                 <div class="watermark"><i class="fi fi-rr-badge-check"></i></div>
             </div>
  
@@ -51,7 +51,7 @@
                     <div class="kpi-lbl">Premium Grade Rate</div>
                     <div class="kpi-icon qc-icon-grade"><i class="fi fi-rr-star text-white qc-lg-icon"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiGradeRate">0%</div>
+                <div class="kpi-val skeleton" id="kpiGradeRate" style="min-width: 40px; display: inline-block;">0%</div>
                 <div class="watermark"><i class="fi fi-rr-star"></i></div>
             </div>
         </div>
@@ -63,7 +63,8 @@
                 <div class="grid-title">Recent & Future Appointments</div>
             </div>
             <div class="kendo-widget-container">
-                <div id="historyGrid" class="borderless-grid"></div>
+                <div id="gridSkeleton" class="skeleton chart-skeleton" style="height: 300px; width: 100%; border-radius: 12px; margin-top: 10px;"></div>
+                <div id="historyGrid" class="borderless-grid" style="display: none;"></div>
             </div>
         </div>
     </section>

@@ -25,7 +25,7 @@
                     <div class="kpi-icon" style="background:var(--grad-rev);"><i class="ph-duotone ph-currency-inr" style="color:white; font-size: 26px;"></i></div>
                     <i class="ph-duotone ph-currency-inr watermark"></i>
                 </div>
-                <div class="kpi-val" id="kpiEarnings">₹0</div>
+                <div class="kpi-val skeleton" id="kpiEarnings">₹0</div>
                 <div class="kpi-sub"><span class="kpi-trend up"><i class="ph-bold ph-trend-up"></i> Collected</span> to your bank accounts</div>
             </div>
             <div class="kpi-card">
@@ -34,7 +34,7 @@
                     <div class="kpi-icon" style="background:var(--grad-vend);"><i class="ph-duotone ph-hourglass-high" style="color:white; font-size: 26px;"></i></div>
                     <i class="ph-duotone ph-hourglass-high watermark"></i>
                 </div>
-                <div class="kpi-val" id="kpiPendingPay">₹0</div>
+                <div class="kpi-val skeleton" id="kpiPendingPay">₹0</div>
                 <div class="kpi-sub"><span class="kpi-trend neutral"><i class="ph-bold ph-minus"></i> Awaiting</span> buyer confirmation</div>
             </div>
             <div class="kpi-card">
@@ -43,7 +43,7 @@
                     <div class="kpi-icon" style="background:var(--grad-farm);"><i class="ph-duotone ph-plant" style="color:white; font-size: 26px;"></i></div>
                     <i class="ph-duotone ph-plant watermark"></i>
                 </div>
-                <div class="kpi-val" id="kpiCrops">0</div>
+                <div class="kpi-val skeleton" id="kpiCrops">0</div>
                 <div class="kpi-sub"><span class="kpi-trend up"><i class="ph-bold ph-check-circle"></i> Verified</span> by FarmBridge</div>
             </div>
             <div class="kpi-card">
@@ -52,7 +52,7 @@
                     <div class="kpi-icon" style="background:var(--grad-fo);"><i class="ph-duotone ph-shield-check" style="color:white; font-size: 26px;"></i></div>
                     <i class="ph-duotone ph-shield-check watermark"></i>
                 </div>
-                <div class="kpi-val" id="kpiQC">0</div>
+                <div class="kpi-val skeleton" id="kpiQC">0</div>
                 <div class="kpi-sub"><span class="kpi-trend neutral"><i class="ph-bold ph-calendar"></i> Scheduled</span> for future dates</div>
             </div>
         </div>
@@ -67,7 +67,10 @@
                         <div class="chart-sub">Your monthly earnings summary</div>
                     </div>
                 </div>
-                <div class="kendo-widget-container"><div id="incomeChart" style="height: 200px;"></div></div>
+                <div class="kendo-widget-container">
+                    <div id="chartSkeleton" class="skeleton chart-skeleton"></div>
+                    <div id="incomeChart" style="height: 200px; display: none;"></div>
+                </div>
             </div>
 
             <div class="grid-card" style="padding: 20px; overflow: hidden; display: flex; flex-direction: column;">
@@ -75,7 +78,8 @@
                     <div class="grid-title">Recent Payments & Clearances</div>
                 </div>
                 <div class="kendo-widget-container" style="flex: 1;">
-                    <div id="paymentsGrid" class="borderless-grid"></div>
+                    <div id="gridSkeleton" class="skeleton chart-skeleton" style="height: 100%;"></div>
+                    <div id="paymentsGrid" class="borderless-grid" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -95,25 +99,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/Farmer/dashboard.js" asp-append-version="true"></script>
-
-    <script>
-        $(document).ready(function () {
-            // 1. Check if the login page left us the flag
-            if (localStorage.getItem("ShowWelcomeGuide") === "true") {
-                // 2. Show the modal and stop the background from scrolling
-                $('#farmerWelcomeModal').addClass('show');
-                $('body').css('overflow', 'hidden'); 
-                
-                // 3. IMMEDIATELY delete the flag so it never shows on refresh
-                localStorage.removeItem("ShowWelcomeGuide"); 
-            }
-        });
-
-        // 4. Function to close the modal when they click the 'X'
-        function closeWelcomeModal() {
-            $('#farmerWelcomeModal').removeClass('show');
-            $('body').css('overflow', 'auto');
-        }
-    </script>
+<script src="~/js/Farmer/dashboard.js" asp-append-version="true"></script>
 }

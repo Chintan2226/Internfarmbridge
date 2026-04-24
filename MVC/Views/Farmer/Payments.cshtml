@@ -86,7 +86,7 @@
                     <div class="kpi-lbl">Lifetime Earnings</div>
                     <div class="kpi-icon" style="background:var(--grad-farm);"><i class="fi fi-rr-wallet" style="color:white; font-size: 18px;"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiLifetimeEarned">₹0</div>
+                <div class="kpi-val skeleton" id="kpiLifetimeEarned" style="min-width: 60px; display: inline-block;">₹0</div>
                 <div class="watermark"><i class="fi fi-rr-wallet"></i></div>
             </div>
             <div class="kpi-card">
@@ -94,7 +94,7 @@
                     <div class="kpi-lbl">Pending Clearance</div>
                     <div class="kpi-icon" style="background:var(--grad-vend);"><i class="fi fi-rr-time-fast" style="color:white; font-size: 18px;"></i></div>
                 </div>
-                <div class="kpi-val" id="kpiPendingPay">₹0</div>
+                <div class="kpi-val skeleton" id="kpiPendingPay" style="min-width: 60px; display: inline-block;">₹0</div>
                 <div class="watermark"><i class="fi fi-rr-time-fast"></i></div>
             </div>
         </div>
@@ -106,7 +106,8 @@
                 <div class="grid-title">Financial Ledger</div>
             </div>
             <div class="kendo-widget-container">
-                <div id="paymentsGrid"></div>
+                <div id="gridSkeleton" class="skeleton chart-skeleton" style="height: 300px; width: 100%; border-radius: 12px;"></div>
+                <div id="paymentsGrid" style="display: none;"></div>
             </div>
         </div>
     </section>

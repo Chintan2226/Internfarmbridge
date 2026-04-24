@@ -536,212 +536,31 @@ body {
 }
 
 
-/* ========================================================================= */
-/* GLOBAL KENDO GRID STYLING                                                 */
-/* ========================================================================= */
-
-/* ── Header ── */
-.k-grid .k-grid-header th.k-header {
-    background: #f8fafc !important;
-    color: #475569 !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.06em !important;
-    text-transform: uppercase !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-    padding: 14px 14px !important;
-    border-right: 1px solid #f1f5f9 !important;
+/* End of Dashboard Shared Styles */
+/* --- SKELETON LOADER --- */
+.skeleton {
+    background: #e2e8f0;
+    background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    color: transparent !important;
+    border-radius: 4px;
+    display: inline-block;
+    min-height: 1em;
 }
 
-/* ── Rows (WITH LIGHT GREEN HOVER FIX) ── */
-.k-grid .k-grid-content tr {
-    transition: background 0.15s ease;
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
-.k-grid .k-grid-content tr:hover td {
-    background: #f0fdf4 !important; /* <--- PERFECT LIGHT GREEN HOVER */
+.skeleton * {
+    visibility: hidden;
 }
 
-.k-grid .k-grid-content tr:nth-child(even) td {
-    background: #fafcff;
-}
-
-.k-grid .k-grid-content tr:nth-child(even):hover td {
-    background: #f0fdf4 !important; /* <--- PERFECT LIGHT GREEN HOVER */
-}
-
-/* ── Cells ── */
-.k-grid .k-grid-content td {
-    padding: 13px 14px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    border-right: 1px solid #f8fafc !important;
-    vertical-align: middle !important;
-    color: #334155;
-    font-size: 13px;
-}
-
-/* ── Toolbar / Search bar ── */
-.k-grid .k-grid-toolbar {
-    background: #f8fafc !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    padding: 10px 14px !important;
-    border-radius: 12px 12px 0 0 !important;
-}
-
-.k-grid .k-searchbox {
-    border-radius: 8px !important;
-    border: 1px solid #e2e8f0 !important;
-    background: #fff !important;
-    font-size: 13px !important;
-}
-
-.k-grid .k-searchbox:focus-within {
-    border-color: #10b981 !important;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
-}
-
-/* ── Pager container ── */
-.k-grid .k-pager-wrap,
-.k-grid .k-grid-pager {
-    background: #f8fafc !important;
-    border-top: 1px solid #e2e8f0 !important;
-    padding: 10px 16px !important;
-    color: #64748b !important;
-    font-size: 12px !important;
-    border-radius: 0 0 12px 12px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-}
-
-/* ── All page buttons (numbers + nav arrows) ── */
-.k-grid .k-pager-wrap .k-link,
-.k-grid .k-grid-pager .k-link,
-.k-grid .k-pager-wrap .k-pager-nav,
-.k-grid .k-grid-pager .k-pager-nav {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 8px !important;
-    border: 1px solid #e2e8f0 !important;
-    background: #fff !important;
-    color: #64748b !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.15s ease !important;
-    cursor: pointer !important;
-    text-decoration: none !important;
-    box-shadow: none !important;
-}
-
-.k-grid .k-pager-wrap .k-link:hover,
-.k-grid .k-grid-pager .k-link:hover,
-.k-grid .k-pager-wrap .k-pager-nav:hover,
-.k-grid .k-grid-pager .k-pager-nav:hover {
-    background: #f0fdf4 !important;
-    border-color: #10b981 !important;
-    color: #059669 !important;
-}
-
-/* ── Active / selected page ── */
-.k-grid .k-pager-wrap .k-selected,
-.k-grid .k-grid-pager .k-selected,
-.k-grid .k-pager-wrap .k-state-selected,
-.k-grid .k-grid-pager .k-state-selected {
-    background: #10b981 !important;
-    color: #fff !important;
-    border-color: #059669 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3) !important;
-}
-
-/* ── Kill the ugly pink/red page input box entirely ── */
-.k-grid .k-pager-input,
-.k-grid .k-pager-wrap .k-textbox,
-.k-grid .k-pager-wrap input[type=text] {
-    display: none !important;
-}
-
-/* ── Pager info text (e.g. "1-10 of 45 items") ── */
-.k-grid .k-pager-info,
-.k-grid .k-pager-sizes {
-    font-size: 11px !important;
-    color: #94a3b8 !important;
-    font-weight: 500 !important;
-    margin-left: auto !important;
-}
-
-/* ── Disable state (first/last arrows when at boundary) ── */
-.k-grid .k-pager-wrap .k-state-disabled,
-.k-grid .k-grid-pager .k-state-disabled,
-.k-grid .k-pager-wrap .k-disabled,
-.k-grid .k-grid-pager .k-disabled {
-    opacity: 0.35 !important;
-    pointer-events: none !important;
-    background: #f1f5f9 !important;
-}
-
-/* ── Grid outer shell ── */
-.k-grid {
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
-    font-family: 'Inter', sans-serif !important;
-}
-
-/* ==================================================== */
-/* GLOBAL SKELETON LOADER ANIMATION                     */
-/* ==================================================== */
-
-@keyframes fb-shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-}
-
-.fb-skeleton-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+/* Specific skeleton overrides */
+.chart-skeleton {
     width: 100%;
-    padding: 10px 0;
-}
-
-.fb-skeleton-row {
-    height: 60px; /* Standard Kendo Grid row height */
-    width: 100%;
+    height: 200px;
     border-radius: 8px;
-    background: #f1f5f9;
-    background-image: linear-gradient(to right, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%, #f1f5f9 100%);
-    background-repeat: no-repeat;
-    background-size: 1000px 100%;
-    animation: fb-shimmer 1.5s infinite linear forwards;
-}
-
-.fb-skeleton-row.header {
-    height: 40px;
-    border-radius: 8px 8px 0 0;
-    background-image: linear-gradient(to right, #f8fafc 0%, #e5e7eb 20%, #f8fafc 40%, #f8fafc 100%);
-    margin-bottom: 5px;
-}
-
-/* Card layout version for Vendor Catalog */
-.fb-skeleton-grid-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-    width: 100%;
-}
-
-.fb-skeleton-card {
-    height: 320px; /* Standard Vendor Catalog card height */
-    width: 100%;
-    border-radius: 16px;
-    background: #f1f5f9;
-    background-image: linear-gradient(to right, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%, #f1f5f9 100%);
-    background-repeat: no-repeat;
-    background-size: 1000px 100%;
-    animation: fb-shimmer 1.5s infinite linear forwards;
 }
