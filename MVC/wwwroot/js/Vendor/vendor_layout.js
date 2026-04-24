@@ -101,102 +101,55 @@ async function loadNotifications() {
             fvNotifs = data.data || [];
             renderNotifList();
         }
-
     } catch (err) {
         console.error("Load notifications error:", err);
     }
 }
 
-async function markSingleRead(id) {
-    try {
-        await fvAuthFetch(`${NOTIF_API_BASE}/MarkAsRead`, {
-            method: 'POST',
-            body: JSON.stringify(id)
-        });
 
-        const n = fvNotifs.find(x => x.id == id);
-        if (n) n.isRead = true;
-
-        renderNotifList();
-        getUnreadCount();
-
-    } catch (err) {
-        console.error("Mark read error:", err);
-    }
+function toggleDrawer() {
+    document.getElementById('fvSidebar')?.classList.toggle('open');
+    document.getElementById('fvOverlay')?.classList.toggle('open');
 }
 
-async function deleteSingleNotif(id) {
-    if (!confirm('Delete this notification?')) return;
-
-    try {
-        await fvAuthFetch(`${NOTIF_API_BASE}/DeleteNotification`, {
-            method: 'POST',
-            body: JSON.stringify(id)
-        });
-
-        fvNotifs = fvNotifs.filter(x => x.id != id);
-        renderNotifList();
-        getUnreadCount();
-
-        showFvToast('Notification deleted');
-
-    } catch {
-        showFvToast('Delete failed', 'error');
-    }
+function toggleNotifDrawer(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('fvNotif')?.classList.toggle('open');
 }
 
-async function fvMarkAllRead() {
-    try {
-        await fvAuthFetch(`${NOTIF_API_BASE}/MarkAllRead`, {
-            method: 'POST',
-            body: JSON.stringify({})
-        });
-
-        fvNotifs.forEach(n => n.isRead = true);
-        renderNotifList();
-        getUnreadCount();
-
-        showFvToast('All marked as read');
-
-    } catch {
-        showFvToast('Update failed', 'error');
-    }
+function fvTab(tab, btn) {
+    currentFvTab = tab;
+    document.querySelectorAll('.fv-notif-tabs button').forEach(b => b.classList.remove('active'));
+    btn?.classList.add('active');
+    renderNotifs();
 }
 
-async function fvClearAll() {
-    if (!confirm('Clear all notifications?')) return;
+function loadNotifs() {
+    const base = 'http://localhost:5020/api/Notification';
 
-    try {
-        await fvAuthFetch(`${NOTIF_API_BASE}/ClearAllNotifications`, {
-            method: 'POST'
-        });
-
-        fvNotifs = [];
-        renderNotifList();
-        getUnreadCount();
-
-        showFvToast('All notifications cleared');
-
-    } catch {
-        showFvToast('Clear failed', 'error');
-    }
+    const token = getCookie('authToken');
+    fetch(base + '/GetNotifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+        .then(r => r.json())
+        .then(res => {
+            if (res?.success) {
+                fvNotifs = res.data || [];
+                renderNotifs();
+            }
+        })
+        .catch(() => { });
 }
 
-/* ===================== UI ===================== */
+function renderNotifs() {
+    const unread = fvNotifs.filter(n => !n.isRead).length;
 
-function handleNotifClick(id, url) {
-    const n = fvNotifs.find(x => x.id == id);
+    const dot = document.getElementById('fvBellDot');
+    if (dot) dot.hidden = unread === 0;
 
-    if (n && !n.isRead) {
-        markSingleRead(id);
-    }
+    const uel = document.getElementById('fvUnread');
+    if (uel) uel.textContent = unread;
 
-    if (url && url !== '#') {
-        window.location.href = url;
-    }
-}
-
-function renderNotifList() {
     const list = document.getElementById('fvNotifList');
     if (!list) return;
 
@@ -204,38 +157,234 @@ function renderNotifList() {
         ? fvNotifs.filter(n => !n.isRead)
         : fvNotifs;
 
-    if (!data.length) {
-        list.innerHTML = `<div class="fv-notif-empty">🔔 No notifications</div>`;
+    if (!filtered.length) {
+        list.innerHTML = `
+            <div class="fv-notif-empty">
+                <div class="empty-icon-wrap">
+                    <i class="fi fi-rr-bell-ring"></i>
+                </div>
+                <p>No new notifications</p>
+                <small>We'll notify you when something important happens.</small>
+            </div>
+        `;
         return;
     }
 
-    list.innerHTML = data.map(n => `
-        <div class="fv-notif-item ${n.isRead ? '' : 'unread'}" data-id="${n.id}">
-            <div class="fv-notif-content" onclick="handleNotifClick(${n.id}, '${esc(n.redirectUrl || '')}')">
-                <div class="fv-notif-icon">
-                    <i class="fi fi-rr-bell" style="font-size:18px;color:var(--fv-primary)"></i>
+    list.innerHTML = filtered.map(n => {
+        const timeStr = formatNotifTime(n.createdAt || n.CreatedAt);
+        let iconClass = 'fi-rr-bell';
+        let typeClass = 'type-info';
+
+        const title = (n.title || '').toLowerCase();
+        if (title.includes('order')) { iconClass = 'fi-rr-box-alt'; typeClass = 'type-order'; }
+        else if (title.includes('payment') || title.includes('money')) { iconClass = 'fi-rr-usd-circle'; typeClass = 'type-payment'; }
+        else if (title.includes('cart')) { iconClass = 'fi-rr-shopping-cart'; typeClass = 'type-cart'; }
+        else if (title.includes('wishlist')) { iconClass = 'fi-rr-heart'; typeClass = 'type-wishlist'; }
+
+        return `
+            <div class="fv-notif-item ${n.isRead ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.redirectUrl || '#'}')">
+                <div class="notif-icon-wrap ${typeClass}">
+                    <i class="fi ${iconClass}"></i>
                 </div>
-                <div style="flex:1">
-                    <div style="font-size:13px;font-weight:600;">${esc(n.title || 'Notification')}</div>
-                    <div style="font-size:12px;color:var(--fv-muted); margin-top:4px;">${esc(n.message || '')}</div>
-                    <div style="font-size:10px;color:#9ca3af; margin-top:4px;">${formatDate(n.createdAt)}</div>
+                <div class="notif-content">
+                    <div class="notif-title">${esc(n.title)}</div>
+                    <div class="notif-message">${esc(n.message)}</div>
+                    <div class="notif-time">${timeStr}</div>
                 </div>
+                ${!n.isRead ? '<div class="notif-unread-dot"></div>' : ''}
             </div>
-            <div class="fv-notif-actions-btns">
-                ${!n.isRead ? `
-                    <button onclick="event.stopPropagation(); markSingleRead(${n.id})" 
-                            class="fv-notif-btn" title="Mark as read">
-                        ✓
-                    </button>
-                ` : ''}
-                <button onclick="event.stopPropagation(); deleteSingleNotif(${n.id})" 
-                        class="fv-notif-btn" title="Delete">
-                    ✕
-                </button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
+
+function fvMarkAllRead() {
+    fvNotifs.forEach(n => n.isRead = true);
+    renderNotifs();
+}
+
+function fvClearAll() {
+    fvNotifs = [];
+    renderNotifs();
+}
+
+
+/* ===================== TOAST ===================== */
+
+window.showFvToast = function (message, type = 'success') {
+    const container = document.getElementById('fvToasts');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `fv-toast ${type}`;
+
+    toast.innerHTML = `
+        <span>${esc(message)}</span>
+        <button onclick="this.parentElement.remove()">✕</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+};
+
+
+/* ===================== CART ===================== */
+
+// let vendorCart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+
+function saveCart() {
+    localStorage.setItem('vendor_cart', JSON.stringify(vendorCart));
+}
+
+function loadCart() {
+    vendorCart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+}
+
+window.addToCart = function (id, name, price) {
+    loadCart();
+
+    let item = vendorCart.find(x => x.id == id);
+
+    if (item) {
+        item.quantity++;
+        item.total = item.quantity * item.price;
+    } else {
+        vendorCart.push({
+            id,
+            name,
+            price,
+            quantity: 1,
+            total: price
+        });
+    }
+
+    saveCart();
+    renderCart();
+    showFvToast(`${name} added to cart`);
+};
+
+window.removeFromCart = function (id) {
+    loadCart();
+    vendorCart = vendorCart.filter(x => x.id != id);
+    saveCart();
+    renderCart();
+    showFvToast('Item removed');
+};
+
+window.updateCartQuantity = function (id, change) {
+    loadCart();
+
+    let item = vendorCart.find(x => x.id == id);
+    if (!item) return;
+
+    item.quantity += change;
+
+    if (item.quantity <= 0) {
+        vendorCart = vendorCart.filter(x => x.id != id);
+    } else {
+        item.total = item.quantity * item.price;
+    }
+
+    saveCart();
+    renderCart();
+};
+
+function renderCart() {
+    loadCart();
+
+    const list = document.getElementById('cartItemsList');
+    const footer = document.getElementById('cartFooter');
+    const totalEl = document.getElementById('cartTotal');
+
+    if (!list) return;
+
+    if (!vendorCart.length) {
+        list.innerHTML = `<p class="text-center text-muted py-5">Cart is empty</p>`;
+        if (footer) footer.style.display = 'none';
+        return;
+    }
+
+    let total = 0;
+
+    list.innerHTML = vendorCart.map(item => {
+        total += item.total;
+
+        return `
+        <div class="cart-item">
+            <div>
+                <strong>${esc(item.name)}</strong><br>
+                ₹${item.price} × ${item.quantity}
+            </div>
+            <div>
+                <button onclick="updateCartQuantity(${item.id},-1)">-</button>
+                <button onclick="updateCartQuantity(${item.id},1)">+</button>
+                <button onclick="removeFromCart(${item.id})">🗑</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    if (footer) footer.style.display = 'block';
+    if (totalEl) totalEl.innerText = '₹' + total;
+}
+
+function toggleCart() {
+    document.getElementById('cartSidebar')?.classList.toggle('active');
+}
+
+function proceedToCheckout() {
+    if (vendorCart.length > 0) {
+        window.location.href = '/Vendor/Checkout';
+    } else {
+        showFvToast('Cart is empty', 'error');
+    }
+} 
+
+
+/* ===================== WISHLIST ===================== */
+
+// let wishlist = JSON.parse(localStorage.getItem('vendor_wishlist') || '[]');
+
+function saveWishlist() {
+    localStorage.setItem('vendor_wishlist', JSON.stringify(wishlist));
+}
+
+window.toggleWishlist = function (id, name, price) {
+    let item = wishlist.find(x => x.id == id);
+
+    if (item) {
+        wishlist = wishlist.filter(x => x.id != id);
+        showFvToast('Removed from wishlist');
+    } else {
+        wishlist.push({ id, name, price });
+        showFvToast('Added to wishlist');
+    }
+
+    saveWishlist();
+};
+
+
+/* ===================== DASHBOARD ===================== */
+
+window.loadDashboardStats = async function () {
+    try {
+        const res = await fetch(`${window.API_BASE_URL}/user/stats`);
+        const result = await res.json();
+
+        if (result.success && result.data) {
+            const s = result.data;
+
+            document.getElementById('totalOrders').innerText = s.totalOrders || 0;
+            document.getElementById('totalSpent').innerText = '₹' + (s.totalSpent || 0);
+            document.getElementById('totalQuantity').innerText = (s.totalQuantity || 0) + ' kg';
+            document.getElementById('pendingDeliveries').innerText = s.pendingOrders || 0;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+};
+
 
 /* ===================== HELPERS ===================== */
 

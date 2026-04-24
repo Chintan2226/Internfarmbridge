@@ -144,10 +144,14 @@
         });
 
         // 🔥 2. LOAD TODAY GRID
+        if (typeof window.showGridSkeleton === 'function') {
+            window.showGridSkeleton('#recentGrid', 5);
+        }
         $.ajax({
             url: foApiUrl("/today-schedules"),
             type: "GET",
             success: function (data) {
+                $("#recentGrid").empty();
                 loadGrid(data);
             },
             error: function (xhr) {
