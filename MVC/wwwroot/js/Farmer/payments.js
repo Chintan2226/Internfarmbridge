@@ -1,3 +1,4 @@
+
 /**
  * Farmer Payments — payments.js
  * JWT Bearer token is read from cookie: "authToken"
@@ -90,13 +91,8 @@ $(document).ready(function () {
             $("#kpiLifetimeEarned").removeClass("skeleton").text(
                 "₹" + totalEarned.toLocaleString("en-IN")
             );
-<<<<<<< HEAD
-
-            $("#kpiPendingPay").text(
-=======
             
             $("#kpiPendingPay").removeClass("skeleton").text(
->>>>>>> dev
                 "₹" + totalPending.toLocaleString("en-IN")
             );
 

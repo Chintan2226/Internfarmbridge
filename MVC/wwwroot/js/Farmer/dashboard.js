@@ -200,13 +200,8 @@ $(document).ready(function () {
                 };
             });
 
-<<<<<<< HEAD
-
-            $("#paymentsGrid").kendoGrid({
-=======
         $("#gridSkeleton").hide();
         $("#paymentsGrid").show().kendoGrid({
->>>>>>> dev
 
                 dataSource: {
                     data: rows,
