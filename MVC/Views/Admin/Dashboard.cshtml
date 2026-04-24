@@ -27,10 +27,6 @@
             <button id="closeSearchResults" class="close-btn">&times;</button>
         </div>
         <div id="searchResultsList" class="results-list">
-            <div class="loading-state">
-                <div class="spinner"></div>
-                <p>Searching...</p>
-            </div>
         </div>
     </div>
 </div>
@@ -317,7 +313,6 @@
                 window.showGridSkeleton('#activeCatalogGrid', 5);
             } else {
                 console.error("ERROR: showGridSkeleton not found. Please Hard Refresh (Cmd+Shift+R or Ctrl+F5)!");
-                $("#activeCatalogGrid").html("<div style='padding: 20px; color: gray;'>Loading Catalog...</div>");
             }
         }
 
@@ -473,7 +468,9 @@
     
     currentQuery = query;
     $('#globalSearchResults').show();
-    $('#searchResultsList').html('<div class="loading-state"><div class="spinner"></div><p>Searching...</p></div>');
+    if (typeof window.showGridSkeleton === 'function') {
+        window.showGridSkeleton('#searchResultsList', 3);
+    }
     
     $.ajax({
         url: '/Admin/UniversalSearch',

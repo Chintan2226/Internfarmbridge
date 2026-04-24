@@ -1,441 +1,430 @@
-﻿@{
+@{
     Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
-    ViewData["Title"] = "Payments";
+    ViewData["Title"] = "Payment History";
 }
 
-
 <link rel="stylesheet" href="~/css/pages/vendor/payments.css" asp-append-version="true" />
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
 
-
-<div class="payments-header">
-    <h1 class="payments-title">
-        <i class="fi fi-rr-credit-card"></i>
-        Payment History
-    </h1>
-</div>
-
-<div class="fb-pay-stats">
-    <div class="fb-pay-stat">
-        <div class="pay-stat-icon" style="background: linear-gradient(135deg, rgba(45, 122, 39, 0.1) 0%, rgba(212, 240, 208, 0.2) 100%); color: #2d7a27;">
-            <i class="fi fi-rr-check-circle"></i>
+<div class="payments-page-wrapper">
+    <!-- Header Section -->
+    <header class="payments-main-header">
+        <div class="header-left">
+            <div class="header-icon-gradient">
+                <i class="fi fi-rr-wallet"></i>
+            </div>
+            <div>
+                <h1 class="page-title">Payment History</h1>
+                <p class="page-subtitle">Track your transactions and download settlement receipts</p>
+            </div>
         </div>
-        <div class="fb-pay-stat-value" id="payTotalReceived">â‚¹0</div>
-        <div class="fb-pay-stat-label">Total Paid</div>
+        <div class="header-right d-none d-md-block">
+            <button class="btn-receipt" onclick="loadPayments()">
+                <i class="fi fi-rr-refresh"></i> Refresh History
+            </button>
+        </div>
+    </header>
+
+    <!-- Stats Section -->
+    <div id="statsContainer" class="payments-stats-grid">
+        <div class="payment-stat-card skeleton-active">
+            <div class="skeleton-icon"></div>
+            <div style="flex:1">
+                <div class="skeleton-line" style="width: 40%; height: 10px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line" style="width: 70%; height: 20px;"></div>
+            </div>
+        </div>
+        <div class="payment-stat-card skeleton-active">
+            <div class="skeleton-icon"></div>
+            <div style="flex:1">
+                <div class="skeleton-line" style="width: 40%; height: 10px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line" style="width: 70%; height: 20px;"></div>
+            </div>
+        </div>
+        <div class="payment-stat-card skeleton-active">
+            <div class="skeleton-icon"></div>
+            <div style="flex:1">
+                <div class="skeleton-line" style="width: 40%; height: 10px; margin-bottom: 8px;"></div>
+                <div class="skeleton-line" style="width: 70%; height: 20px;"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="fb-pay-stat">
-        <div class="pay-stat-icon" style="background: linear-gradient(135deg, rgba(232, 114, 12, 0.1) 0%, rgba(253, 240, 227, 0.2) 100%); color: #E8720C;">
-            <i class="fi fi-rr-clock"></i>
-        </div>
-        <div class="fb-pay-stat-value" id="payPending">â‚¹0</div>
-        <div class="fb-pay-stat-label">Pending</div>
-    </div>
-
-    <div class="fb-pay-stat">
-        <div class="pay-stat-icon" style="background: linear-gradient(135deg, rgba(45, 122, 122, 0.1) 0%, rgba(200, 232, 242, 0.2) 100%); color: #2d7a7a;">
-            <i class="fi fi-rr-receipt"></i>
-        </div>
-        <div class="fb-pay-stat-value" id="payTxnCount">0</div>
-        <div class="fb-pay-stat-label">Transactions</div>
-    </div>
-</div>
-
-<div class="fb-pay-table-wrap">
-    <div class="payments-controls">
-        <h2 class="fb-pay-table-title"><i class="fi fi-rr-list"></i> Transactions</h2>
-        <div class="payment-filters">
-            <select id="payStatusFilter">
-                <option value="all">All Status</option>
-                <option value="success">âœ“ Success</option>
-                <option value="pending">â± Pending</option>
-                <option value="initiated">â†’ Initiated</option>
-                <option value="failed">âœ• Failed</option>
+    <!-- Filter Bar -->
+    <div class="payments-filter-bar">
+        <h2 class="section-title">
+            <i class="fi fi-rr-list-check" style="color: var(--emerald-primary)"></i> 
+            Recent Transactions
+        </h2>
+        <div class="filter-group">
+            <select id="payStatusFilter" class="payment-select">
+                <option value="all">All Statuses</option>
+                <option value="success">Successful</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
             </select>
-            <select id="payMethodFilter">
+            <select id="payMethodFilter" class="payment-select">
                 <option value="all">All Methods</option>
-                <option value="upi">ðŸ“± UPI</option>
-                <option value="neft">ðŸ’³ NEFT / IMPS / RTGS</option>
-                <option value="online_banking">ðŸ’° Card / Net Banking</option>
+                <option value="upi">UPI Payments</option>
+                <option value="card">Card / NetBanking</option>
             </select>
         </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="fb-pay-table">
-            <thead>
-                <tr>
-                    <th>Transaction ID</th>
-                    <th>Order ID</th>
-                    <th>Amount</th>
-                    <th>Payment Method</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="paymentsTableBody">
-                <tr>
-                    <td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Loading
-                        payments......</td>
-                    </tr>
-                </tbody>
-            </table>
+    <!-- Table Section -->
+    <div class="payments-table-card">
+        <div id="tableContainer">
+            <div class="skeleton-table skeleton-active"></div>
         </div>
     </div>
+</div>
 
-    @section Scripts {
-        <script>
-            const API_URL = 'http://localhost:5020/api/Vendor';
-            let allPayments = [];
-            function getCookie(name) {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) return parts.pop().split(';').shift();
-                return null;
-            }
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/Vendor/vendor_dashboard.js"></script>
+    
+    <script>
+        const API_BASE = window.API_BASE_URL || 'http://localhost:5020/api/Vendor';
+        let allPayments = [];
 
-            // --- JWT HELPER FUNCTIONS ---
-            function getAuthToken() {
-                return getCookie('authToken'); // Adjust key name if yours is 'jwt' or 'authToken'
-            }
-
-            function handleUnauthorized() {
-                showToast('Session expired. Redirecting to login...', 'error');
-                setTimeout(() => {
-                    window.location.href = '/Vendor/Login'; // Adjust to your login path
-                }, 2000);
-            }
-
-            // Helper function to get user-friendly payment method display name
-            function getDisplayMethod(method) {
-                const methodLower = (method || '').toLowerCase();
-                switch (methodLower) {
-                    case 'upi': return 'UPI';
-                    case 'neft': return 'NEFT / IMPS';
-                    case 'online_banking': return 'Card / Net Banking';
-                    default: return method || 'N/A';
+        async function loadPayments() {
+            showSkeletons();
+            
+            try {
+                const response = await authorizedFetch(`${API_BASE}/payments`);
+                if (!response) {
+                    console.warn("No response from authorizedFetch - likely unauthorized");
+                    return; 
                 }
-            }
-
-            async function loadPayments() {
-                const statusFilter = document.getElementById('payStatusFilter').value;
-                const methodFilter = document.getElementById('payMethodFilter').value;
-
-                const token = getAuthToken();
-                if (!token) {
-                    handleUnauthorized();
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${API_URL}/payments`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (response.status === 401 || response.status === 403) {
-                        handleUnauthorized();
-                        return;
-                    }
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    let payments = [];
-                    if (result.success && result.data) {
-                        payments = result.data;
-                    } else if (Array.isArray(result)) {
-                        payments = result;
-                    } else if (result.payments) {
-                        payments = result.payments;
-                    } else {
-                        payments = [];
-                    }
-
-                    allPayments = payments;
-
-                    if (payments.length > 0) {
-                        let totalReceived = 0;
-                        let totalPending = 0;
-
-                        payments.forEach(p => {
-                            const amount = p.amount || 0;
-                            if (p.status === 'success' || p.status === 'completed') {
-                                totalReceived += amount;
-                            } else if (p.status === 'pending' || p.status === 'initiated' || p.status === 'processing') {
-                                totalPending += amount;
-                            }
-                        });
-
-                        document.getElementById('payTotalReceived').innerText = 'â‚¹' + totalReceived.toLocaleString('en-IN');
-                        document.getElementById('payPending').innerText = 'â‚¹' + totalPending.toLocaleString('en-IN');
-                        document.getElementById('payTxnCount').innerText = payments.length;
-
-                        let filtered = [...payments];
-                        if (statusFilter !== 'all') {
-                            filtered = filtered.filter(p => p.status === statusFilter);
-                        }
-                        if (methodFilter !== 'all') {
-                            filtered = filtered.filter(p => {
-                                const paymentMethod = (p.paymentMethod || p.method || '').toLowerCase();
-                                return paymentMethod === methodFilter;
-                            });
-                        }
-
-                        renderTable(filtered);
-                    } else {
-                        renderEmptyState();
-                    }
-                } catch (error) {
-                    console.error('Error loading payments:', error);
-                    showToast('Failed to load payments: ' + error.message, 'error');
-                    renderEmptyState();
-                }
-            }
-
-            function renderTable(payments) {
-                const tbody = document.getElementById('paymentsTableBody');
-
-                if (!payments || payments.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">No transactions found</td></tr>';
-                    return;
-                }
-
-                let html = '';
-                payments.forEach(p => {
-                    const statusClass = getStatusClass(p.status);
-                    const statusLabel = getStatusLabel(p.status);
-                    const methodIcon = getMethodIcon(p.paymentMethod || p.method);
-                    const rawMethod = p.paymentMethod || p.method || 'N/A';
-                    const displayMethod = getDisplayMethod(rawMethod);
-                    const amount = p.amount || 0;
-                    const transactionId = p.transactionId || p.id || 'N/A';
-                    const orderId = p.orderId || p.order_id || 'N/A';
-                    const paymentDate = p.paymentDate || p.date || p.createdAt || new Date().toISOString();
-
-                    html += `<tr>
-                                <td><strong>${escapeHtml(transactionId)}</strong></td>
-                                <td>${escapeHtml(orderId)}</td>
-                                <td><strong>â‚¹${amount.toLocaleString('en-IN')}</strong></td>
-                                <td><span class="pay-method"><i class="fas ${methodIcon}"></i> ${escapeHtml(displayMethod)}</span></td>
-                                <td><span class="pay-status ${statusClass}">${statusLabel}</span></td>
-                                <td>${new Date(paymentDate).toLocaleDateString()}</td>
-                                <td><button class="receipt-btn-outline" onclick="viewReceipt('${escapeHtml(transactionId)}', '${escapeHtml(orderId)}', ${amount}, '${p.status}', '${escapeHtml(rawMethod)}')">
-                                    <i class="fas fa-download"></i> Receipt
-                                </button></td>
-                            </tr>`;
-                });
-                tbody.innerHTML = html;
-            }
-
-            function renderEmptyState() {
-                document.getElementById('paymentsTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-4">No payment records found</td></tr>';
-                document.getElementById('payTotalReceived').innerText = 'â‚¹0';
-                document.getElementById('payPending').innerText = 'â‚¹0';
-                document.getElementById('payTxnCount').innerText = '0';
-            }
-
-            function getStatusClass(status) {
-                const s = (status || '').toLowerCase();
-                switch (s) {
-                    case 'success':
-                    case 'completed':
-                        return 'pay-status-success';
-                    case 'pending':
-                        return 'pay-status-pending';
-                    case 'failed':
-                        return 'pay-status-failed';
-                    case 'processing':
-                        return 'pay-status-processing';
-                    case 'initiated':
-                        return 'pay-status-initiated';
-                    default:
-                        return 'pay-status-pending';
-                }
-            }
-
-            function getStatusLabel(status) {
-                const s = (status || '').toLowerCase();
-                switch (s) {
-                    case 'success':
-                    case 'completed':
-                        return 'âœ“ Success';
-                    case 'pending':
-                        return 'â³ Pending';
-                    case 'failed':
-                        return 'âœ• Failed';
-                    case 'processing':
-                        return 'âŸ³ Processing';
-                    case 'initiated':
-                        return 'ðŸš€ Initiated';
-                    default:
-                        return status || 'Unknown';
-                }
-            }
-
-            function getMethodIcon(method) {
-                const methodLower = (method || '').toLowerCase();
-                const icons = {
-                    'upi': 'fa-mobile-alt',
-                    'neft': 'fa-university',
-                    'online_banking': 'fa-laptop',
-                    'imps': 'fa-exchange-alt',
-                    'card': 'fa-credit-card',
-                    'credit card': 'fa-credit-card',
-                    'paypal': 'fa-paypal',
-                    'bank': 'fa-university'
-                };
-                return icons[methodLower] || 'fa-credit-card';
-            }
-
-            function escapeHtml(str) {
-                if (!str) return '';
-                return str.toString()
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-            }
-
-            function viewReceipt(transactionId, orderId, amount, status, paymentMethod) {
-                const now = new Date();
-                const dateStr = now.toLocaleDateString('en-IN');
-                const timeStr = now.toLocaleTimeString();
-                const displayMethod = getDisplayMethod(paymentMethod);
-
-                // Get status class for badge
-                let statusClass = '';
-                let statusDisplay = (status || '').toUpperCase();
-                switch ((status || '').toLowerCase()) {
-                    case 'success':
-                    case 'completed':
-                        statusClass = 'status-success';
-                        break;
-                    case 'initiated':
-                        statusClass = 'status-initiated';
-                        break;
-                    case 'pending':
-                        statusClass = 'status-pending';
-                        break;
-                    case 'failed':
-                        statusClass = 'status-failed';
-                        break;
-                    default:
-                        statusClass = 'status-pending';
-                }
-
-                const receiptHtml = `<!DOCTYPE html>
-            <html>
-            <head>
-                <title>FarmBridge Receipt - ${transactionId}</title>
-                <meta charset="UTF-8">
                 
-<link rel="stylesheet" href="~/css/pages/vendor/payments.css" asp-append-version="true" />
+                const result = await response.json();
+                console.log("Payments API Result:", result);
+                
+                allPayments = result.data || result || [];
+                
+                displayStats(allPayments);
+                filterAndDisplayTable();
+                
+            } catch (error) {
+                console.error("Error loading payments:", error);
+                renderErrorState();
+            }
+        }
 
-            </head>
-            <body>
-                <div class="receipt">
-                    <div class="receipt-header">
-                        <div class="logo">ðŸŒ¾</div>
-                        <h1>FarmBridge</h1>
-                        <p>Payment Receipt</p>
+        function showSkeletons() {
+            const statsHtml = `
+                <div class="payment-stat-card skeleton-active"><div class="skeleton-icon"></div><div style="flex:1"><div class="skeleton-line" style="width:40%;height:10px;margin-bottom:8px"></div><div class="skeleton-line" style="width:70%;height:20px"></div></div></div>
+                <div class="payment-stat-card skeleton-active"><div class="skeleton-icon"></div><div style="flex:1"><div class="skeleton-line" style="width:40%;height:10px;margin-bottom:8px"></div><div class="skeleton-line" style="width:70%;height:20px"></div></div></div>
+                <div class="payment-stat-card skeleton-active"><div class="skeleton-icon"></div><div style="flex:1"><div class="skeleton-line" style="width:40%;height:10px;margin-bottom:8px"></div><div class="skeleton-line" style="width:70%;height:20px"></div></div></div>
+            `;
+            document.getElementById('statsContainer').innerHTML = statsHtml;
+            document.getElementById('tableContainer').innerHTML = '<div class="skeleton-table skeleton-active"></div>';
+        }
+
+        function displayStats(payments) {
+            const successPayments = payments.filter(p => p.status?.toLowerCase() === 'success' || p.status?.toLowerCase() === 'completed');
+            const totalPaid = successPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const pendingCount = payments.filter(p => p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'initiated').length;
+
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="payment-stat-card reveal">
+                    <div class="stat-icon-wrap emerald">
+                        <i class="fi fi-rr-check-circle"></i>
                     </div>
-                    <div class="receipt-body">
-                        <div class="info-row">
-                            <span class="info-label">Transaction ID</span>
-                            <span class="info-value">${escapeHtml(transactionId)}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Order ID</span>
-                            <span class="info-value">${escapeHtml(orderId)}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Date & Time</span>
-                            <span class="info-value">${dateStr} at ${timeStr}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Payment Method</span>
-                            <span class="info-value">${escapeHtml(displayMethod)}</span>
-                        </div>
-                        <div class="amount-box">
-                            <div class="amount-label">Total Amount</div>
-                            <div class="amount-value">â‚¹${amount.toLocaleString('en-IN')}</div>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Payment Status</span>
-                            <span class="status-badge ${statusClass}">${statusDisplay}</span>
-                        </div>
-                    </div>
-                    <div class="receipt-footer">
-                        <button class="receipt-btn-print" onclick="window.print()">ðŸ–¨ï¸ Print Receipt</button>
-                        <p style="margin-top: 15px;">Thank you for shopping with FarmBridge!</p>
-                        <p>support@farmbridge.com | www.farmbridge.com</p>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Settled</span>
+                        <h2 class="stat-value">₹${totalPaid.toLocaleString('en-IN')}</h2>
                     </div>
                 </div>
-                <script>
-                    window.onload = function() {
-                        window.print();
-                    };
-                <\/script>
-            </body>
-            </html>`;
+                <div class="payment-stat-card reveal" style="transition-delay: 0.1s">
+                    <div class="stat-icon-wrap orange">
+                        <i class="fi fi-rr-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Pending Settlements</span>
+                        <h2 class="stat-value">${pendingCount}</h2>
+                    </div>
+                </div>
+                <div class="payment-stat-card reveal" style="transition-delay: 0.2s">
+                    <div class="stat-icon-wrap blue">
+                        <i class="fi fi-rr-receipt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Transactions</span>
+                        <h2 class="stat-value">${payments.length}</h2>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => $(".reveal").addClass("visible"), 50);
+        }
 
-                const receiptWindow = window.open('', '_blank');
-                if (receiptWindow) {
-                    receiptWindow.document.write(receiptHtml);
-                    receiptWindow.document.close();
-                    showToast(`Opening receipt for ${transactionId}...`, 'success');
-                } else {
-                    showToast('Please allow pop-ups to view receipt', 'error');
-                }
+        function filterAndDisplayTable() {
+            const statusFilter = document.getElementById('payStatusFilter').value;
+            const methodFilter = document.getElementById('payMethodFilter').value;
+
+            let filtered = allPayments;
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(p => p.status?.toLowerCase() === statusFilter);
+            }
+            if (methodFilter !== 'all') {
+                filtered = filtered.filter(p => (p.paymentMethod || p.method || '').toLowerCase().includes(methodFilter));
             }
 
-            function showToast(message, type) {
-                let container = document.getElementById('fbToastContainer');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'fbToastContainer';
-                    container.className = 'fb-toast-container';
-                    document.body.appendChild(container);
-                }
+            renderTable(filtered);
+        }
 
-                const icons = { success: 'âœ…', error: 'âŒ', info: 'â„¹ï¸' };
-                const titles = { success: 'Success!', error: 'Error!', info: 'Info' };
+        function renderTable(payments) {
+            const container = document.getElementById('tableContainer');
+            if (!payments || payments.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fi fi-rr-inbox mb-3 d-block" style="font-size: 48px; color: #cbd5e1;"></i>
+                        <p class="text-muted">No transactions matching your filters</p>
+                    </div>
+                `;
+                return;
+            }
 
-                const toast = document.createElement('div');
-                toast.className = `fb-toast ${type}`;
-                toast.innerHTML = `
-                            <div class="fb-toast-icon">${icons[type] || icons.info}</div>
-                            <div class="fb-toast-content">
-                                <div class="fb-toast-title">${titles[type] || titles.info}</div>
-                                <div class="fb-toast-message">${escapeHtml(message)}</div>
+            let html = `
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>TRANSACTION ID</th>
+                            <th>ORDER ID</th>
+                            <th>AMOUNT</th>
+                            <th>METHOD</th>
+                            <th>STATUS</th>
+                            <th>DATE</th>
+                            <th class="text-right">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            payments.forEach(p => {
+                const status = (p.status || '').toLowerCase();
+                const statusClass = (status === 'success' || status === 'completed') ? 'status-success' :
+                                   (status === 'failed') ? 'status-failed' :
+                                   (status === 'initiated') ? 'status-initiated' : 'status-pending';
+                
+                const method = p.paymentMethod || p.method || 'N/A';
+                const date = new Date(p.paymentDate || p.createdAt || new Date()).toLocaleDateString('en-IN', {
+                    day: '2-digit', month: 'short', year: 'numeric'
+                });
+
+                html += `
+                    <tr class="reveal">
+                        <td><span class="txn-id-pill">${p.transactionId || 'N/A'}</span></td>
+                        <td><a href="/Vendor/Orders" class="order-id-link">${p.orderId || 'N/A'}</a></td>
+                        <td><span class="amount-text">₹${(p.amount || 0).toLocaleString('en-IN')}</span></td>
+                        <td><span class="pay-method-badge">${method}</span></td>
+                        <td><span class="pay-status-badge ${statusClass}">${status}</span></td>
+                        <td><span class="date-text">${date}</span></td>
+                        <td class="text-right">
+                            <button class="btn-receipt" onclick="viewReceipt('${p.transactionId}', '${p.orderId}', ${p.amount}, '${status}', '${method}')">
+                                <i class="fi fi-rr-download"></i> Receipt
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            setTimeout(() => $(".reveal").addClass("visible"), 50);
+        }
+
+        function renderErrorState() {
+            document.getElementById('tableContainer').innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fi fi-rr-triangle-warning mb-3 d-block" style="font-size: 48px; color: #ef4444;"></i>
+                    <p class="text-danger">Failed to load payment history. Please try again.</p>
+                    <button class="btn-receipt mt-3 mx-auto" onclick="loadPayments()">Retry Connection</button>
+                </div>
+            `;
+        }
+
+        function viewReceipt(txnId, orderId, amount, status, method) {
+            const dateStr = new Date().toLocaleString('en-IN');
+            const subtotal = amount / 1.05;
+            const tax = amount - subtotal;
+            const isPaid = status.toLowerCase() === 'success' || status.toLowerCase() === 'completed';
+
+            const receiptHtml = `
+                <div id="printableReceipt" style="text-align: left; padding: 20px; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; background: #fff; position: relative; overflow: hidden;">
+                    <!-- Watermark -->
+                    ${isPaid ? `
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 120px; font-weight: 900; color: rgba(21, 128, 61, 0.04); pointer-events: none; text-transform: uppercase; letter-spacing: 10px; z-index: 0;">
+                        PAID
+                    </div>
+                    ` : ''}
+
+                    <!-- Receipt Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; position: relative; z-index: 1;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img src="/Logo/Logo_Without_Bg.png" alt="Logo" style="width: 52px; height: 52px;" />
+                            <div>
+                                <div style="font-size: 22px; font-weight: 800; color: #15803d; line-height: 1;">FARMBRIDGE</div>
+                                <div style="font-size: 10px; color: #64748b; letter-spacing: 0.5px; margin-top: 4px;">AGRO SOLUTIONS PVT LTD</div>
                             </div>
-                            <button class="fb-toast-close" onclick="this.closest('.fb-toast').remove()">âœ•</button>
-                        `;
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">RECEIPT</div>
+                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+                                <span style="font-size: 12px; color: #64748b;">No:</span>
+                                <span style="font-size: 12px; font-weight: 700; color: #1e293b;">#${txnId.slice(-8).toUpperCase()}</span>
+                            </div>
+                        </div>
+                    </div>
 
-                container.appendChild(toast);
+                    <!-- Details Section -->
+                    <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-bottom: 40px; position: relative; z-index: 1;">
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #f1f5f9;">
+                            <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Billing To</div>
+                            <div style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Registered Business Partner</div>
+                            <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
+                                FarmBridge Marketplace Verified Vendor<br>
+                                GSTIN: 24AAAFB1234F1Z5 (Simulated)<br>
+                                Registered Office, India
+                            </div>
+                        </div>
+                        <div style="padding: 10px 0;">
+                            <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Summary</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 12px; color: #64748b;">Order Ref:</span>
+                                    <span style="font-size: 12px; font-weight: 700; color: #1e293b;">${orderId}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 12px; color: #64748b;">Method:</span>
+                                    <span style="font-size: 12px; font-weight: 700; color: #1e293b; text-transform: uppercase;">${method}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 12px; color: #64748b;">Status:</span>
+                                    <span style="font-size: 12px; font-weight: 800; color: ${isPaid ? '#15803d' : '#f59e0b'};">${status.toUpperCase()}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 12px; color: #64748b;">Date:</span>
+                                    <span style="font-size: 12px; font-weight: 700; color: #1e293b;">${new Date().toLocaleDateString('en-IN')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                setTimeout(() => {
-                    if (toast && toast.parentNode) {
-                        toast.classList.add('fade-out');
-                        setTimeout(() => {
-                            if (toast && toast.parentNode) toast.remove();
-                        }, 300);
-                    }
-                }, 3000);
-            }
+                    <!-- Itemized Table -->
+                    <div style="position: relative; z-index: 1; margin-bottom: 30px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 12px 16px; text-align: left; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #f1f5f9;">Transaction Description</th>
+                                    <th style="padding: 12px 16px; text-align: right; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #f1f5f9;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 20px 16px; border-bottom: 1px solid #f1f5f9;">
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Crop Procurement Settlement</div>
+                                        <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Automatic settlement for Order #${orderId}</div>
+                                    </td>
+                                    <td style="padding: 20px 16px; text-align: right; font-size: 14px; font-weight: 700; color: #1e293b; border-bottom: 1px solid #f1f5f9;">
+                                        ₹${subtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-            document.getElementById('payStatusFilter').addEventListener('change', loadPayments);
-            document.getElementById('payMethodFilter').addEventListener('change', loadPayments);
+                    <!-- Totals Block -->
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 50px; position: relative; z-index: 1;">
+                        <div style="width: 260px; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #f1f5f9;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                <span style="font-size: 13px; color: #64748b;">Subtotal</span>
+                                <span style="font-size: 13px; font-weight: 600; color: #1e293b;">₹${subtotal.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #e2e8f0;">
+                                <span style="font-size: 13px; color: #64748b;">Tax / TDS (5%)</span>
+                                <span style="font-size: 13px; font-weight: 600; color: #1e293b;">₹${tax.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 14px; font-weight: 800; color: #0f172a;">Total Amount</span>
+                                <span style="font-size: 22px; font-weight: 900; color: #15803d;">₹${amount.toLocaleString('en-IN')}</span>
+                            </div>
+                        </div>
+                    </div>
 
-            loadPayments();
-        </script>
-    }
+                    <!-- Footer -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1;">
+                        <div>
+                            <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
+                                <strong style="color: #1e293b; font-size: 12px;">FarmBridge Support</strong><br>
+                                farmbridge13@gmail.com | +91 1800-123-4567<br>
+                                Ground Floor, Agri-Tech Park, Gujarat, India
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="background: #fff; padding: 8px; border: 1px solid #e2e8f0; border-radius: 12px; display: inline-block; margin-bottom: 8px;">
+                                <i class="fi fi-rr-qrcode" style="font-size: 42px; color: #0f172a;"></i>
+                            </div>
+                            <div style="font-size: 9px; font-weight: 800; color: #15803d; text-transform: uppercase; letter-spacing: 1px;">✓ Digitally Certified Document</div>
+                        </div>
+                    </div>
+                </div>
+            `;
 
+            Swal.fire({
+                title: '',
+                html: receiptHtml,
+                showConfirmButton: true,
+                confirmButtonText: '<i class="fi fi-rr-print"></i> Download / Print Receipt',
+                confirmButtonColor: '#15803d',
+                showCloseButton: true,
+                width: '720px',
+                padding: '0',
+                customClass: {
+                    popup: 'premium-receipt-modal'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    printReceipt(receiptHtml);
+                }
+            });
+        }
+
+        function printReceipt(html) {
+            const printWindow = window.open('', '_blank', 'width=950,height=900');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Official Receipt - FarmBridge</title>
+                        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+                        <style>
+                            body { font-family: 'Plus Jakarta Sans', sans-serif; padding: 40px; color: #1e293b; background: #fff; -webkit-print-color-adjust: exact; }
+                            .receipt-outer { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #f1f5f9; }
+                            @@media print {
+                                body { padding: 0; }
+                                .receipt-outer { border: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="receipt-outer">
+                            ${html}
+                        </div>
+                        <script>
+                            setTimeout(() => {
+                                window.print();
+                                window.close();
+                            }, 1000);
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        document.getElementById('payStatusFilter').addEventListener('change', filterAndDisplayTable);
+        document.getElementById('payMethodFilter').addEventListener('change', filterAndDisplayTable);
+
+        loadPayments();
+    </script>
+}

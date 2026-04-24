@@ -8,9 +8,10 @@
 <div class="catalog-page-header">
     <div>
         <h1 class="catalog-page-title">
-            <i class="fi fi-rr-shop"></i>
-            Our Catalog
+            <i class="fi fi-rr-sprout"></i>
+            Product Catalog
         </h1>
+        <p class="catalog-page-subtitle">Premium harvests sourced directly from certified farmers</p>
     </div>
     <div class="header-buttons">
         <button class="wishlist-top-btn" onclick="location.href='/Vendor/Wishlist'">
@@ -27,19 +28,54 @@
 </div>
 
 <div class="catalog-filters">
-    <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by crop name, category, grade..."
-           autocomplete="off">
-    <select class="filter-select" id="categoryFilter">
-        <option value="all">All Categories</option>
-        <option value="Grain">🌾 Grains</option>
-        <option value="Oilseed">🌿 Oilseeds</option>
-    </select>
-    <select class="filter-select" id="sortFilter">
-        <option value="default">Default</option>
-        <option value="price_asc">Price: Low to High</option>
-        <option value="price_desc">Price: High to Low</option>
-        <option value="name_asc">Name: A to Z</option>
-    </select>
+    <div class="search-container">
+        <i class="fi fi-rr-search"></i>
+        <input type="text" class="filter-input" id="searchInput" placeholder="Search by crop name, category, grade..."
+               autocomplete="off">
+    </div>
+    <!-- Custom Category Dropdown -->
+    <div class="fb-dropdown" id="categoryDropdown">
+        <div class="fb-dropdown-trigger">
+            <span><i class="fi fi-rr-apps" style="margin-right: 8px;"></i> All Categories</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="fb-dropdown-menu">
+            <div class="fb-dropdown-item active" data-value="all"><i class="fi fi-rr-apps"></i> All Categories</div>
+            <div class="fb-dropdown-item" data-value="Grain">🌾 Grains</div>
+            <div class="fb-dropdown-item" data-value="Oilseed">🌻 Oilseeds</div>
+            <div class="fb-dropdown-item" data-value="Pulse">🫘 Pulses</div>
+            <div class="fb-dropdown-item" data-value="Spice">🌶️ Spices</div>
+            <div class="fb-dropdown-item" data-value="Other">📦 Others</div>
+        </div>
+        <select id="categoryFilter" style="display: none;">
+            <option value="all">All Categories</option>
+            <option value="Grain">Grain</option>
+            <option value="Oilseed">Oilseed</option>
+            <option value="Pulse">Pulse</option>
+            <option value="Spice">Spice</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <!-- Custom Sort Dropdown -->
+    <div class="fb-dropdown" id="sortDropdown">
+        <div class="fb-dropdown-trigger">
+            <span><i class="fi fi-rr-sort-amount-down" style="margin-right: 8px;"></i> Default Sort</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="fb-dropdown-menu">
+            <div class="fb-dropdown-item active" data-value="default"><i class="fi fi-rr-refresh"></i> Default Sort</div>
+            <div class="fb-dropdown-item" data-value="price-low"><i class="fi fi-rr-arrow-trend-up"></i> Price: Low to High</div>
+            <div class="fb-dropdown-item" data-value="price-high"><i class="fi fi-rr-arrow-trend-down"></i> Price: High to Low</div>
+            <div class="fb-dropdown-item" data-value="newest"><i class="fi fi-rr-clock"></i> Newest First</div>
+        </div>
+        <select id="sortFilter" style="display: none;">
+            <option value="default">Default Sort</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="newest">Newest First</option>
+        </select>
+    </div>
 </div>
 
 <!-- Search Results Info -->
@@ -51,47 +87,43 @@
 </div>
 
 <div id="catalogGrid">
-    <div class="catalog-loading">
-        <i class="fi fi-rr-spinner"></i>
-        <h3>Loading Catalog</h3>
-        <p>Fetching fresh products from our suppliers...</p>
-    </div>
 </div>
 
-<div id="quantityWindow" style="display: none; width: 400px; padding: 20px;">
-    <div style="text-align: center; margin-bottom: 20px;">
-        <div class="product-icon" id="popupProductIcon" style="font-size: 48px; color: #2d8a45;"></div>
-        <h3 id="popupProductName" style="color: #1a5c2a; margin: 10px 0;">Product Name</h3>
-        <div class="stock-info" id="popupStockInfo" style="color: #64748b; font-size: 13px;">Available: 0 kg</div>
-        <div class="min-info" style="color: #e65100; font-size: 12px; margin-top: 5px;">⚠️ Minimum order: 20kg</div>
-    </div>
+<div id="quantityWindow" style="display: none; padding: 0;">
+    <div class="premium-modal-card">
+        <div class="modal-product-info">
+            <div id="popupProductIcon" class="modal-icon-wrap"></div>
+            <div class="modal-text-wrap">
+                <h3 id="popupProductName">Product Name</h3>
+                <div id="popupStockInfo" class="stock-badge">Available: 0 kg</div>
+            </div>
+        </div>
+        
+        <div class="quantity-control-section">
+            <label class="qty-label">Order Quantity</label>
+            <div class="modern-stepper-pill">
+                <button id="qtyMinus" class="pill-step-btn"><i class="fi fi-rr-minus-small"></i></button>
+                <div class="pill-input-area">
+                    <input type="number" id="popupQuantity" value="20" min="20" step="5">
+                    <span class="pill-unit">kg</span>
+                </div>
+                <button id="qtyPlus" class="pill-step-btn"><i class="fi fi-rr-plus-small"></i></button>
+            </div>
+        </div>
 
-    <div class="quantity-selector"
-         style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0;">
-        <button id="qtyMinus" class="k-button k-button-md k-rounded-md"
-                style="background: #f1f5f0; border: none; width: 40px; height: 40px; font-size: 20px;">
-            <i class="fas fa-minus"></i>
-        </button>
-        <input type="number" id="popupQuantity" value="20" min="20" step="5"
-               style="width: 100px; text-align: center; font-size: 24px; font-weight: 700; border: 2px solid #e0ece3; border-radius: 10px; padding: 10px;">
-        <button id="qtyPlus" class="k-button k-button-md k-rounded-md"
-                style="background: #f1f5f0; border: none; width: 40px; height: 40px; font-size: 20px;">
-            <i class="fas fa-plus"></i>
-        </button>
-    </div>
+        <div class="price-display-card">
+            <div class="price-label">Estimated Total Investment</div>
+            <div id="popupTotalPrice" class="total-price-value">₹0</div>
+        </div>
 
-    <div class="price-display" style="text-align: center; margin-bottom: 20px;">
-        <span style="color: #64748b;">Total Price: </span>
-        <span id="popupTotalPrice" style="font-size: 24px; font-weight: 700; color: #2d8a45;">₹0</span>
-    </div>
-
-    <div class="popup-actions" style="display: flex; gap: 12px; margin-top: 20px;">
-        <button id="cancelQtyBtn" class="k-button k-button-md"
-                style="flex: 1; background: #f1f5f0; color: #64748b; border: none;">Cancel</button>
-        <button id="confirmQtyBtn" class="k-button k-button-md"
-                style="flex: 1; background: linear-gradient(135deg, #2d8a45, #1a5c2a); color: white; border: none;">
-            <i class="fas fa-cart-plus"></i> Add to Cart
-        </button>
+        <div class="modal-footer-actions">
+            <button id="cancelQtyBtn" class="btn-modal-cancel">
+                <i class="fi fi-rr-cross-small"></i> Cancel
+            </button>
+            <button id="confirmQtyBtn" class="btn-modal-confirm">
+                <i class="fi fi-rr-shopping-cart-add"></i> Add to Cart
+            </button>
+        </div>
     </div>
 </div>
 
@@ -103,349 +135,367 @@
         let wishlistIds = [];
         let isSearchMode = false;
         let searchTimeout;
+        let notification;
 
         // --- HELPER FUNCTIONS ---
         function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
         }
 
         async function authorizedFetch(url, options = {}) {
-        const token = getCookie("authToken");
-        options.headers = {
-        ...options.headers,
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-        };
-        const response = await fetch(url, options);
-        if (response.status === 401) {
-        window.location.href = "/Vendor/Login";
-        return null;
-        }
-        return response;
+            const token = getCookie("authToken");
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            const response = await fetch(url, options);
+            if (response.status === 401) {
+                window.location.href = "/Vendor/Login";
+                return null;
+            }
+            return response;
         }
 
         function updateHeaderCartCount() {
-        let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
-        const headerCartSpan = document.getElementById('headerCartCount');
-        if (headerCartSpan) headerCartSpan.innerText = cart.length;
-        if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
+            let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+            const headerCartSpan = document.getElementById('headerCartCount');
+            if (headerCartSpan) headerCartSpan.innerText = cart.length;
+            if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
         }
 
         function updateWishlistCount() {
-        const el = document.getElementById('wishlistCount');
-        if (el) el.innerText = wishlistIds.length;
-        if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
+            const el = document.getElementById('wishlistCount');
+            if (el) el.innerText = wishlistIds.length;
+            if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
         }
 
-        // ========== ELASTICSEARCH SEARCH (Real-time) ==========
-        // ========== ELASTICSEARCH SEARCH (Real-time) ==========
-        // ========== ELASTICSEARCH SEARCH (Real-time) ==========
+        // ========== SEARCH LOGIC ==========
         async function elasticSearchProducts(searchQuery) {
-        if (!searchQuery || searchQuery.trim() === '') {
-        isSearchMode = false;
-        document.getElementById('searchResultsInfo').style.display = 'none';
-        await loadCatalogFromDatabase();
-        return;
+            if (!searchQuery || searchQuery.trim() === '') {
+                isSearchMode = false;
+                document.getElementById('searchResultsInfo').style.display = 'none';
+                await loadCatalogFromDatabase();
+                return;
+            }
+
+            isSearchMode = true;
+            document.getElementById('searchResultsInfo').style.display = 'block';
+            document.getElementById('searchQueryText').innerText = searchQuery;
+
+            try {
+                if (typeof window.showCardSkeleton === 'function') {
+                    window.showCardSkeleton('#catalogGrid', 4);
+                }
+                const response = await authorizedFetch('/Vendor/SearchCatalog', {
+                    method: 'POST',
+                    body: JSON.stringify({ Query: searchQuery, Page: 1, PageSize: 100 })
+                });
+                
+                if (!response || !response.ok) {
+                    allProducts = [];
+                    displayProducts([]);
+                    return;
+                }
+
+                const result = await response.json();
+                if (result && result.results) {
+                    allProducts = result.results.map(p => ({
+                        id: parseInt(p.id),
+                        name: p.name,
+                        category: p.category,
+                        unit: p.unitOfMeasure || 'kg',
+                        unitPrice: parseFloat(p.price) || 0,
+                        quantityAvailable: parseFloat(p.quantityAvailable) || 0,
+                        imageUrl: p.imageUrl,
+                        grade: p.grade || ''
+                    }));
+                    await loadWishlistIds();
+                    applySortAndDisplay();
+                } else {
+                    allProducts = [];
+                    displayProducts([]);
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                allProducts = [];
+                displayProducts([]);
+            }
         }
 
-        isSearchMode = true;
-        document.getElementById('searchResultsInfo').style.display = 'block';
-        document.getElementById('searchQueryText').innerText = searchQuery;
+        function initCustomDropdowns() {
+            $('.fb-dropdown').each(function() {
+                const $dropdown = $(this);
+                const $trigger = $dropdown.find('.fb-dropdown-trigger');
+                const $select = $dropdown.find('select');
 
-        try {
-        const token = getCookie("authToken");
-        
-        const response = await fetch('/Vendor/SearchCatalog', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ Query: searchQuery, Page: 1, PageSize: 100 })
-        });
-        
-        if (!response.ok) {
-        console.error('Search API error:', response.status);
-        allProducts = [];
-        displayProducts([]);
-        return;
-        }
+                $trigger.on('click', function(e) {
+                    e.stopPropagation();
+                    $('.fb-dropdown').not($dropdown).removeClass('open');
+                    $dropdown.toggleClass('open');
+                });
 
-        const result = await response.json();
-        console.log('Search results:', result);
-        
-        if (result && result.results && result.results.length > 0) {
-        allProducts = result.results.map(p => ({
-        id: p.id,
-        name: p.name,
-        category: p.category,
-        unit: p.unitOfMeasure || 'kg',
-        unitPrice: p.price || 0,
-        quantityAvailable: p.quantityAvailable || 0,
-        imageUrl: p.imageUrl,
-        grade: p.grade || ''
-        }));
-        await loadWishlistIds();
-        applySortAndDisplay();
-        } else {
-        allProducts = [];
-        displayProducts([]);
-        console.log('No products found for:', searchQuery);
-        }
-        } catch (error) {
-        console.error('Elasticsearch error:', error);
-        allProducts = [];
-        displayProducts([]);
-        }
+                $dropdown.find('.fb-dropdown-item').on('click', function() {
+                    const val = $(this).data('value');
+                    const text = $(this).html();
+                    
+                    $dropdown.find('.fb-dropdown-item').removeClass('active');
+                    $(this).addClass('active');
+                    
+                    $trigger.find('span').html(text);
+                    $select.val(val).trigger('change');
+                    $dropdown.removeClass('open');
+                });
+            });
+
+            $(document).on('click', function() {
+                $('.fb-dropdown').removeClass('open');
+            });
         }
 
-        // Load from Database (when no search)
         async function loadCatalogFromDatabase() {
-        const category = document.getElementById('categoryFilter').value;
-        try {
-        let url = `${API_URL}/catalog?category=${encodeURIComponent(category)}&search=`;
-        const response = await authorizedFetch(url);
-        if (!response) return;
+            const category = document.getElementById('categoryFilter').value;
+            try {
+                if (typeof window.showCardSkeleton === 'function') {
+                    window.showCardSkeleton('#catalogGrid', 8);
+                }
+                let url = `${API_URL}/catalog?category=${encodeURIComponent(category)}&search=`;
+                const response = await authorizedFetch(url);
+                if (!response) return;
 
-        const result = await response.json();
-        if (result.success && result.data) {
-        allProducts = result.data;
-        await loadWishlistIds();
-        applySortAndDisplay();
-        } else {
-        document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products found</p></div>';
-        }
-        } catch (error) {
-        document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><p class="text-danger">Error loading products</p></div>';
-        }
+                const result = await response.json();
+                if (result.success && result.data) {
+                    allProducts = result.data.map(p => ({
+                        ...p,
+                        id: parseInt(p.id),
+                        unitPrice: parseFloat(p.unitPrice) || 0,
+                        quantityAvailable: parseFloat(p.quantityAvailable) || 0
+                    }));
+                    await loadWishlistIds();
+                    applySortAndDisplay();
+                } else {
+                    document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products found</p></div>';
+                }
+            } catch (error) {
+                console.error('Database load error:', error);
+            }
         }
 
         async function loadWishlistIds() {
-        try {
-        const response = await authorizedFetch(`${API_URL}/wishlist`);
-        if (!response) return;
-        const result = await response.json();
-        if (result.success && result.data) {
-        wishlistIds = result.data.map(item => `${item.productId}_${item.grade || 'nograde'}`);
-        updateWishlistCount();
-        }
-        } catch (error) { wishlistIds = []; }
+            try {
+                const response = await authorizedFetch(`${API_URL}/wishlist`);
+                if (!response) return;
+                const result = await response.json();
+                if (result.success && result.data) {
+                    wishlistIds = result.data.map(item => `${item.productId}_${item.grade || 'nograde'}`);
+                    updateWishlistCount();
+                }
+            } catch (error) { wishlistIds = []; }
         }
 
         function applySortAndDisplay() {
-        const sortBy = document.getElementById('sortFilter').value;
-        let sortedProducts = [...allProducts];
+            const sortBy = document.getElementById('sortFilter').value;
+            let sortedProducts = [...allProducts];
 
-        switch (sortBy) {
-        case 'price_asc': sortedProducts.sort((a, b) => (a.unitPrice || 0) - (b.unitPrice || 0)); break;
-        case 'price_desc': sortedProducts.sort((a, b) => (b.unitPrice || 0) - (a.unitPrice || 0)); break;
-        case 'name_asc': sortedProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')); break;
-        default: sortedProducts.sort((a, b) => (a.id || 0) - (b.id || 0));
-        }
-        displayProducts(sortedProducts);
+            switch (sortBy) {
+                case 'price-low': sortedProducts.sort((a, b) => (a.unitPrice || 0) - (b.unitPrice || 0)); break;
+                case 'price-high': sortedProducts.sort((a, b) => (b.unitPrice || 0) - (a.unitPrice || 0)); break;
+                case 'newest': sortedProducts.sort((a, b) => (b.id || 0) - (a.id || 0)); break;
+            }
+            displayProducts(sortedProducts);
         }
 
         function displayProducts(products) {
-        if (!products || products.length === 0) {
-        document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products found</p></div>';
-        return;
+            const grid = document.getElementById('catalogGrid');
+            if (!products || products.length === 0) {
+                grid.innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products found</p></div>';
+                return;
+            }
+
+            let html = '<div class="products-container">';
+            products.forEach(p => {
+                const wishlistKey = `${p.id}_${p.grade || 'nograde'}`;
+                const isInWishlist = wishlistIds.includes(wishlistKey);
+                const price = p.unitPrice || 0;
+                const img = p.imageUrl || null;
+                const displayName = p.grade ? `${p.name} (Grade ${p.grade})` : p.name;
+                const media = img ? `<img src="${img}" alt="${escapeHtml(displayName)}">` : `
+                    <div class="no-image-placeholder">
+                        <div class="placeholder-icon-wrapper">
+                            <i class="fi fi-rr-sprout"></i>
+                            <div class="placeholder-text">FarmBridge</div>
+                        </div>
+                    </div>`;
+
+                html += `
+                <div class="catalog-product-card">
+                    <div class="catalog-product-img">
+                        ${p.grade ? `<div class="catalog-product-badge">Grade ${p.grade}</div>` : ''}
+                        <div class="wishlist-heart-float ${isInWishlist ? 'active' : ''}" 
+                             onclick="toggleWishlistItem(${p.id}, '${escapeHtml(p.name)}', ${price}, '${p.grade || ''}', event)">
+                            <i class="${isInWishlist ? 'fas' : 'far'} fa-heart"></i>
+                        </div>
+                        ${media}
+                    </div>
+                    <div class="catalog-product-body">
+                        <div class="catalog-product-name">${escapeHtml(displayName)}</div>
+                        <div class="catalog-product-price">
+                            ₹${price.toLocaleString('en-IN')}<small>/${p.unit || 'kg'}</small>
+                        </div>
+                        <div class="catalog-product-stock">
+                            <i class="fi fi-rr-box"></i> ${p.quantityAvailable || 0} ${p.unit || 'kg'} in stock
+                        </div>
+                        <button class="btn-catalog-add-cart" onclick='addToCart(${p.id}, "${escapeHtml(p.name)}", ${price}, ${p.quantityAvailable || 0}, "${img || ''}", "${p.grade || ''}")'>
+                            <i class="fi fi-rr-shopping-cart-add"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            grid.innerHTML = html;
+            updateHeaderCartCount();
         }
 
-        let html = '<div class="products-container">';
-        products.forEach(p => {
-        const wishlistKey = `${p.id}_${p.grade || 'nograde'}`;
-        let isInWishlist = wishlistIds.includes(wishlistKey);
-        let heartIconClass = isInWishlist ? 'fas' : 'far';
-        let price = p.unitPrice || 0;
-        let displayImg = p.imageUrl || null;
-        let displayName = p.grade ? `${p.name} (Grade ${p.grade})` : p.name;
-
-        let mediaContent = displayImg
-        ? `<img src="${displayImg}" alt="${escapeHtml(displayName)}">`
-        : `<i class="fas ${getProductIcon(p.name)}"></i>`;
-
-        html += `
-        <div class="catalog-product-card">
-        <div class="catalog-product-img">
-        ${mediaContent}
-        ${p.grade ? `<div class="catalog-product-badge grade">Grade ${p.grade}</div>` : ''}
-        </div>
-        <div class="catalog-product-body">
-        <div class="catalog-product-name">${escapeHtml(displayName)}</div>
-        <div class="catalog-product-price">
-        ₹${price.toLocaleString('en-IN')}<small>/${p.unit || 'kg'}</small>
-        </div>
-        <div class="catalog-product-stock">
-        <i class="fi fi-rr-box"></i> ${p.quantityAvailable || 0} ${p.unit || 'kg'} available
-        </div>
-        <div class="catalog-product-actions">
-        <button class="btn-catalog-add-cart" onclick='addToCart(${p.id}, "${escapeHtml(p.name)}", ${price}, ${p.quantityAvailable || 0}, "${displayImg || ''}", "${p.grade || ''}")'>
-        <i class="fas fa-cart-plus"></i> Add to Cart
-        </button>
-        <button class="btn-wishlist-heart ${isInWishlist ? 'active' : ''}" onclick="toggleWishlistItem(${p.id}, '${escapeHtml(p.name)}', ${price}, '${p.grade || ''}', event)">
-        <i class="${heartIconClass} fa-heart"></i>
-        </button>
-        </div>
-        </div>
-        </div>`;
-        });
-        html += '</div>';
-        document.getElementById('catalogGrid').innerHTML = html;
-        updateHeaderCartCount();
-        }
-
-        // ========== ACTIONS ==========
         async function toggleWishlistItem(productId, productName, price, grade, event) {
-        event.stopPropagation();
-        const btn = event.currentTarget;
-        const isActive = btn.classList.contains('active');
-        const wishlistKey = `${productId}_${grade || 'nograde'}`;
+            event.stopPropagation();
+            const btn = event.currentTarget;
+            const isActive = btn.classList.contains('active');
+            const wishlistKey = `${productId}_${grade || 'nograde'}`;
 
-        try {
-        let url = isActive
-        ? `${API_URL}/wishlist/remove/${productId}?grade=${encodeURIComponent(grade || '')}`
-        : `${API_URL}/wishlist/add/${productId}?grade=${encodeURIComponent(grade || '')}`;
-        const response = await authorizedFetch(url, { method: isActive ? 'DELETE' : 'POST' });
-        if (!response) return;
-
-        const result = await response.json();
-        if (result.success) {
-        btn.classList.toggle('active');
-        btn.querySelector('i').className = btn.classList.contains('active') ? 'fas fa-heart' : 'far fa-heart';
-        if (isActive) wishlistIds = wishlistIds.filter(key => key !== wishlistKey);
-        else wishlistIds.push(wishlistKey);
-        updateWishlistCount();
-        }
-        } catch (error) { console.error('Wishlist error:', error); }
+            try {
+                let url = isActive
+                    ? `${API_URL}/wishlist/remove/${productId}?grade=${encodeURIComponent(grade || '')}`
+                    : `${API_URL}/wishlist/add/${productId}?grade=${encodeURIComponent(grade || '')}`;
+                const response = await authorizedFetch(url, { method: isActive ? 'DELETE' : 'POST' });
+                if (response?.ok) {
+                    btn.classList.toggle('active');
+                    btn.querySelector('i').className = btn.classList.contains('active') ? 'fas fa-heart' : 'far fa-heart';
+                    if (isActive) wishlistIds = wishlistIds.filter(key => key !== wishlistKey);
+                    else wishlistIds.push(wishlistKey);
+                    updateWishlistCount();
+                }
+            } catch (error) { console.error('Wishlist error:', error); }
         }
 
-        async function addToCartAPI(productId, productName, price, quantity, grade) {
-        try {
-        const response = await authorizedFetch(`${API_URL}/cart/add`, {
-        method: 'POST',
-        body: JSON.stringify({ cropId: productId, quantity: quantity })
-        });
-        const result = await response.json();
-        if (result.success) {
-        let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
-        const cartKey = `${productId}_${grade || 'nograde'}`;
-        let existing = cart.find(item => `${item.id}_${item.grade || 'nograde'}` === cartKey);
-        const displayName = grade ? `${productName} (Grade ${grade})` : productName;
-
-        if (existing) {
-        existing.quantity += quantity;
-        existing.total = existing.quantity * price;
-        } else {
-        cart.push({ id: productId, name: displayName, price: price, quantity: quantity, total: price * quantity, grade: grade || '' });
-        }
-        localStorage.setItem('vendor_cart', JSON.stringify(cart));
-        updateHeaderCartCount();
-        closeQuantityWindow();
-        }
-        } catch (error) { console.error('Cart error:', error); }
-        }
-
-        // --- POPUP LOGIC --- 
+        // --- POPUP & CART ---
         let currentProduct = null;
-        function addToCart(id, name, price, max, img, grade) {
-        currentProduct = { id, name, price, max, grade };
-        const displayName = grade ? `${name} (Grade ${grade})` : name;
-        document.getElementById('popupProductName').innerText = displayName;
-        document.getElementById('popupStockInfo').innerText = `Available: ${max} kg`;
+        async function addToCart(id, name, price, max, img, grade) {
+            currentProduct = { 
+                id: parseInt(id), 
+                name: name, 
+                price: parseFloat(price) || 0, 
+                max: parseFloat(max) || 0, 
+                grade: grade 
+            };
+            document.getElementById('popupProductName').innerText = grade ? `${name} (Grade ${grade})` : name;
+            document.getElementById('popupStockInfo').innerText = `Available: ${currentProduct.max} kg`;
+            
+            const iconDiv = document.getElementById('popupProductIcon');
+            iconDiv.innerHTML = img
+                ? `<img src="${img}" style="width: 80px; height: 80px; border-radius: 16px; object-fit: cover; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">`
+                : `<div style="font-size: 40px;">🌾</div>`;
 
-        const iconDiv = document.getElementById('popupProductIcon');
-        iconDiv.innerHTML = img
-        ? `<img src="${img}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`
-        : (name.toLowerCase().includes('rice') || name.toLowerCase().includes('wheat') ? '🌾' : '📦');
-
-        document.getElementById('popupQuantity').value = 20;
-        updateTotalPrice();
-        openQuantityWindow();
+            document.getElementById('popupQuantity').value = Math.min(20, currentProduct.max);
+            updateTotalPrice();
+            openQuantityWindow();
         }
 
         function updateTotalPrice() {
-        const qty = parseFloat(document.getElementById('popupQuantity').value) || 0;
-        document.getElementById('popupTotalPrice').innerText = `₹${(qty * currentProduct.price).toLocaleString('en-IN')}`;
+            const qty = parseFloat(document.getElementById('popupQuantity').value) || 0;
+            const total = qty * (currentProduct?.price || 0);
+            document.getElementById('popupTotalPrice').innerText = `₹${total.toLocaleString('en-IN', { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`;
         }
 
         function openQuantityWindow() {
-        if (!$("#quantityWindow").data("kendoWindow")) {
-        $("#quantityWindow").kendoWindow({ title: "Select Quantity", modal: true, visible: false, width: 420 });
-        }
-        $("#quantityWindow").data("kendoWindow").center().open();
+            if (!$("#quantityWindow").data("kendoWindow")) {
+                $("#quantityWindow").kendoWindow({ 
+                    title: false, 
+                    modal: true, 
+                    visible: false, 
+                    width: 500,
+                    resizable: false,
+                    draggable: true,
+                    animation: {
+                        open: { effects: "fade:in", duration: 300 },
+                        close: { effects: "fade:out", duration: 200 }
+                    }
+                });
+            }
+            $("#quantityWindow").data("kendoWindow").center().open();
         }
 
-        function closeQuantityWindow() { $("#quantityWindow").data("kendoWindow")?.close(); }
-
-        function getProductIcon(name) {
-        name = name.toLowerCase();
-        return (name.includes('rice') || name.includes('wheat')) ? 'fa-seedling' : 'fa-box';
+        async function confirmAddToCart() {
+            const qty = parseInt($('#popupQuantity').val());
+            try {
+                const response = await authorizedFetch(`${API_URL}/cart/add`, {
+                    method: 'POST',
+                    body: JSON.stringify({ cropId: currentProduct.id, quantity: qty })
+                });
+                if (response?.ok) {
+                    notification.show({ message: "Added to cart successfully!" }, "success");
+                    $("#quantityWindow").data("kendoWindow").close();
+                    updateHeaderCartCount();
+                }
+            } catch (e) { console.error(e); }
         }
 
         function escapeHtml(text) {
-        return text ? text.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])) : '';
+            return text ? text.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])) : '';
         }
 
-        // Clear search
-        function clearSearch() {
-        document.getElementById('searchInput').value = '';
-        isSearchMode = false;
-        document.getElementById('searchResultsInfo').style.display = 'none';
-        loadCatalogFromDatabase();
-        }
+        // --- INIT ---
+        $(document).ready(function () {
+            initCustomDropdowns();
+            loadCatalogFromDatabase();
 
-        // ========== EVENT LISTENERS ==========
-        $(document).ready(() => {
-        // Initial load
-        loadCatalogFromDatabase();
+            notification = $("#popupNotification").kendoNotification({
+                position: { pinned: true, top: 30, right: 30 },
+                autoHideAfter: 3000
+            }).data("kendoNotification");
 
-        // REAL-TIME SEARCH (as user types)
-        $('#searchInput').on('input', function () {
-        clearTimeout(searchTimeout);
-        const searchQuery = $(this).val().trim();
-        searchTimeout = setTimeout(() => {
-        elasticSearchProducts(searchQuery);
-        }, 300); // 300ms debounce
-        });
+            $('#searchInput').on('input', _.debounce(function() {
+                elasticSearchProducts($(this).val().trim());
+            }, 300));
 
-        // Category filter
-        $('#categoryFilter').on('change', () => {
-        if (!isSearchMode) {
-        loadCatalogFromDatabase();
-        }
-        });
+            $('#categoryFilter').on('change', () => { if (!isSearchMode) loadCatalogFromDatabase(); });
+            $('#sortFilter').on('change', applySortAndDisplay);
+            $('#clearSearch').on('click', () => { $('#searchInput').val(''); elasticSearchProducts(''); });
 
-        // Sort filter
-        $('#sortFilter').on('change', applySortAndDisplay);
-
-        // Clear search button
-        $('#clearSearch').on('click', clearSearch);
-
-        // Quantity popup events
-        $('#qtyPlus').on('click', () => {
-        let input = $('#popupQuantity');
-        input.val(Math.min(currentProduct.max, parseInt(input.val()) + 5));
-        updateTotalPrice();
-        });
-        $('#qtyMinus').on('click', () => {
-        let input = $('#popupQuantity');
-        input.val(Math.max(20, parseInt(input.val()) - 5));
-        updateTotalPrice();
-        });
-        $('#popupQuantity').on('input', updateTotalPrice);
-        $('#cancelQtyBtn').on('click', closeQuantityWindow);
-        $('#confirmQtyBtn').on('click', () => {
-        addToCartAPI(
-        currentProduct.id,
-        currentProduct.name,
-        currentProduct.price,
-        parseInt($('#popupQuantity').val()),
-        currentProduct.grade
-        );
-        });
+            $('#qtyPlus').on('click', () => { 
+                const input = document.getElementById('popupQuantity'); 
+                let val = parseFloat(input.value) || 0;
+                let step = 5;
+                if (val + step <= currentProduct.max) {
+                    input.value = val + step;
+                } else {
+                    input.value = currentProduct.max;
+                }
+                updateTotalPrice();
+            });
+            $('#qtyMinus').on('click', () => { 
+                const input = document.getElementById('popupQuantity'); 
+                let val = parseFloat(input.value) || 0;
+                let step = 5;
+                let min = Math.min(20, currentProduct.max);
+                if (val - step >= min) {
+                    input.value = val - step;
+                } else {
+                    input.value = min;
+                }
+                updateTotalPrice();
+            });
+            $('#popupQuantity').on('input', function() {
+                let val = parseFloat(this.value);
+                let min = Math.min(20, currentProduct.max);
+                if (val > currentProduct.max) this.value = currentProduct.max;
+                if (val < min && val !== 0) this.value = min;
+                updateTotalPrice();
+            });
+            $('#cancelQtyBtn').on('click', () => $("#quantityWindow").data("kendoWindow").close());
+            $('#confirmQtyBtn').on('click', confirmAddToCart);
         });
     </script>
 }

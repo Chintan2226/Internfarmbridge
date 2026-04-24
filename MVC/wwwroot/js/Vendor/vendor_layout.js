@@ -40,9 +40,12 @@ function fvTab(tab, btn) {
 }
 
 function loadNotifs() {
-    const base = window.API_BASE || 'http://localhost:5020/api/Vendor';
+    const base = 'http://localhost:5020/api/Notification';
 
-    fetch(base + '/GetNotifications')
+    const token = getCookie('authToken');
+    fetch(base + '/GetNotifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
         .then(r => r.json())
         .then(res => {
             if (res?.success) {
@@ -70,25 +73,69 @@ function renderNotifs() {
         : fvNotifs;
 
     if (!filtered.length) {
-        list.innerHTML = `<div class="fv-notif-empty">🔔 No notifications</div>`;
+        list.innerHTML = `
+            <div class="fv-notif-empty">
+                <div class="empty-icon-wrap">
+                    <i class="fi fi-rr-bell-ring"></i>
+                </div>
+                <p>No new notifications</p>
+                <small>We'll notify you when something important happens.</small>
+            </div>
+        `;
         return;
     }
 
-    list.innerHTML = filtered.map(n => `
-        <div class="fv-notif-item${n.isRead ? '' : ' unread'}"
-             onclick="location.href='${n.redirectUrl || '#'}'">
-            <i class="fi fi-rr-bell"></i>
-            <div>
-                <div style="font-weight:600;">${esc(n.title)}</div>
-                <div style="font-size:12px;color:#777;">${esc(n.message)}</div>
+    list.innerHTML = filtered.map(n => {
+        const timeStr = formatNotifTime(n.createdAt || n.CreatedAt);
+        let iconClass = 'fi-rr-bell';
+        let typeClass = 'type-info';
+
+        const title = (n.title || '').toLowerCase();
+        if (title.includes('order')) { iconClass = 'fi-rr-box-alt'; typeClass = 'type-order'; }
+        else if (title.includes('payment') || title.includes('money')) { iconClass = 'fi-rr-usd-circle'; typeClass = 'type-payment'; }
+        else if (title.includes('cart')) { iconClass = 'fi-rr-shopping-cart'; typeClass = 'type-cart'; }
+        else if (title.includes('wishlist')) { iconClass = 'fi-rr-heart'; typeClass = 'type-wishlist'; }
+
+        return `
+            <div class="fv-notif-item ${n.isRead ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.redirectUrl || '#'}')">
+                <div class="notif-icon-wrap ${typeClass}">
+                    <i class="fi ${iconClass}"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-title">${esc(n.title)}</div>
+                    <div class="notif-message">${esc(n.message)}</div>
+                    <div class="notif-time">${timeStr}</div>
+                </div>
+                ${!n.isRead ? '<div class="notif-unread-dot"></div>' : ''}
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
-function fvMarkAllRead() {
-    fvNotifs.forEach(n => n.isRead = true);
+function formatNotifTime(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+}
+
+function handleNotifClick(id, url) {
+    const notif = fvNotifs.find(n => n.id === id);
+    if (notif) notif.isRead = true;
     renderNotifs();
+    if (url && url !== '#') location.href = url;
+}
+
+function esc(t) {
+    if (!t) return '';
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
 }
 
 function fvClearAll() {

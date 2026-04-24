@@ -34,7 +34,6 @@
             </div>
 
             <div id="wh-grid" class="wh-grid">
-                <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">Loading warehousesâ€¦</div>
             </div>
 </div>
 
@@ -193,6 +192,9 @@
     // â”€â”€ LOAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function loadData() {
         try {
+            if (typeof window.showCardSkeleton === 'function') {
+                window.showCardSkeleton('#wh-grid', 6);
+            }
             const [kpiRes, gridRes] = await Promise.all([
                 fetch(`${WAREHOUSE_API_BASE}/admin/kpi`),   // ✅ correct KPI url
                 fetch(`${WAREHOUSE_API_BASE}/admin/warehouses/all`) // <-- Fixed endpoint name
