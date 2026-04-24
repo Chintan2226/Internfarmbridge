@@ -33,6 +33,7 @@ builder.Services.AddScoped<RabbitMqService>();
 builder.Services.AddHostedService<NotificationConsumer>();
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<ElasticService>();
+builder.Services.AddHttpClient<AiInventoryService>();
 
 
 //Email

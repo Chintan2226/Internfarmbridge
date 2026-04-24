@@ -25,6 +25,7 @@ namespace API.Controllers
         private const string NotifKey = "admin:notifs";
         private readonly IConfiguration _configuration;
         private readonly ElasticService _elasticService;
+        private readonly AiInventoryService _aiInventoryService;
 
         public AdminController(
             AdminHelper adminRepo,
@@ -34,7 +35,8 @@ namespace API.Controllers
             EmailService emailService,
             NpgsqlConnection conn,
             IConfiguration configuration,
-            ElasticService elasticService
+            ElasticService elasticService,
+            AiInventoryService aiInventoryService
         )
         {
             _adminRepo = adminRepo;
@@ -45,6 +47,7 @@ namespace API.Controllers
             _conn = conn;
             _configuration = configuration;
             _elasticService = elasticService;
+            _aiInventoryService = aiInventoryService;
         }
 
         // ==================== NOTIFICATIONS ====================
@@ -173,8 +176,6 @@ namespace API.Controllers
 
             return StatusCode(500, new { success = false, message = "Failed to process payment." });
         }
-        
-        
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
@@ -955,7 +956,15 @@ namespace API.Controllers
             return Ok(new { healthy = isHealthy });
         }
 
-        
+
+        [HttpGet("GetCropsCatalog")]
+        public async Task<IActionResult> GetCropsCatalog()
+        {
+            // Ask Python to read the CSV and run the AI predictions!
+            var aiData = await _aiInventoryService.GetAiInventoryDataAsync();
+            
+            return Ok(aiData);
+        }
 
     }
 

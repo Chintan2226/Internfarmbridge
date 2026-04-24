@@ -144,3 +144,53 @@ window.addEventListener("click", () => {
   const menu = document.getElementById("langMenu");
   if (menu && menu.classList.contains("open")) menu.classList.remove("open");
 });
+
+// ====================================================
+// GLOBAL SKELETON LOADER HELPERS
+// ====================================================
+
+/**
+ * Injects a shimmering skeleton into a table/grid container.
+ * Call this BEFORE your $.ajax or $.getJSON call.
+ * @param {string} containerId - The ID of the div (e.g., "#activeCatalogGrid")
+ * @param {number} rowCount - How many fake rows to draw (default: 5)
+ */
+window.showGridSkeleton = function(containerId, rowCount = 5) {
+    let rowsHtml = '';
+    for(let i = 0; i < rowCount; i++) {
+        rowsHtml += '<div class="fb-skeleton-row"></div>';
+    }
+    
+    let skeletonHtml = `
+        <div class="fb-skeleton-container">
+            <div class="fb-skeleton-row header"></div>
+            ${rowsHtml}
+        </div>
+    `;
+    
+    // Check if Kendo grid already exists. If it does, we don't need skeleton.
+    let kendoCheck = $(containerId).data("kendoGrid");
+    if (!kendoCheck) {
+        $(containerId).html(skeletonHtml);
+    }
+};
+
+/**
+ * Injects a shimmering skeleton specifically for card-based layouts (like Vendor Catalog)
+ * @param {string} containerId - The ID of the div 
+ * @param {number} cardCount - How many fake cards to draw (default: 4)
+ */
+window.showCardSkeleton = function(containerId, cardCount = 4) {
+    let cardsHtml = '';
+    for(let i = 0; i < cardCount; i++) {
+        cardsHtml += '<div class="fb-skeleton-card"></div>';
+    }
+    
+    let skeletonHtml = `
+        <div class="fb-skeleton-grid-cards">
+            ${cardsHtml}
+        </div>
+    `;
+    
+    $(containerId).html(skeletonHtml);
+};
