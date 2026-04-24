@@ -56,7 +56,7 @@ namespace API.Controllers
         }
 
         // ============ REGISTER & LOGIN ============
-        
+
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] vm_VendorRegister model)
@@ -172,7 +172,7 @@ namespace API.Controllers
                 if (isNewUser)
                 {
                     await _emailService.SendVendorWelcomeEmailAsync(request.Email, request.Name);
-                    
+
                     // ✅ NOTIFICATION: New vendor via Google
                     await _rabbitMqService.PublishToRoleAsync("admin",
                         "New Vendor Registered (Google)",
@@ -278,7 +278,7 @@ namespace API.Controllers
             if (result == "Success")
             {
                 await _redisService.RemoveUserAsync($"vendor:dashboard:kpi:{CurrentVendorId}");
-                
+
                 // ✅ NOTIFICATION: Item added to cart
                 await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
                     "Item Added to Cart",
@@ -302,7 +302,7 @@ namespace API.Controllers
                     "Item Removed from Cart",
                     "An item has been removed from your cart.",
                     "cart");
-                    
+
                 return Ok(new { success = true });
             }
             return BadRequest(new { success = false, message = result });
@@ -351,7 +351,7 @@ namespace API.Controllers
                     "Order Cancelled",
                     $"Your order #{request.OrderId} has been cancelled. Reason: {request.Reason}",
                     "order");
-                    
+
                 // ✅ NOTIFICATION to Admin
                 await _rabbitMqService.PublishToRoleAsync("admin",
                     "Order Cancelled by Vendor",
@@ -374,7 +374,7 @@ namespace API.Controllers
                     "Order Repeated",
                     $"Your previous order #{orderId} has been placed again.",
                     "order");
-                    
+
                 return Ok(new { success = true, message = result });
             }
             return BadRequest(new { success = false, message = result });
@@ -400,7 +400,7 @@ namespace API.Controllers
         public async Task<IActionResult> SaveAddress([FromBody] VM_SaveAddressRequest request)
         {
             var result = await _vendorHelper.SaveAddressAsync(CurrentVendorId, request);
-            
+
             if (result.Success)
             {
                 // ✅ NOTIFICATION: New address added
@@ -409,7 +409,7 @@ namespace API.Controllers
                     "A new delivery address has been added to your account.",
                     "address");
             }
-            
+
             return Ok(result);
         }
 
@@ -455,7 +455,7 @@ namespace API.Controllers
                     "Order Placed Successfully 🎉",
                     $"Your order has been placed successfully. Order ID: {result.OrderId}",
                     "order");
-                    
+
                 // ✅ NOTIFICATION to Admin
                 await _rabbitMqService.PublishToRoleAsync("admin",
                     "New Order Placed",
@@ -481,20 +481,20 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-      [HttpPost("payment/verify")]
-public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPaymentVerification verification)
-{
-    var result = await _vendorHelper.VerifyRazorpayPaymentAsync(CurrentVendorId, verification);
-    if (result.Success)
-    {
-        // ✅ NOTIFICATION: Payment successful - Now verification.Amount exists!
-        await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
-            "Payment Successful 💰",
-            $"Your payment of ₹{verification.Amount} has been successful.",
-            "payment");
-    }
-    return Ok(result);
-}
+        [HttpPost("payment/verify")]
+        public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPaymentVerification verification)
+        {
+            var result = await _vendorHelper.VerifyRazorpayPaymentAsync(CurrentVendorId, verification);
+            if (result.Success)
+            {
+                // ✅ NOTIFICATION: Payment successful - Now verification.Amount exists!
+                await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
+                    "Payment Successful 💰",
+                    $"Your payment of ₹{verification.Amount} has been successful.",
+                    "payment");
+            }
+            return Ok(result);
+        }
         // ============ PROFILE ============
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
@@ -519,7 +519,7 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
                     "Profile Updated",
                     "Your profile information has been updated successfully.",
                     "profile");
-                    
+
                 return Ok(new { success = true, message = result });
             }
             return BadRequest(new { success = false, message = result });
@@ -545,7 +545,7 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
                     "Password Changed",
                     "Your password has been changed successfully.",
                     "security");
-                    
+
                 return Ok(new { success = true, message = result });
             }
             return BadRequest(new { success = false, message = result });
@@ -566,7 +566,7 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
             if (result.Contains("Added"))
             {
                 await _redisService.RemoveUserAsync($"vendor:dashboard:kpi:{CurrentVendorId}");
-                
+
                 // ✅ NOTIFICATION: Added to wishlist
                 await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
                     "Added to Wishlist",
@@ -584,7 +584,7 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
             if (result.Contains("Removed"))
             {
                 await _redisService.RemoveUserAsync($"vendor:dashboard:kpi:{CurrentVendorId}");
-                
+
                 // ✅ NOTIFICATION: Removed from wishlist
                 await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
                     "Removed from Wishlist",
@@ -745,6 +745,50 @@ public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPay
             request.VendorId = vendorId;
             var results = await _elasticService.SearchOrdersForMVCAsync(request);
             return Ok(results);
+        }
+
+
+        //ElasticSearch
+        [HttpPost("search/vendor-catalog")]
+        public async Task<IActionResult> SearchVendorCatalog([FromBody] SearchRequestModel request)
+        {
+            try
+            {
+                var results = await _elasticService.SearchVendorCatalogForMVCAsync(request);
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "SearchVendorCatalog failed");
+                return Ok(new SearchResponseModel<CatalogSearchResult>());
+            }
+        }
+        [HttpGet("sample-vendor-catalog")]
+        public async Task<IActionResult> GetSampleVendorCatalog()
+        {
+            try
+            {
+                var result = await _elasticService.GetFirstVendorCatalogDocumentAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("reindex-vendor-catalog")]
+        public async Task<IActionResult> ReindexVendorCatalog()
+        {
+            try
+            {
+                var result = await _elasticService.ReindexVendorCatalogAsync();
+                return Ok(new { success = true, indexed = result, message = $"Reindexed {result} products" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
     }
 }

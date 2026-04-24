@@ -3,9 +3,7 @@
     ViewData["Title"] = "Catalog";
 }
 
-
 <link rel="stylesheet" href="~/css/pages/vendor/catalog.css" asp-append-version="true" />
-
 
 <div class="catalog-page-header">
     <div>
@@ -29,7 +27,8 @@
 </div>
 
 <div class="catalog-filters">
-    <input type="text" class="filter-input" id="searchInput" placeholder="Search by crop name...">
+    <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by crop name, category, grade..."
+           autocomplete="off">
     <select class="filter-select" id="categoryFilter">
         <option value="all">All Categories</option>
         <option value="Grain">🌾 Grains</option>
@@ -41,6 +40,14 @@
         <option value="price_desc">Price: High to Low</option>
         <option value="name_asc">Name: A to Z</option>
     </select>
+</div>
+
+<!-- Search Results Info -->
+<div id="searchResultsInfo"
+     style="display: none; padding: 10px 15px; background: #e8f5e9; border-radius: 8px; margin-bottom: 15px;">
+    <i class="fas fa-info-circle"></i>
+    Showing search results for: <strong id="searchQueryText"></strong>
+    <button id="clearSearch" class="btn btn-sm btn-link" style="float: right;">Clear</button>
 </div>
 
 <div id="catalogGrid">
@@ -80,9 +87,7 @@
 
     <div class="popup-actions" style="display: flex; gap: 12px; margin-top: 20px;">
         <button id="cancelQtyBtn" class="k-button k-button-md"
-                style="flex: 1; background: #f1f5f0; color: #64748b; border: none;">
-            Cancel
-        </button>
+                style="flex: 1; background: #f1f5f0; color: #64748b; border: none;">Cancel</button>
         <button id="confirmQtyBtn" class="k-button k-button-md"
                 style="flex: 1; background: linear-gradient(135deg, #2d8a45, #1a5c2a); color: white; border: none;">
             <i class="fas fa-cart-plus"></i> Add to Cart
@@ -96,6 +101,8 @@
         const API_URL = 'http://localhost:5020/api/Vendor';
         let allProducts = [];
         let wishlistIds = [];
+        let isSearchMode = false;
+        let searchTimeout;
 
         // --- HELPER FUNCTIONS ---
         function getCookie(name) {
@@ -112,7 +119,6 @@
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
         };
-
         const response = await fetch(url, options);
         if (response.status === 401) {
         window.location.href = "/Vendor/Login";
@@ -121,39 +127,86 @@
         return response;
         }
 
-        // UPDATED: Syncs local Catalog page AND global Layout navbar
         function updateHeaderCartCount() {
         let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
-
-        // Update local catalog page badge
         const headerCartSpan = document.getElementById('headerCartCount');
         if (headerCartSpan) headerCartSpan.innerText = cart.length;
-
-        // SYNC GLOBAL LAYOUT BADGE
-        if (typeof syncGlobalBadges === 'function') {
-        syncGlobalBadges();
-        }
+        if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
         }
 
-        // UPDATED: Syncs local Catalog page AND global Layout navbar
         function updateWishlistCount() {
-        // Update local catalog page badge
         const el = document.getElementById('wishlistCount');
         if (el) el.innerText = wishlistIds.length;
-
-        // SYNC GLOBAL LAYOUT BADGE
-        if (typeof syncGlobalBadges === 'function') {
-        syncGlobalBadges();
-        }
+        if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
         }
 
-        // --- CORE LOGIC ---
-        async function loadCatalog() {
-        const category = document.getElementById('categoryFilter').value;
-        const search = document.getElementById('searchInput').value;
+        // ========== ELASTICSEARCH SEARCH (Real-time) ==========
+        // ========== ELASTICSEARCH SEARCH (Real-time) ==========
+        // ========== ELASTICSEARCH SEARCH (Real-time) ==========
+        async function elasticSearchProducts(searchQuery) {
+        if (!searchQuery || searchQuery.trim() === '') {
+        isSearchMode = false;
+        document.getElementById('searchResultsInfo').style.display = 'none';
+        await loadCatalogFromDatabase();
+        return;
+        }
+
+        isSearchMode = true;
+        document.getElementById('searchResultsInfo').style.display = 'block';
+        document.getElementById('searchQueryText').innerText = searchQuery;
 
         try {
-        let url = `${API_URL}/catalog?category=${encodeURIComponent(category)}&search=${encodeURIComponent(search)}`;
+        const token = getCookie("authToken");
+        
+        const response = await fetch('/Vendor/SearchCatalog', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ Query: searchQuery, Page: 1, PageSize: 100 })
+        });
+        
+        if (!response.ok) {
+        console.error('Search API error:', response.status);
+        allProducts = [];
+        displayProducts([]);
+        return;
+        }
+
+        const result = await response.json();
+        console.log('Search results:', result);
+        
+        if (result && result.results && result.results.length > 0) {
+        allProducts = result.results.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        unit: p.unitOfMeasure || 'kg',
+        unitPrice: p.price || 0,
+        quantityAvailable: p.quantityAvailable || 0,
+        imageUrl: p.imageUrl,
+        grade: p.grade || ''
+        }));
+        await loadWishlistIds();
+        applySortAndDisplay();
+        } else {
+        allProducts = [];
+        displayProducts([]);
+        console.log('No products found for:', searchQuery);
+        }
+        } catch (error) {
+        console.error('Elasticsearch error:', error);
+        allProducts = [];
+        displayProducts([]);
+        }
+        }
+
+        // Load from Database (when no search)
+        async function loadCatalogFromDatabase() {
+        const category = document.getElementById('categoryFilter').value;
+        try {
+        let url = `${API_URL}/catalog?category=${encodeURIComponent(category)}&search=`;
         const response = await authorizedFetch(url);
         if (!response) return;
 
@@ -176,7 +229,6 @@
         if (!response) return;
         const result = await response.json();
         if (result.success && result.data) {
-        // Store grade-aware keys to keep items separate by grade
         wishlistIds = result.data.map(item => `${item.productId}_${item.grade || 'nograde'}`);
         updateWishlistCount();
         }
@@ -188,10 +240,10 @@
         let sortedProducts = [...allProducts];
 
         switch (sortBy) {
-        case 'price_asc': sortedProducts.sort((a, b) => a.unitPrice - b.unitPrice); break;
-        case 'price_desc': sortedProducts.sort((a, b) => b.unitPrice - a.unitPrice); break;
-        case 'name_asc': sortedProducts.sort((a, b) => a.name.localeCompare(b.name)); break;
-        default: sortedProducts.sort((a, b) => a.id - b.id);
+        case 'price_asc': sortedProducts.sort((a, b) => (a.unitPrice || 0) - (b.unitPrice || 0)); break;
+        case 'price_desc': sortedProducts.sort((a, b) => (b.unitPrice || 0) - (a.unitPrice || 0)); break;
+        case 'name_asc': sortedProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')); break;
+        default: sortedProducts.sort((a, b) => (a.id || 0) - (b.id || 0));
         }
         displayProducts(sortedProducts);
         }
@@ -204,13 +256,11 @@
 
         let html = '<div class="products-container">';
         products.forEach(p => {
-        // Grade-aware wishlist key: productId_grade
         const wishlistKey = `${p.id}_${p.grade || 'nograde'}`;
         let isInWishlist = wishlistIds.includes(wishlistKey);
         let heartIconClass = isInWishlist ? 'fas' : 'far';
         let price = p.unitPrice || 0;
         let displayImg = p.imageUrl || null;
-        // Display name with grade if grade exists
         let displayName = p.grade ? `${p.name} (Grade ${p.grade})` : p.name;
 
         let mediaContent = displayImg
@@ -222,21 +272,17 @@
         <div class="catalog-product-img">
         ${mediaContent}
         ${p.grade ? `<div class="catalog-product-badge grade">Grade ${p.grade}</div>` : ''}
-        ${p.discountPercentage > 0 ? `<div class="catalog-product-badge discount">${p.discountPercentage}% OFF</div>` : ''}
         </div>
         <div class="catalog-product-body">
         <div class="catalog-product-name">${escapeHtml(displayName)}</div>
-        <div class="catalog-product-farmer"><i class="fi fi-rr-user"></i> ${escapeHtml(p.farmerName || 'Verified Farmer')}</div>
-                        
         <div class="catalog-product-price">
         ₹${price.toLocaleString('en-IN')}<small>/${p.unit || 'kg'}</small>
         </div>
-                        
         <div class="catalog-product-stock">
-        <i class="fi fi-rr-box"></i> ${p.quantityAvailable} ${p.unit || 'kg'} available
+        <i class="fi fi-rr-box"></i> ${p.quantityAvailable || 0} ${p.unit || 'kg'} available
         </div>
         <div class="catalog-product-actions">
-        <button class="btn-catalog-add-cart" onclick="addToCart(${p.id}, '${escapeHtml(p.name)}', ${price}, ${p.quantityAvailable}, '${displayImg || ''}', '${p.grade || ''}')">
+        <button class="btn-catalog-add-cart" onclick='addToCart(${p.id}, "${escapeHtml(p.name)}", ${price}, ${p.quantityAvailable || 0}, "${displayImg || ''}", "${p.grade || ''}")'>
         <i class="fas fa-cart-plus"></i> Add to Cart
         </button>
         <button class="btn-wishlist-heart ${isInWishlist ? 'active' : ''}" onclick="toggleWishlistItem(${p.id}, '${escapeHtml(p.name)}', ${price}, '${p.grade || ''}', event)">
@@ -251,7 +297,7 @@
         updateHeaderCartCount();
         }
 
-        // --- ACTIONS ---
+        // ========== ACTIONS ==========
         async function toggleWishlistItem(productId, productName, price, grade, event) {
         event.stopPropagation();
         const btn = event.currentTarget;
@@ -259,7 +305,6 @@
         const wishlistKey = `${productId}_${grade || 'nograde'}`;
 
         try {
-        // Pass grade as query parameter to API
         let url = isActive
         ? `${API_URL}/wishlist/remove/${productId}?grade=${encodeURIComponent(grade || '')}`
         : `${API_URL}/wishlist/add/${productId}?grade=${encodeURIComponent(grade || '')}`;
@@ -270,7 +315,6 @@
         if (result.success) {
         btn.classList.toggle('active');
         btn.querySelector('i').className = btn.classList.contains('active') ? 'fas fa-heart' : 'far fa-heart';
-        // Update grade-aware wishlist array
         if (isActive) wishlistIds = wishlistIds.filter(key => key !== wishlistKey);
         else wishlistIds.push(wishlistKey);
         updateWishlistCount();
@@ -287,7 +331,6 @@
         const result = await response.json();
         if (result.success) {
         let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
-        // Create unique key with grade to keep items separate
         const cartKey = `${productId}_${grade || 'nograde'}`;
         let existing = cart.find(item => `${item.id}_${item.grade || 'nograde'}` === cartKey);
         const displayName = grade ? `${productName} (Grade ${grade})` : productName;
@@ -304,11 +347,11 @@
         }
         } catch (error) { console.error('Cart error:', error); }
         }
+
         // --- POPUP LOGIC --- 
         let currentProduct = null;
         function addToCart(id, name, price, max, img, grade) {
         currentProduct = { id, name, price, max, grade };
-        // Display name with grade if it exists
         const displayName = grade ? `${name} (Grade ${grade})` : name;
         document.getElementById('popupProductName').innerText = displayName;
         document.getElementById('popupStockInfo').innerText = `Available: ${max} kg`;
@@ -346,12 +389,42 @@
         return text ? text.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])) : '';
         }
 
-        // --- EVENT LISTENERS ---
-        $(document).ready(() => {
-        loadCatalog();
-        $('#categoryFilter, #sortFilter').on('change', applySortAndDisplay);
-        $('#searchInput').on('input', _.debounce(loadCatalog, 500));
+        // Clear search
+        function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        isSearchMode = false;
+        document.getElementById('searchResultsInfo').style.display = 'none';
+        loadCatalogFromDatabase();
+        }
 
+        // ========== EVENT LISTENERS ==========
+        $(document).ready(() => {
+        // Initial load
+        loadCatalogFromDatabase();
+
+        // REAL-TIME SEARCH (as user types)
+        $('#searchInput').on('input', function () {
+        clearTimeout(searchTimeout);
+        const searchQuery = $(this).val().trim();
+        searchTimeout = setTimeout(() => {
+        elasticSearchProducts(searchQuery);
+        }, 300); // 300ms debounce
+        });
+
+        // Category filter
+        $('#categoryFilter').on('change', () => {
+        if (!isSearchMode) {
+        loadCatalogFromDatabase();
+        }
+        });
+
+        // Sort filter
+        $('#sortFilter').on('change', applySortAndDisplay);
+
+        // Clear search button
+        $('#clearSearch').on('click', clearSearch);
+
+        // Quantity popup events
         $('#qtyPlus').on('click', () => {
         let input = $('#popupQuantity');
         input.val(Math.min(currentProduct.max, parseInt(input.val()) + 5));
@@ -364,9 +437,7 @@
         });
         $('#popupQuantity').on('input', updateTotalPrice);
         $('#cancelQtyBtn').on('click', closeQuantityWindow);
-
         $('#confirmQtyBtn').on('click', () => {
-        // UPDATED: Passing grade from the currentProduct object
         addToCartAPI(
         currentProduct.id,
         currentProduct.name,
@@ -375,8 +446,6 @@
         currentProduct.grade
         );
         });
-
         });
     </script>
 }
-

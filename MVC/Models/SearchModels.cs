@@ -61,6 +61,9 @@ namespace MVC.Models
         public string Description { get; set; }
         public string ImageUrl { get; set; }
         public bool IsActive { get; set; }
+        public string Grade { get; set; }
+    public decimal Price { get; set; }           
+    public decimal QuantityAvailable { get; set; }
     }
 
     // Vendor - Order Search Result
