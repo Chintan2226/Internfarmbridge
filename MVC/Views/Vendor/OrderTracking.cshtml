@@ -1,4 +1,4 @@
-﻿@using Razorpay.Api
+@using Razorpay.Api
 @{
     Layout = "~/Views/Shared/Layouts/_VendorLayout.cshtml";
     ViewData["Title"] = "Track Order";
@@ -9,19 +9,30 @@
 <link rel="stylesheet" href="~/css/pages/vendor/ordertracking.css" asp-append-version="true" />
 
 
-<div class="tracking-header">
-    <h1 class="tracking-title">
-        <i class="fi fi-rr-map-marker-check"></i>
-        Track Your Order
-    </h1>
-</div>
-
-<div class="tracking-container">
-    <div id="trackingContent">
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 40px; background: rgba(255, 255, 255, 0.82); border-radius: 20px; gap: 16px;">
-            <div style="width: 48px; height: 48px; border: 3px solid rgba(45, 122, 39, 0.1); border-top-color: #2d7a27; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-            <span style="color: #5a7257; font-size: 14px;">Fetching your order journey...</span>
+<div class="tracking-page-wrapper reveal">
+    <!-- Main Header -->
+    <div class="tracking-main-header glass-morphism animate-in">
+        <div class="header-left">
+            <div class="status-indicator">
+                <div class="pulse-ring"></div>
+                <i class="fas fa-route"></i>
+            </div>
+            <div class="header-text">
+                <h1 class="page-title">Track Journey</h1>
+                <p class="page-subtitle">Real-time procurement tracking for Order <span class="text-emerald">#@orderId</span></p>
+            </div>
         </div>
+        <div class="header-right">
+            <button class="btn-back-minimal" onclick="location.href='/Vendor/Orders'">
+                <i class="fi fi-rr-arrow-small-left"></i>
+                <span>Back to Orders</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="tracking-dashboard-grid" id="trackingContent">
+        <!-- Skeletons or Content will be injected here -->
     </div>
 </div>
 
@@ -37,11 +48,35 @@
         return null;
     }
 
+    function showTrackingSkeletons() {
+        const container = document.getElementById('trackingContent');
+        container.innerHTML = `
+            <div class="tracking-col-left">
+                <div class="skeleton-card glass-morphism h-full">
+                    <div class="skeleton-shimmer h-40 mb-5 w-40"></div>
+                    <div class="skeleton-timeline">
+                        ${[1, 2, 3, 4, 5].map(() => `<div class="skeleton-step mb-4"></div>`).join('')}
+                    </div>
+                </div>
+            </div>
+            <div class="tracking-col-right">
+                <div class="skeleton-card glass-morphism mb-4">
+                    <div class="skeleton-shimmer h-100"></div>
+                </div>
+                <div class="skeleton-card glass-morphism">
+                    <div class="skeleton-shimmer h-200"></div>
+                </div>
+            </div>
+        `;
+    }
+
     async function loadTracking() {
         if (!orderId) {
             showError("Order ID is missing.");
             return;
         }
+
+        showTrackingSkeletons();
 
         try {
             const token = getCookie('authToken');
@@ -60,7 +95,7 @@
 
             const result = await response.json();
             if (result.success && result.data) {
-                displayTracking(result.data);
+                setTimeout(() => displayTracking(result.data), 800);
             } else {
                 showError(result.message || "Order details not found.");
             }
@@ -70,99 +105,168 @@
     }
 
     function displayTracking(data) {
+        const isCancelled = data.status.toLowerCase() === 'cancelled' || data.status.toLowerCase() === 'canceled';
+        
         const statusSteps = [
-            { key: 'placed', label: 'Order Placed', desc: 'We have received your order.' },
-            { key: 'admin_confirmed', label: 'Confirmed', desc: 'Vendor has accepted the order.' },
-            { key: 'dispatched', label: 'Dispatched', desc: 'Package is ready for transit.' },
-            { key: 'in_transit', label: 'In Transit', desc: 'On the way to your location.' },
-            { key: 'delivered', label: 'Delivered', desc: 'Successfully received.' }
+            { key: 'placed', label: 'Order Placed', desc: 'Order received and logged.', icon: 'fi-rr-shopping-cart-add' },
+            { key: 'admin_confirmed', label: 'Confirmed', desc: 'Order verified by FarmBridge.', icon: 'fi-rr-box-check' },
+            { key: 'dispatched', label: 'Dispatched', desc: 'Package left the warehouse.', icon: 'fi-rr-truck-loading' },
+            { key: 'in_transit', label: 'In Transit', desc: 'Journey to destination started.', icon: 'fi-rr-map-marker' },
+            { key: 'delivered', label: 'Delivered', desc: 'Handover complete.', icon: 'fi-rr-badge-check' }
         ];
 
         const statusOrder = ['placed', 'admin_confirmed', 'dispatched', 'in_transit', 'delivered'];
         const currentIdx = statusOrder.indexOf(data.status);
+        const statusText = data.status.replace('_', ' ').toUpperCase();
+
+        // Billing calculations
+        const subtotal = data.items.reduce((sum, item) => sum + (item.total || 0), 0);
+        const otherFees = (data.totalAmount || 0) - subtotal;
+
+        // Header Updates
+        if (isCancelled) {
+            document.querySelector('.page-title').textContent = 'Order Details';
+            document.querySelector('.status-indicator').style.background = '#ef4444';
+            document.querySelector('.status-indicator i').className = 'fas fa-times-circle';
+        }
 
         let html = `
-            <div class="order-info-card">
-                <div class="order-info-header">
-                    <h4><i class="fi fi-rr-tag"></i> Order #${data.orderId}</h4>
-                    <span class="status-badge">${data.status.replace('_', ' ').toUpperCase()}</span>
-                </div>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="info-label">Placed On</span>
-                        <span class="info-value">${new Date(data.orderDate).toLocaleDateString('en-IN')}</span>
+            ${!isCancelled ? `
+            <!-- Left Column: Timeline -->
+            <div class="tracking-col-left animate-in">
+                <div class="timeline-card glass-morphism">
+                    <div class="card-header-flex">
+                        <h3 class="section-title"><i class="fi fi-rr-stats"></i> Delivery Journey</h3>
+                        <span class="live-tag"><span class="dot"></span> Live Updates</span>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">Tracking ID</span>
-                        <span class="info-value">${data.trackingId || 'TBA'}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Est. Delivery</span>
-                        <span class="info-value" style="color: #2d7a27;">${data.estimatedDelivery ? new Date(data.estimatedDelivery).toLocaleDateString('en-IN') : 'Updating...'}</span>
+                    
+                    <div class="modern-timeline">
+                        ${statusSteps.map((step, index) => {
+                            let state = 'pending';
+                            if (index < currentIdx) state = 'completed';
+                            else if (index === currentIdx) state = 'active';
+
+                            return `
+                                <div class="timeline-node ${state}">
+                                    <div class="node-marker">
+                                        <div class="node-inner">
+                                            <i class="fi ${state === 'completed' ? 'fi-rr-check' : step.icon}"></i>
+                                        </div>
+                                        <div class="node-line"></div>
+                                    </div>
+                                    <div class="node-content">
+                                        <div class="node-label">${step.label}</div>
+                                        <div class="node-desc">${state === 'pending' ? 'Estimated next' : step.desc}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             </div>
+            ` : `
+            <!-- Cancelled Message Column -->
+            <div class="tracking-col-left animate-in">
+                <div class="cancellation-card glass-morphism">
+                    <div class="cancel-icon-wrap">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <h2>This Order was Cancelled</h2>
+                    <p>We're sorry, but this procurement request has been cancelled. No further tracking updates are available for this journey.</p>
+                    <div class="cancel-reason">
+                        <small>STATUS UPDATE</small>
+                        <span>CANCELLATION CONFIRMED</span>
+                    </div>
+                </div>
+            </div>
+            `}
 
-            <div class="timeline-container">
-                <div class="timeline-title"><i class="fi fi-rr-navigation"></i>Delivery Progress</div>
-                ${statusSteps.map((step, index) => {
-                    let state = 'pending';
-                    if (index < currentIdx) state = 'completed';
-                    else if (index === currentIdx) state = 'active';
-
-                    return `
-                        <div class="timeline-step">
-                            <div class="timeline-dot ${state}">
-                                ${state === 'completed' ? '<i class="fi fi-rr-check"></i>' : (index + 1)}
-                            </div>
-                            <div class="timeline-line"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-content-title">${step.label}</div>
-                                <div class="timeline-desc">${state === 'pending' ? 'Waiting...' : step.desc}</div>
+            <!-- Right Column: Details & Items -->
+            <div class="tracking-col-right">
+                <!-- Info Summary -->
+                <div class="info-summary-card glass-morphism animate-in" style="animation-delay: 0.1s">
+                    <div class="status-banner">
+                        <div class="status-text-wrap">
+                            <small>CURRENT STATE</small>
+                            <h4 style="color: ${isCancelled ? '#ef4444' : 'var(--track-primary)'}">${statusText}</h4>
+                        </div>
+                        <div class="tracking-id-pill">
+                            <i class="fi fi-rr-paper-plane"></i>
+                            <span>#${data.trackingId || 'N/A'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mini-grid">
+                        <div class="mini-pill">
+                            <i class="fi fi-rr-calendar"></i>
+                            <div>
+                                <small>Ordered On</small>
+                                <span>${new Date(data.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
                             </div>
                         </div>
-                    `;
-                }).join('')}
-            </div>
-
-            <div class="items-card">
-                <h5><i class="fi fi-rr-box"></i> Items Summary</h5>
-                <table class="items-table">
-                    <thead><tr><th>Product</th><th>Quantity</th><th>Price</th><th>Total</th></tr></thead>
-                    <tbody>
-                        ${data.items.map(item => `
-                            <tr>
-                                <td><strong>${item.productName}</strong><br><small>Farmer: ${item.farmerName || 'Market'}</small></td>
-                                <td>${item.quantity} ${item.unit || 'kg'}</td>
-                                <td>â‚¹${item.price}</td>
-                                <td><strong>â‚¹${item.total}</strong></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                <div class="total-row">
-                    <span>Grand Total</span>
-                    <span>â‚¹${data.totalAmount.toLocaleString('en-IN')}</span>
+                        <div class="mini-pill ${isCancelled ? '' : 'highlight'}">
+                            <i class="fi fi-rr-${isCancelled ? 'cross-circle' : 'time-fast'}"></i>
+                            <div>
+                                <small>${isCancelled ? 'Status' : 'Expected By'}</small>
+                                <span>${isCancelled ? 'Terminated' : (data.estimatedDelivery ? new Date(data.estimatedDelivery).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'TBD')}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="tracking-actions">
-                <a href="/Vendor/Orders" class="back-btn">
-                    <i class="fi fi-rr-arrow-left"></i> Back to Orders
-                </a>
+
+                <!-- Package Contents -->
+                <div class="package-card glass-morphism animate-in" style="animation-delay: 0.2s">
+                    <h3 class="section-title"><i class="fi fi-rr-box-open"></i> Items In Order</h3>
+                    <div class="item-list">
+                        ${data.items.map(item => `
+                            <div class="item-row">
+                                <div class="item-main">
+                                    <span class="item-name">${item.productName}</span>
+                                    <span class="item-meta">${item.quantity} ${item.unit || 'kg'} &bull; &#8377;${parseFloat(item.price).toFixed(2)}/unit</span>
+                                </div>
+                                <div class="item-total">&#8377;${parseFloat(item.total).toFixed(2)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Billing Breakdown -->
+                    <div class="billing-breakdown">
+                        <div class="billing-row">
+                            <span>Subtotal</span>
+                            <span>&#8377;${subtotal.toFixed(2)}</span>
+                        </div>
+                        <div class="billing-row">
+                            <span>Service & Delivery</span>
+                            <span>&#8377;${otherFees.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grand-total-footer" style="${isCancelled ? 'background: #fef2f2; border-color: #fee2e2;' : ''}">
+                        <div class="total-label-wrap">
+                            <span style="${isCancelled ? 'color: #ef4444;' : ''}">FINAL TOTAL</span>
+                            <small>${isCancelled ? 'Refund processed/pending' : 'Inclusive of all taxes'}</small>
+                        </div>
+                        <div class="total-amount-wrap" style="${isCancelled ? 'color: #991b1b;' : ''}">&#8377;${parseFloat(data.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    </div>
+                </div>
             </div>
         `;
         document.getElementById('trackingContent').innerHTML = html;
+        document.querySelector('.tracking-page-wrapper').classList.add('visible');
     }
 
     function showError(msg) {
         document.getElementById('trackingContent').innerHTML = `
-            <div class="tracking-error">
-                <i class="fi fi-rr-exclamation"></i>
-                <h4>${msg}</h4>
-                <a href="/Vendor/Orders" class="back-btn">
-                    <i class="fi fi-rr-arrow-left"></i> Return to Orders
-                </a>
+            <div class="error-state-card glass-morphism animate-in">
+                <div class="error-icon">
+                    <i class="fi fi-rr-exclamation"></i>
+                </div>
+                <h3>Journey Interrupted</h3>
+                <p>${msg}</p>
+                <button class="btn-premium" onclick="location.href='/Vendor/Orders'">
+                    <i class="fi fi-rr-arrow-left"></i>
+                    Return to My Orders
+                </button>
             </div>
         `; 
     }

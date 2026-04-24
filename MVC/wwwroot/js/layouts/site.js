@@ -183,7 +183,15 @@ window.showGridSkeleton = function(containerId, rowCount = 5) {
 window.showCardSkeleton = function(containerId, cardCount = 4) {
     let cardsHtml = '';
     for(let i = 0; i < cardCount; i++) {
-        cardsHtml += '<div class="fb-skeleton-card"></div>';
+        cardsHtml += `
+            <div class="fb-skeleton-card">
+                <div class="skeleton-body">
+                    <div class="fb-skeleton-line title"></div>
+                    <div class="fb-skeleton-line"></div>
+                    <div class="fb-skeleton-line price"></div>
+                    <div class="fb-skeleton-line btn"></div>
+                </div>
+            </div>`;
     }
     
     let skeletonHtml = `

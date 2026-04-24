@@ -40,21 +40,21 @@
             <div class="stat-icon-wrap" style="background:var(--green-light)">👷</div>
             <div class="stat-label">Total Field Officers</div>
             <div class="stat-value" id="stat-total">—</div>
-            <div class="stat-note green" id="stat-total-note">Loading...</div>
+            <div class="stat-note green" id="stat-total-note"></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--green-main)"></div>
             <div class="stat-icon-wrap" style="background:var(--green-light)">✅</div>
             <div class="stat-label">Active Officers</div>
             <div class="stat-value" id="stat-active">—</div>
-            <div class="stat-note green" id="stat-active-note">Loading...</div>
+            <div class="stat-note green" id="stat-active-note"></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:#3B82F6"></div>
             <div class="stat-icon-wrap" style="background:var(--blue-bg)">🏫</div>
             <div class="stat-label">Warehouses Covered</div>
             <div class="stat-value" id="stat-warehouses">—</div>
-            <div class="stat-note blue" id="stat-warehouse-note">Loading...</div>
+            <div class="stat-note blue" id="stat-warehouse-note"></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--amber)"></div>
@@ -96,7 +96,7 @@
     <!-- Card View -->
     <div id="fo-card-view">
         <div class="cards-grid" id="fo-cards-container">
-            <div class="empty-state" style="grid-column:1/-1">Loading field officers...</div>
+            <div class="empty-state" style="grid-column:1/-1"></div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
             <div class="fo-pagination" style="border:none;padding:0">
@@ -129,7 +129,7 @@
                     </tr>
                 </thead>
                 <tbody id="fo-tbody">
-                    <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-light)">Loading...</td></tr>
+                    <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-light)"></td></tr>
                 </tbody>
             </table>
             <div class="fo-pagination">
@@ -231,10 +231,10 @@
             </div>
 
             <div id="tab-inspections" style="display:none">
-                <div id="inspections-content"><div class="empty-state">Loading inspections...</div></div>
+                <div id="inspections-content"><div class="empty-state"></div></div>
             </div>
             <div id="tab-slots" style="display:none">
-                <div id="slots-content"><div class="empty-state">Loading warehouse slots...</div></div>
+                <div id="slots-content"><div class="empty-state"></div></div>
             </div>
 
         </div>
@@ -282,6 +282,12 @@
     document.addEventListener('DOMContentLoaded', function () { loadOfficers(); });
 
     async function loadOfficers() {
+        if (typeof window.showCardSkeleton === 'function') {
+            window.showCardSkeleton('#fo-cards-container', 9);
+        }
+        if (typeof window.showGridSkeleton === 'function') {
+            window.showGridSkeleton('#fo-tbody', 5);
+        }
         setBanner('loading', '⏳ Connecting to API...');
         try {
             var controller = new AbortController();
@@ -544,7 +550,9 @@
 
     async function foLoadInspections(id) {
         var el = document.getElementById('inspections-content');
-        el.innerHTML = '<div class="empty-state">Loading inspections...</div>';
+        if (typeof window.showGridSkeleton === 'function') {
+            window.showGridSkeleton(el, 3);
+        }
         try {
             var res = await fetch(API_BASE + '/FoInspections/' + id, { headers: buildHeaders() });
             if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -592,7 +600,9 @@
 
     async function foLoadSlots(id) {
         var el = document.getElementById('slots-content');
-        el.innerHTML = '<div class="empty-state">Loading warehouse slots...</div>';
+        if (typeof window.showGridSkeleton === 'function') {
+            window.showGridSkeleton(el, 3);
+        }
         try {
             var res = await fetch(API_BASE + '/FoWarehouseSlots/' + id, { headers: buildHeaders() });
             if (!res.ok) throw new Error('HTTP ' + res.status);

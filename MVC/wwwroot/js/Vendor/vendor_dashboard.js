@@ -1,3 +1,32 @@
+// ============ Shared Helpers ============
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
+async function authorizedFetch(url, options = {}) {
+    const token = getCookie("authToken");
+    options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+        window.location.href = "/Vendor/Login";
+        return null;
+    }
+    return response;
+}
+
+// Global exposure
+window.getCookie = getCookie;
+window.authorizedFetch = authorizedFetch;
+window.API_BASE_URL = window.API_BASE_URL || 'http://localhost:5020/api/Vendor';
+
 // ============ Cart Functions ============
 let vendorCart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
 
@@ -48,7 +77,7 @@ function renderCart() {
     $('.cart-count').text(count);
 
     if (vendorCart.length === 0) {
-        $('#cartItemsList').html('<p class="text-center text-muted py-5">Cart is empty</p>');
+        $('#cartItemsList').html('<div class="text-center text-muted py-5"><i class="fi fi-rr-shopping-cart-add mb-3 d-block" style="font-size: 40px; opacity: 0.3;"></i><p>Your cart is empty</p></div>');
         $('#cartFooter').hide();
     } else {
         let html = '';
@@ -58,17 +87,20 @@ function renderCart() {
                 stockWarning = `<small class="text-danger">⚠️ Only ${item.availableStock || 0}kg available!</small>`;
             }
             
-            html += `<div class="cart-item">
+            html += `<div class="cart-item glass-morphism mb-2" style="border-radius: 12px; padding: 12px;">
                 <div class="cart-item-info">
-                    <h6>${item.name}</h6>
-                    <small>Qty: ${item.quantity} × ₹${item.price.toLocaleString('en-IN')}</small>
+                    <h6 style="margin: 0; font-weight: 700;">${item.name}</h6>
+                    <small class="text-muted">₹${item.price.toLocaleString('en-IN')} / kg</small>
                     ${stockWarning}
                 </div>
-                <div class="cart-item-price">₹${item.total.toLocaleString('en-IN')}</div>
-                <div>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="updateCartQuantity(${item.id}, -1)">-</button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="updateCartQuantity(${item.id}, 1)">+</button>
-                    <button class="btn btn-sm btn-link text-danger" onclick="removeFromCart(${item.id})"><i class="fas fa-trash"></i></button>
+                <div class="cart-item-price" style="font-weight: 800; color: var(--emerald-primary);">₹${item.total.toLocaleString('en-IN')}</div>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                    <div class="quantity-control d-flex align-items-center bg-light rounded-pill px-2">
+                        <button class="btn btn-sm p-0" onclick="updateCartQuantity(${item.id}, -1)"><i class="fi fi-rr-minus-small"></i></button>
+                        <span class="mx-2 fw-bold" style="min-width: 20px; text-align: center;">${item.quantity}</span>
+                        <button class="btn btn-sm p-0" onclick="updateCartQuantity(${item.id}, 1)"><i class="fi fi-rr-plus-small"></i></button>
+                    </div>
+                    <button class="btn btn-sm text-danger ms-auto" onclick="removeFromCart(${item.id})"><i class="fi fi-rr-trash"></i></button>
                 </div>
             </div>`;
         });
@@ -98,53 +130,11 @@ window.toggleWishlist = function(id, name, price, imageIcon) {
     if (window.location.pathname.includes('Wishlist')) loadWishlistPage();
 };
 
-// ============ Dashboard Functions ============
-async function loadDashboardStats() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/user/stats`);
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            const stats = result.data;
-            
-            document.getElementById('totalOrders').innerText = stats.totalOrders || 0;
-            document.getElementById('totalSpent').innerText = '₹' + (stats.totalSpent || 0).toLocaleString('en-IN');
-            document.getElementById('totalQuantity').innerText = (stats.totalQuantity || 0) + ' kg';
-            document.getElementById('pendingOrders').innerText = stats.pendingOrders || 0;
-        }
-    } catch (error) {
-        console.error('Error loading dashboard stats:', error);
-    }
-}
-
-// 👉 NEW: Example function of how to use the Card Skeleton on the Catalog Page!
-window.loadVendorCatalog = async function(containerId) {
-    // Show 8 shimmering cards before fetching
-    if (typeof window.showCardSkeleton === 'function') {
-        window.showCardSkeleton(containerId, 8); 
-    }
-    
-    try {
-        // Replace with your actual catalog fetch endpoint
-        const response = await fetch(`${API_BASE_URL}/catalog`); 
-        const result = await response.json();
-        
-        // Build your actual HTML and overwrite the skeleton
-        let catalogHtml = '';
-        // result.data.forEach(...) 
-        
-        $(containerId).html(catalogHtml);
-        
-    } catch(err) {
-        $(containerId).html('<p>Failed to load catalog.</p>');
-    }
-}
-
 // ============ Notification Functions ============
 let notifications = [
-    { id: 1, icon: '💰', title: 'Payment Received', msg: '₹22,000 credited for Wheat order', time: '2 hrs ago', read: false },
-    { id: 2, icon: '🔬', title: 'Quality Check Done', msg: 'Cotton batch graded A', time: '5 hrs ago', read: false },
-    { id: 3, icon: '📦', title: 'New Order Update', msg: 'Order #ORD002 is In Transit', time: '1 day ago', read: true }
+    { id: 1, icon: 'fi-rr-envelope-dollar', title: 'Payment Received', msg: '₹22,000 credited for Wheat order', time: '2 hrs ago', read: false },
+    { id: 2, icon: 'fi-rr-microscope', title: 'Quality Check Done', msg: 'Cotton batch graded A', time: '5 hrs ago', read: false },
+    { id: 3, icon: 'fi-rr-box-open', title: 'New Order Update', msg: 'Order #ORD002 is In Transit', time: '1 day ago', read: true }
 ];
 
 function renderNotifications() {
@@ -153,8 +143,11 @@ function renderNotifications() {
     let html = '';
     notifications.forEach(n => {
         html += `<div class="notif-item ${!n.read ? 'unread' : ''}" onclick="markAsRead(${n.id})">
-            <div class="notif-dot"></div>
-            <div><div class="notif-text"><strong>${n.title}</strong><br>${n.msg}</div><div class="notif-time">${n.time}</div></div>
+            <div class="notif-icon-wrap ${!n.read ? 'active' : ''}"><i class="fi ${n.icon}"></i></div>
+            <div class="notif-content">
+                <div class="notif-text"><strong>${n.title}</strong><br>${n.msg}</div>
+                <div class="notif-time">${n.time}</div>
+            </div>
         </div>`;
     });
     $('#notifList').html(html);
@@ -164,85 +157,61 @@ function markAsRead(id) { let n = notifications.find(x => x.id == id); if(n && !
 function markAllRead() { notifications.forEach(n => n.read = true); renderNotifications(); showToast('All notifications marked as read', 'info'); }
 function toggleNotifs(e) { $('#notifDrawer').toggleClass('open'); renderNotifications(); }
 
-// ============ Toast ============
-function showToast(msg, type) {
-    let icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-    let toast = $(`<div class="fb-toast ${type}"><span>${icon}</span><span style="flex:1;">${msg}</span><button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;">&times;</button></div>`);
-    $('#fbToastContainer').append(toast);
-    setTimeout(() => { toast.fadeOut(400, function() { $(this).remove(); }); }, 3000);
+// ============ Premium Toast ============
+function showToast(msg, type = 'success') {
+    const container = $('#fbToastContainer');
+    if (container.length === 0) {
+        $('body').append('<div id="fbToastContainer" class="fb-toast-container"></div>');
+    }
+    
+    const id = 'toast-' + Math.random().toString(36).substr(2, 9);
+    const iconMap = {
+        'success': 'fi-rr-check-circle',
+        'error': 'fi-rr-cross-circle',
+        'warning': 'fi-rr-exclamation',
+        'info': 'fi-rr-info'
+    };
+    
+    const toastHtml = `
+        <div id="${id}" class="fb-toast ${type} glass-morphism">
+            <div class="fb-toast-icon"><i class="fi ${iconMap[type] || 'fi-rr-info'}"></i></div>
+            <div class="fb-toast-content">
+                <div class="fb-toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                <div class="fb-toast-message">${msg}</div>
+            </div>
+            <button class="fb-toast-close" onclick="$('#${id}').addClass('fade-out'); setTimeout(() => $('#${id}').remove(), 300);">&times;</button>
+        </div>
+    `;
+    
+    const $toast = $(toastHtml);
+    $('#fbToastContainer').append($toast);
+    
+    setTimeout(() => {
+        $toast.addClass('fade-out');
+        setTimeout(() => $toast.remove(), 300);
+    }, 4000);
 }
 window.showToast = showToast;
 
-function logout() { if(confirm('Logout?')) { localStorage.removeItem('vendor_cart'); window.location.href = '/'; } }
-
-async function updateWishlistCount() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/wishlist`);
-        const result = await response.json();
-        if (result.success && result.data) {
-            const count = result.data.length;
-            const wishlistCountSpan = document.getElementById('wishlistCount');
-            if (wishlistCountSpan) wishlistCountSpan.innerText = count;
+function logout() { 
+    Swal.fire({
+        title: 'Ready to leave?',
+        text: "You'll need to login again to access your dashboard.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#15803d',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, Logout',
+        borderRadius: '16px'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            localStorage.removeItem('vendor_cart');
+            window.location.href = '/';
         }
-    } catch (error) {
-        console.error('Error updating wishlist count:', error);
-    }
+    });
 }
 
 $(document).ready(function() {
-    let vendorNav = [
-        { icon: 'fa-tachometer-alt', text: 'Dashboard', url: '/Vendor/Dashboard' },
-        { icon: 'fa-store', text: 'Catalog', url: '/Vendor/Catalog' },
-        { icon: 'fa-shopping-cart', text: 'Cart / Checkout', url: '/Vendor/Checkout' },
-        { icon: 'fa-heart', text: 'Wishlist', url: '/Vendor/Wishlist' },
-        { icon: 'fa-truck', text: 'My Orders', url: '/Vendor/Orders' },
-        { icon: 'fa-credit-card', text: 'Payments', url: '/Vendor/Payments' },
-        { icon: 'fa-user', text: 'Profile', url: '/Vendor/Profile' }
-    ];
-    let currentPath = window.location.pathname.toLowerCase();
-    let activeItem = vendorNav.find(n => currentPath.includes(n.url.toLowerCase()));
-    
-    let drawerHtml = `<div style="width:260px;height:100%;display:flex;flex-direction:column;">
-        <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">🌾</div><span>FarmBridge</span></div></div>
-        <div class="sidebar-user"><div class="sidebar-avatar">V</div><div><div style="font-weight:600;color:#fff;">Vendor</div><div style="color:var(--green-pale);font-size:12px;">Vendor Account</div></div></div>
-        <div class="nav-section-title">MENU</div><ul style="flex:1;padding:0;list-style:none;">`;
-    vendorNav.forEach(item => {
-        let isActive = currentPath.includes(item.url.toLowerCase());
-        drawerHtml += `<li data-role="drawer-item" data-url="${item.url}" class="k-item ${isActive ? 'k-state-selected' : ''}">
-            <span class="k-item-text"><i class="fa ${item.icon}"></i><span class="ms-2">${item.text}</span></span></li>`;
-    });
-    drawerHtml += `</ul><div class="sidebar-footer"><a href="#" class="logout-btn" onclick="logout(); return false;"><i class="fa fa-sign-out-alt"></i><span>Logout</span></a></div></div>`;
-
-    $("#appbar").kendoAppBar({
-        items: [
-            { template: '<button id="menu-toggle" class="topbar-btn"><lord-icon src="https://cdn.lordicon.com/izqdfqdl.json" trigger="hover" style="width:28px;height:28px;"></lord-icon></button>', type: "contentItem" },
-            { template: `<div class="d-none d-sm-flex align-items-center ms-3"><span class="topbar-title" id="page-title">${activeItem ? activeItem.text : 'Dashboard'}</span></div>`, type: "contentItem" },
-            { width: 0, type: "spacer" },
-            { template: '<button class="topbar-btn me-2 d-none d-sm-flex"><i class="fa fa-search"></i></button>', type: "contentItem" },
-            { template: '<button id="notif-toggle-btn" class="topbar-btn me-3" onclick="toggleNotifs(event)"><i class="fa fa-bell"></i><span class="notif-badge" id="notifDot"></span></button>', type: "contentItem" },
-            { template: '<div class="topbar-avatar" onclick="window.location.href=\'/Vendor/Profile\'">V</div>', type: "contentItem" }
-        ]
-    });
-
-    $("#drawer").kendoDrawer({ template: drawerHtml, mode: "overlay", position: "left", minHeight: "calc(100vh - 64px)", swipeToOpen: true,
-        show: function() { $("body").addClass("no-scroll"); },
-        hide: function() { $("body").removeClass("no-scroll"); },
-        itemClick: function(e) {
-            let url = e.item.data("url");
-            if (url) window.location.href = url;
-            if (window.innerWidth <= 768) this.hide();
-        }
-    });
-
-    $(document).on("click", "#menu-toggle", function() {
-        let d = $("#drawer").data("kendoDrawer");
-        if (d) d.visible ? d.hide() : d.show();
-    });
-
     renderCart();
     renderNotifications();
-    
-    if (window.location.pathname.includes('/Vendor/Dashboard')) {
-        loadDashboardStats();
-    }
 });

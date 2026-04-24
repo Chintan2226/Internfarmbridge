@@ -38,10 +38,13 @@
   }
 
   // FARMER GRID
-  async function loadFarmers() {
+    async function loadFarmers() {
     const query = document.getElementById("search-input").value;
     const container = document.getElementById("f-grid");
     try {
+      if (typeof window.showCardSkeleton === 'function') {
+        window.showCardSkeleton("#f-grid", 8);
+      }
       const res = await fetch(
         `${FARMER_API_BASE}/list?searchTerm=${encodeURIComponent(query)}&pageNumber=${currentPage}`,
       );

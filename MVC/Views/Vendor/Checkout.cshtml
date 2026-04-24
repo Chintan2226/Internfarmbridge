@@ -7,61 +7,116 @@
 <link rel="stylesheet" href="~/css/pages/vendor/checkout.css" asp-append-version="true" />
 
 
-<div class="stepper">
-    <div class="step active" data-step="1" onclick="goToStep(1)">
-        <div class="step-circle">1</div>
-        <div class="step-label">Shopping Cart</div>
-    </div>
-    <div class="step" data-step="2" onclick="goToStep(2)">
-        <div class="step-circle">2</div>
-        <div class="step-label">Delivery Address</div>
-    </div>
-    <div class="step" data-step="3" onclick="goToStep(3)">
-        <div class="step-circle">3</div>
-        <div class="step-label">Payment Method</div>
-    </div>
-    <div class="step" data-step="4" onclick="goToStep(4)">
-        <div class="step-circle">4</div>
-        <div class="step-label">Place Order</div>
+<div class="checkout-page-header">
+    <h1 class="checkout-title">
+        <i class="fi fi-rr-shopping-cart"></i>
+        Checkout & Cart
+    </h1>
+    <p class="checkout-subtitle">Securely complete your procurement in 4 simple steps</p>
+</div>
+
+<div class="stepper-wrapper">
+    <div class="stepper">
+        <div class="step active" data-step="1" onclick="goToStep(1)">
+            <div class="step-circle"><i class="fi fi-rr-shopping-bag"></i></div>
+            <div class="step-label">Cart</div>
+        </div>
+        <div class="step" data-step="2" onclick="goToStep(2)">
+            <div class="step-circle"><i class="fi fi-rr-map-marker"></i></div>
+            <div class="step-label">Shipping</div>
+        </div>
+        <div class="step" data-step="3" onclick="goToStep(3)">
+            <div class="step-circle"><i class="fi fi-rr-credit-card"></i></div>
+            <div class="step-label">Payment</div>
+        </div>
+        <div class="step" data-step="4" onclick="goToStep(4)">
+            <div class="step-circle"><i class="fi fi-rr-check"></i></div>
+            <div class="step-label">Review</div>
+        </div>
     </div>
 </div>
 
 <div class="row">
     <div class="col-lg-8">
         <div id="step1Content" class="checkout-card">
-            <h6>Shopping Cart</h6>
+            <h6><i class="fi fi-rr-shopping-cart"></i> Shopping Cart</h6>
             <div id="cartContainer"></div>
-            <button class="btn-next" onclick="goToStep(2)">Continue to Delivery →</button>
+            <button class="btn-next" onclick="goToStep(2)">
+                <span>Continue to Shipping</span>
+                <i class="fi fi-rr-arrow-small-right"></i>
+            </button>
         </div>
 
         <div id="step2Content" class="checkout-card" style="display: none;">
-            <h6>Select Delivery Address</h6>
+            <h6><i class="fi fi-rr-marker"></i> Select Delivery Address</h6>
             <div id="addressList"></div>
-            <button class="btn-back" onclick="goToStep(1)">← Back to Cart</button>
-            <button class="btn-next" onclick="goToStep(3)">Continue to Payment →</button>
+            <div class="d-flex gap-3">
+                <button class="btn-back" onclick="goToStep(1)"><i class="fi fi-rr-arrow-small-left"></i> Back to Cart</button>
+                <button class="btn-next" onclick="goToStep(3)">
+                    <span>Continue to Payment</span>
+                    <i class="fi fi-rr-arrow-small-right"></i>
+                </button>
+            </div>
         </div>
 
         <div id="step3Content" class="checkout-card" style="display: none;">
-            <h6>Select Payment Method</h6>
+            <h6><i class="fi fi-rr-credit-card"></i> Select Payment Method</h6>
             <div id="paymentMethodsList"></div>
-            <button class="btn-back" onclick="goToStep(2)">← Back to Address</button>
-            <button class="btn-next" onclick="goToStep(4)">Review Order →</button>
+            <div class="d-flex gap-3">
+                <button class="btn-back" onclick="goToStep(2)"><i class="fi fi-rr-arrow-small-left"></i> Back to Shipping</button>
+                <button class="btn-next" onclick="goToStep(4)">
+                    <span>Review Order</span>
+                    <i class="fi fi-rr-arrow-small-right"></i>
+                </button>
+            </div>
         </div>
 
         <div id="step4Content" class="checkout-card" style="display: none;">
-            <h6>Review Your Order</h6>
+            <h6><i class="fi fi-rr-checkbox"></i> Review Your Order</h6>
             <div id="reviewOrderContainer"></div>
-            <button class="btn-back" onclick="goToStep(3)">← Back to Payment</button>
+            <button class="btn-back" onclick="goToStep(3)"><i class="fi fi-rr-arrow-small-left"></i> Back to Payment</button>
         </div>
     </div>
 
     <div class="col-lg-4">
-        <div class="checkout-card">
-            <h6>Order Summary</h6>
-            <div class="summary-row"><span>Subtotal</span><strong id="subtotal">₹0</strong></div>
-            <div class="summary-row"><span>Delivery Fee</span><span id="deliveryFee">₹100</span></div>
-            <div class="summary-row"><span>Tax (GST 5%)</span><strong id="tax">₹0</strong></div>
-            <div class="summary-total"><span>Total</span><strong class="text-success" id="total">₹0</strong></div>
+        <div class="checkout-card summary-sticky">
+            <h6 class="summary-title">
+                <i class="fi fi-rr-receipt"></i>
+                Order Summary
+            </h6>
+            <div class="summary-details">
+                <div class="summary-row">
+                    <span class="label">Subtotal</span>
+                    <strong class="value" id="subtotal">₹0</strong>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Delivery Fee</span>
+                    <span class="value" id="deliveryFee">₹100</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Tax (GST 5%)</span>
+                    <strong class="value" id="tax">₹0</strong>
+                </div>
+                
+                <div class="summary-total">
+                    <div class="total-label-group">
+                        <span class="label">Total Amount</span>
+                        <small class="tax-info">Inc. all taxes</small>
+                    </div>
+                    <strong class="total-value" id="total">₹0</strong>
+                </div>
+            </div>
+            
+            <div class="summary-trust">
+                <div class="trust-item">
+                    <i class="fi fi-rr-shield-check"></i>
+                    <span>Secure Payment</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fi fi-rr-truck-side"></i>
+                    <span>Tracked Delivery</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -185,12 +240,40 @@
             const container = document.getElementById('cartContainer');
 
             if (!cart || cart.length === 0) {
-                container.innerHTML = '<div class="text-center py-5"><i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i><p>Your cart is empty</p><a href="/Vendor/Catalog" class="btn btn-primary">Browse Products</a></div>';
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="empty-cart-icon"><i class="fi fi-rr-shopping-cart-add"></i></div>
+                        <h4 class="fw-bold text-dark mb-2">Your cart is empty</h4>
+                        <p class="text-muted mb-4">Looks like you haven't added any harvest to your cart yet.</p>
+                        <a href="/Vendor/Catalog" class="btn-browse">
+                            <i class="fi fi-rr-search"></i> Browse Products
+                        </a>
+                    </div>`;
                 updateTotals();
+                
+                // Hide the next button if cart is empty
+                const nextBtn = document.querySelector('#step1Content .btn-next');
+                if (nextBtn) nextBtn.style.display = 'none';
                 return;
             }
 
-            let html = '<div class="table-responsive"><table class="cart-table"><thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr></thead><tbody>';
+            // Show next button if items exist
+            const nextBtn = document.querySelector('#step1Content .btn-next');
+            if (nextBtn) nextBtn.style.display = 'flex';
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Product Details</th>
+                                <th>Unit Price</th>
+                                <th>Quantity (kg)</th>
+                                <th>Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
             cart.forEach((item, idx) => {
                 const itemPrice = item.price || 0;
@@ -198,17 +281,37 @@
                 const itemTotal = itemPrice * itemQty;
                 const isMin = itemQty <= MIN_QTY;
 
-                html += `<tr>
-                    <td><strong>${escapeHtml(item.name)}</strong> ${item.grade ? `<small>(${item.grade})</small>` : ''}</td>
-                    <td>₹${itemPrice.toLocaleString('en-IN')}</td>
-                    <td>
-                        <button class="qty-btn" onclick="updateQuantity(${idx}, -1)" ${isMin ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>-</button>
-                        <input class="qty-input" type="text" value="${itemQty}" readonly>
-                        <button class="qty-btn" onclick="updateQuantity(${idx}, 1)">+</button>
-                    </td>
-                    <td><strong>₹${itemTotal.toLocaleString('en-IN')}</strong></td>
-                    <td><button class="remove-btn" onclick="removeItem(${idx})"><i class="fas fa-trash-alt"></i></button></td>
-                </tr>`;
+                html += `
+                    <tr>
+                        <td>
+                            <div class="product-info-cell">
+                                <span class="product-name">${escapeHtml(item.name)}</span>
+                                ${item.grade ? `<span class="product-grade">${item.grade} Grade</span>` : ''}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-dark">₹${itemPrice.toLocaleString('en-IN')}</span>
+                        </td>
+                        <td>
+                            <div class="qty-wrapper">
+                                <button class="qty-btn" onclick="updateQuantity(${idx}, -1)" ${isMin ? 'disabled style="opacity:0.4;"' : ''}>
+                                    <i class="fi fi-rr-minus-small"></i>
+                                </button>
+                                <input class="qty-input" type="text" value="${itemQty}" readonly>
+                                <button class="qty-btn" onclick="updateQuantity(${idx}, 1)">
+                                    <i class="fi fi-rr-plus-small"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-success" style="font-size: 16px;">₹${itemTotal.toLocaleString('en-IN')}</span>
+                        </td>
+                        <td class="text-end">
+                            <button class="remove-btn" onclick="removeItem(${idx})" title="Remove item">
+                                <i class="fi fi-rr-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
             });
 
             html += '</tbody></table></div>';
@@ -246,48 +349,70 @@
                 return;
             }
 
-            let html = '<div class="table-responsive"><table class="cart-table"><thead><tr><th>Product</th><th>Quantity</th><th>Price</th><th>Total</th></tr></thead><tbody>';
+            let html = `
+                <div class="table-responsive mb-4">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
             cart.forEach(item => {
-                html += `<tr>
-                    <td>${escapeHtml(item.name)}</td>
-                    <td>${item.quantity}</td>
-                    <td>₹${item.price.toLocaleString('en-IN')}</td>
-                    <td><strong>₹${(item.price * item.quantity).toLocaleString('en-IN')}</strong></td>
-                </tr>`;
+                html += `
+                    <tr>
+                        <td>
+                            <div class="product-info-cell">
+                                <span class="product-name">${escapeHtml(item.name)}</span>
+                                ${item.grade ? `<span class="product-grade">${item.grade} Grade</span>` : ''}
+                            </div>
+                        </td>
+                        <td class="fw-bold text-dark">${item.quantity} kg</td>
+                        <td class="text-muted">₹${item.price.toLocaleString('en-IN')}</td>
+                        <td><span class="fw-bold text-success">₹${(item.price * item.quantity).toLocaleString('en-IN')}</span></td>
+                    </tr>`;
             });
 
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const delivery = subtotal > 5000 ? 0 : 100;
-            const tax = Math.round(subtotal * 0.05);
-            const total = subtotal + delivery + tax;
-
             html += '</tbody></table></div>';
-            html += `<div class="mt-3 p-3 bg-light rounded">
-                        <div class="d-flex justify-content-between"><span>Subtotal:</span><strong>₹${subtotal.toLocaleString('en-IN')}</strong></div>
-                        <div class="d-flex justify-content-between"><span>Delivery Fee:</span><strong>${delivery === 0 ? 'FREE' : '₹' + delivery}</strong></div>
-                        <div class="d-flex justify-content-between"><span>Tax (GST 5%):</span><strong>₹${tax.toLocaleString('en-IN')}</strong></div>
-                        <hr>
-                        <div class="d-flex justify-content-between"><strong>Total:</strong><strong class="text-success fs-5">₹${total.toLocaleString('en-IN')}</strong></div>
-                    </div>`;
 
             let displayPaymentMethod = 'Not selected';
-            if (selectedPayment === 'upi') displayPaymentMethod = '📱 UPI / Google Pay';
-            else if (selectedPayment === 'card') displayPaymentMethod = '💳 Credit / Debit Card';
-            else if (selectedPayment === 'netbanking') displayPaymentMethod = '🏦 Net Banking';
+            let paymentIcon = 'fi-rr-credit-card';
+            if (selectedPayment === 'upi') { displayPaymentMethod = 'UPI / Google Pay'; paymentIcon = 'fi-rr-smartphone'; }
+            else if (selectedPayment === 'card') { displayPaymentMethod = 'Credit / Debit Card'; paymentIcon = 'fi-rr-credit-card'; }
+            else if (selectedPayment === 'netbanking') { displayPaymentMethod = 'Net Banking'; paymentIcon = 'fi-rr-bank'; }
 
-            html += `<div class="mt-3">
-                        <div class="alert alert-info">
-                            <strong>📍 Delivery Address:</strong><br>
-                            ${selectedAddress ? `${escapeHtml(selectedAddress.name)}<br>${escapeHtml(selectedAddress.address)}, ${escapeHtml(selectedAddress.city)} - ${selectedAddress.pincode}` : 'Not selected'}
+            html += `
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0; height: 100%;">
+                            <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-bold" style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                <i class="fi fi-rr-marker"></i> Delivery Address
+                            </div>
+                            ${selectedAddress ? `
+                                <div class="fw-bold text-dark mb-1">${escapeHtml(selectedAddress.name)}</div>
+                                <div class="text-muted small">${escapeHtml(selectedAddress.address)}, ${escapeHtml(selectedAddress.city)} - ${selectedAddress.pincode}</div>
+                            ` : '<div class="text-danger small">No address selected</div>'}
                         </div>
-                        <div class="alert alert-info">
-                            <strong>💳 Payment Method:</strong><br>
-                            ${displayPaymentMethod}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0; height: 100%;">
+                            <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-bold" style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                <i class="fi ${paymentIcon}"></i> Payment Method
+                            </div>
+                            <div class="fw-bold text-dark mb-1">${displayPaymentMethod}</div>
+                            <div class="text-muted small">Verified Secure Payment</div>
                         </div>
-                    </div>`;
+                    </div>
+                </div>`;
 
-            html += `<button class="btn-place" onclick="placeOrder()">💰 Place Order</button>`;
+            html += `
+                <button class="btn-place mt-4" onclick="placeOrder()">
+                    <i class="fi fi-rr-lock me-2"></i> Confirm & Pay Now
+                </button>`;
             container.innerHTML = html;
         }
 
