@@ -317,6 +317,13 @@ namespace MVC.Controllers
 
         [FarmerAuthorize]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult PricePrediction()
+        {
+            return View();
+        }
+
+        [FarmerAuthorize]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Crops()
         {
             return View();

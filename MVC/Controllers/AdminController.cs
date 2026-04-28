@@ -81,6 +81,11 @@ namespace MVC.Controllers
             return View();
         }
 
+        public IActionResult MarketIntelligence()
+        {
+            return View();
+        }
+
         public IActionResult Catalog()
         {
             return View();
@@ -128,6 +133,12 @@ namespace MVC.Controllers
         public async Task<IActionResult> GetPendingApprovals()
         {
             return await ProxyGetRequest($"{_apiBase}/api/Admin/GetPendingApprovals");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCropsCatalog()
+        {
+            return await ProxyGetRequest($"{_apiBase}/api/Admin/GetCropsCatalog");
         }
 
         // POST: /Admin/ApproveUser
