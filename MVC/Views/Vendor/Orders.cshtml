@@ -244,6 +244,11 @@
                                         </button>
                                     `}
                                     
+                                    <button class="btn-reorder" onclick="repeatOrder('${order.orderId}')" title="Reorder Items">
+                                        <i class="fi fi-rr-rotate-right"></i>
+                                        <span>Reorder</span>
+                                    </button>
+                                    
                                     ${canCancel ? `
                                     <button class="btn-cancel-order" onclick="openCancelModal('${order.orderId}')" title="Cancel Order">
                                         <i class="fi fi-rr-cross-small notranslate"></i>
@@ -294,6 +299,24 @@
                 loadOrders();
             } catch (e) {
                 if (window.fbNotify) fbNotify({ message: "System Error", icon: "error", type: 'toast' });
+            }
+        }
+
+        async function repeatOrder(orderId) {
+            if (!confirm("Are you sure you want to reorder these items? A new order will be placed instantly.")) return;
+            
+            const token = getCookie('authToken');
+            try {
+                const res = await fetch(`${API_URL}/orders/repeat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(orderId.toString())
+                });
+                const result = await res.json();
+                notification.show({ message: result.message }, result.success ? "success" : "error");
+                if (result.success) loadOrders();
+            } catch (e) {
+                notification.show({ message: "System Error" }, "error");
             }
         }
     </script>

@@ -36,7 +36,7 @@
 
                     </label>
 
-                    <h4 id="fullName" style="margin-top:15px;font-weight:600;"></h4>
+                    <h4 id="fullName" class="skeleton" style="margin-top:15px;font-weight:600;min-width:120px;min-height:22px;"></h4>
 
                     <p class="text-muted">Field Officer</p>
 
@@ -52,38 +52,38 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label>First Name</label>
-                            <input id="firstName" class="form-control" />
+                            <input id="firstName" class="form-control skeleton" />
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label>Last Name</label>
-                            <input id="lastName" class="form-control" />
+                            <input id="lastName" class="form-control skeleton" />
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label>Email</label>
-                        <input id="email" class="form-control" readonly />
+                        <input id="email" class="form-control skeleton" readonly />
                     </div>
 
                     <div class="mb-3">
                         <label>Phone</label>
-                        <input id="phone" class="form-control" placeholder="Enter phone number" />
+                        <input id="phone" class="form-control skeleton" placeholder="Enter phone number" />
                     </div>
 
                     <div class="mb-3">
                         <label>Region</label>
-                        <input id="region" class="form-control" readonly />
+                        <input id="region" class="form-control skeleton" readonly />
                     </div>
 
                     <div class="mb-3">
                         <label>Warehouse</label>
-                        <input id="warehouse" class="form-control" readonly />
+                        <input id="warehouse" class="form-control skeleton" readonly />
                     </div>
 
                     <div class="mb-3">
                         <label>Address</label>
-                        <textarea id="warehouseAddress" class="form-control" readonly></textarea>
+                        <textarea id="warehouseAddress" class="form-control skeleton" readonly></textarea>
                     </div>
 
                     <div class="profile-action-row">
@@ -218,24 +218,23 @@
     }
     function loadProfile() {
         $.get(foApiUrl("/profile/me"), function (response) {
-            // Log the response to your browser console (F12) to see exact casing
-            
             if (response.success && response.data) {
                 let p = response.data;
 
-                // Use logical OR (||) to handle both camelCase and PascalCase
                 FO_ID = p.id || p.Id || 0;
-                $("#firstName").val(p.firstName || p.FirstName);
-                $("#lastName").val(p.lastName || p.LastName);
-                $("#email").val(p.email || p.Email);
-                $("#phone").val(p.phone || p.Phone);
-                $("#region").val(p.assignedRegion || p.AssignedRegion);
-                $("#warehouse").val(p.warehouseName || p.WarehouseName);
-                $("#warehouseAddress").val(p.warehouseAddress || p.WarehouseAddress);
-                
+
+                // Remove skeleton & fill values
+                $("#firstName").removeClass('skeleton').val(p.firstName || p.FirstName);
+                $("#lastName").removeClass('skeleton').val(p.lastName || p.LastName);
+                $("#email").removeClass('skeleton').val(p.email || p.Email);
+                $("#phone").removeClass('skeleton').val(p.phone || p.Phone);
+                $("#region").removeClass('skeleton').val(p.assignedRegion || p.AssignedRegion);
+                $("#warehouse").removeClass('skeleton').val(p.warehouseName || p.WarehouseName);
+                $("#warehouseAddress").removeClass('skeleton').val(p.warehouseAddress || p.WarehouseAddress);
+
                 let fname = p.firstName || p.FirstName || "";
                 let lname = p.lastName || p.LastName || "";
-                $("#fullName").text(fname + " " + lname);
+                $("#fullName").removeClass('skeleton').text(fname + " " + lname);
 
                 let imgUrl = p.profileImageUrl || p.ProfileImageUrl;
                 if (imgUrl) {
@@ -244,12 +243,17 @@
 
                 let date = p.createdAt || p.CreatedAt;
                 if (date) {
-                    $("#memberSince").text(new Date(date).toLocaleDateString());
+                    $("#memberSince").removeClass('skeleton').text(new Date(date).toLocaleDateString());
+                } else {
+                    $("#memberSince").removeClass('skeleton').text('-');
                 }
             }
         }).fail(function (err) {
+            // Remove skeletons even on error
+            $('#firstName, #lastName, #email, #phone, #region, #warehouse, #warehouseAddress')
+                .removeClass('skeleton');
+            $('#fullName, #memberSince').removeClass('skeleton');
             if (handleFoUnauthorized(err)) return;
-            console.error("Load failed:", err);
             showToast("Failed to load profile data", "error");
             showFoLoadFailedAlert("profile data");
         });

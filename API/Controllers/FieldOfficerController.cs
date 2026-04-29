@@ -26,6 +26,7 @@ namespace API.Controllers
         private readonly ILogger<FieldOfficerController> _logger;
         private readonly RabbitMqService _rabbitMqService;
         private readonly ElasticService _elasticService;
+        private readonly RedisService _redisService;
 
 
         public FieldOfficerController(
@@ -34,7 +35,8 @@ namespace API.Controllers
             EmailService emailService,
             ILogger<FieldOfficerController> logger,
             RabbitMqService rabbitMqService,
-            ElasticService elasticService)
+            ElasticService elasticService,
+            RedisService redisService)
         {
             _helper = helper;
             _cloudinaryService = cloudinaryService;
@@ -42,6 +44,7 @@ namespace API.Controllers
             _logger = logger;
             _rabbitMqService = rabbitMqService;
             _elasticService = elasticService;
+            _redisService = redisService;
         }
 
         private async Task TryNotifyFarmerAsync(Func<Task> send)
@@ -550,7 +553,13 @@ namespace API.Controllers
         public async Task<IActionResult> GetWarehouseCatalog()
         {
             int foId = await GetFieldOfficerProfileIdAsync();
+            string cacheKey = $"fo:warehousecatalog:{foId}";
+            
+            var cachedData = await _redisService.GetAsync<List<vmWarehouseCatalog>>(cacheKey);
+            if (cachedData != null) return Ok(cachedData);
+
             var data = await _helper.GetWarehouseCatalog(foId);
+            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
             return Ok(data);
         }
 

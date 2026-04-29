@@ -16,7 +16,9 @@
             </div>
         </div>
         <div id="summaryCards" class="ph-summary-cards">
-            <!-- Will be populated by JS -->
+            <div class="skeleton" style="width:120px;height:60px;border-radius:12px;display:inline-block;"></div>
+            <div class="skeleton" style="width:120px;height:60px;border-radius:12px;display:inline-block;margin-left:12px;"></div>
+            <div class="skeleton" style="width:120px;height:60px;border-radius:12px;display:inline-block;margin-left:12px;"></div>
         </div>
     </div>
 
@@ -41,9 +43,9 @@
         </div>
     </div>
 
-    <!-- Payments Table -->
     <div class="ph-table-container">
-        <table class="ph-table">
+        <div id="tableSkeletonPH" class="skeleton chart-skeleton" style="height:300px;"></div>
+        <table class="ph-table" id="paymentTable" style="display:none;">
             <thead>
                 <tr>
                     <th>UTR / Reference</th>
@@ -98,25 +100,25 @@
     });
 
     function loadPaymentHistory() {
-        // NOTE: Field Officers don't typically receive payments
-        // This endpoint returns an empty state with proper message
-        // If you need to track farmer payments associated with this FO's inspections,
-        // that would require a different endpoint design
         $.ajax({
             url: foApiUrl('/fo-payment-summary'),
             type: 'GET',
             success: function (response) {
+                $('#tableSkeletonPH').hide();
+                $('#paymentTable').show();
                 if (response.success && response.payments) {
                     allPayments = response.payments;
                     renderSummary();
                     renderPayments(allPayments);
-                } else if (response.success && (!response.payments || response.payments.length === 0)) {
-                    showEmptyState('No payment history available');
                 } else {
+                    renderSummary();
                     showEmptyState('No payment history available');
                 }
             },
             error: function (xhr, status, error) {
+                $('#tableSkeletonPH').hide();
+                $('#paymentTable').show();
+                $('#summaryCards').html('');
                 if (handleFoUnauthorized(xhr)) return;
                 console.error('Payment history error:', error);
                 showEmptyState('No payment history available');

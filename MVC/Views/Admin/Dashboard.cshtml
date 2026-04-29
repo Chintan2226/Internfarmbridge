@@ -137,7 +137,7 @@
         kpi:     '/Admin/GetDashboardKpi',
         revenue: '/Admin/GetRevenueChart',
         orders:  '/Admin/GetOrderVolumeChart',
-        catalog: 'http://localhost:5020/api/Admin/GetCropsCatalog' 
+        catalog: '/Admin/GetCropsCatalog'
     };
 
     let dashboardState = {
@@ -321,7 +321,11 @@
             setTimeout(() => {
                 
                 $.getJSON(`${API_URLS.catalog}?_=${ts}`, res => {
-                    if (!res.success && !res.data) {
+                    if (!res || res.success === false || !Array.isArray(res.data)) {
+                        const msg = (res && res.message) ? res.message : "Catalog data is unavailable.";
+                        $("#activeCatalogGrid").html(
+                            `<div style='padding:16px;color:#991b1b;font-weight:600;'>${msg}</div>`
+                        );
                         resolve();
                         return;
                     }
@@ -409,49 +413,6 @@
             if (result.isConfirmed) {
                 Swal.fire({ title: 'Discount Applied!', text: `Vendors have been notified about the ${cropName} discount.`, icon: 'success', confirmButtonColor: '#1B7A3E' });
             }
-
-            $("#pendingGrid").kendoGrid({
-                dataSource: new kendo.data.DataSource({
-                    data: gridData,
-                    pageSize: 6
-                }),
-                height: 280,
-                scrollable: true,
-                sortable: true,
-                pageable: {
-                    buttonCount: 3,
-                    info: false,
-                    input: false,
-                    previousNext: true
-                },
-                columns: [
-                    {
-                        field: "fullName",
-                        title: "User",
-                        width: "32%"
-                    },
-                    {
-                        field: "role",
-                        title: "Role",
-                        width: "22%",
-                        template: "<span style='font-family:Inter,monospace;font-size:11px;background:#fef9c3;color:#854d0e;border:1px solid #fde68a;padding:2px 8px;border-radius:6px;text-transform:capitalize;'>#: role #</span>"
-                    },
-                    {
-                        field: "appliedOn",
-                        title: "Applied",
-                        width: "28%"
-                    },
-                    {
-                        title: "",
-                        width: "18%",
-                        template: "<button class='btn-approve' onclick='approve(#=userId#)'>Approve</button>"
-                    }
-                ]
-            });
-
-        })
-        .fail(function (err) {
-            console.error("Pending Grid Error:", err);
         });
     }
         // ========== ELASTICSEARCH GLOBAL SEARCH ==========

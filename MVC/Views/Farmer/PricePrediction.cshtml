@@ -1,0 +1,777 @@
+@{
+    ViewData["Title"] = "Price Predictor";
+    Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+@* Kendo/jQuery/Chart.js are already loaded by `_FarmerLayout.cshtml`.
+   Keeping a single version prevents blank/unstable widget rendering. *@
+
+<style>
+    /* ── Reset & Base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    .pp-wrap {
+        font-family: 'DM Sans', sans-serif;
+        color: #1d2b22;
+        padding: 0 0 2.5rem;
+    }
+
+    /* ── CSS Variables ────────────────────────────────── */
+    .pp-wrap {
+        --green-50:  #f0faf4;
+        --green-100: #d1f0de;
+        --green-200: #a3e1bc;
+        --green-500: #22a05a;
+        --green-600: #1a8048;
+        --green-700: #146037;
+        --green-900: #0b3a20;
+        --amber-50:  #fffbeb;
+        --amber-100: #fef3c7;
+        --red-50:    #fef2f2;
+        --red-100:   #fee2e2;
+        --red-600:   #dc2626;
+        --surface:   #ffffff;
+        --surface-2: #f8f9f8;
+        --border:    rgba(0,0,0,0.09);
+        --text:      #1d2b22;
+        --muted:     #6a7f73;
+        --shadow:    0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    /* ── Kendo Grid Overrides ────────────────────────── */
+    .k-grid {
+        font-family: 'DM Sans', sans-serif !important;
+        border: none !important;
+        background: transparent !important;
+    }
+    .k-grid-header, .k-grid-header th.k-header {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: var(--muted) !important;
+        background: var(--surface-2) !important;
+        border-bottom: 0.5px solid var(--border) !important;
+        padding: 9px 14px !important;
+    }
+    .k-grid td {
+        padding: 9px 14px !important;
+        font-size: 13px !important;
+        color: var(--text) !important;
+        border-bottom: 0.5px solid var(--border) !important;
+        vertical-align: middle !important;
+    }
+    .k-grid tr:hover { background: var(--surface-2) !important; }
+    
+    .k-pager-wrap {
+        padding: 10px 14px !important;
+        background: var(--surface-2) !important;
+        border-top: 0.5px solid var(--border) !important;
+        border-bottom: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    .k-pager-wrap *, .k-grid * { box-sizing: border-box !important; }
+    .k-pager-numbers {
+        display: flex !important;
+        gap: 4px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        list-style: none !important;
+    }
+    .k-pager-numbers .k-link,
+    .k-pager-numbers .k-state-selected,
+    .k-pager-nav {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 28px !important;
+        height: 28px !important;
+        padding: 0 4px !important;
+        border-radius: 6px !important;
+        font-size: 12px !important;
+        text-decoration: none !important;
+        background: transparent !important;
+        color: var(--text) !important;
+        border: 0.5px solid transparent !important;
+        box-shadow: none !important;
+    }
+    .k-pager-numbers .k-link:hover,
+    .k-pager-nav:hover {
+        background: var(--green-50) !important;
+        color: var(--green-700) !important;
+    }
+    .k-pager-numbers .k-state-selected {
+        background: var(--green-500) !important;
+        color: white !important;
+        border-color: var(--green-500) !important;
+    }
+    .k-pager-info {
+        margin-left: auto !important;
+        font-size: 12px !important;
+        color: var(--muted) !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+
+    /* ── Header ───────────────────────────────────────── */
+    .pp-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 0.5px solid var(--border);
+    }
+
+    .pp-header-left h1 {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .pp-header-left p {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+
+    .leaf-icon {
+        width: 28px; height: 28px;
+        background: var(--green-500);
+        border-radius: 50% 0 50% 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--green-50);
+        color: var(--green-700);
+        border: 0.5px solid var(--green-200);
+    }
+
+    .pulse-dot {
+        width: 6px; height: 6px;
+        background: var(--green-500);
+        border-radius: 50%;
+        animation: pp-pulse 2s ease-in-out infinite;
+    }
+
+    @@keyframes pp-pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    /* ── Layout ───────────────────────────────────────── */
+    .pp-grid {
+        display: grid;
+        grid-template-columns: 284px 1fr;
+        gap: 16px;
+    }
+
+    .pp-sidebar { display: flex; flex-direction: column; gap: 12px; }
+    .pp-main    { display: flex; flex-direction: column; gap: 12px; }
+
+    /* ── Card ─────────────────────────────────────────── */
+    .pp-card {
+        background: var(--surface);
+        border: 0.5px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .pp-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 14px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--surface-2);
+    }
+
+    .pp-card-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--muted);
+    }
+
+    .pp-card-body { padding: 14px; }
+
+    /* ── Form fields ──────────────────────────────────── */
+    .field-group { margin-bottom: 11px; }
+    .field-group:last-of-type { margin-bottom: 0; }
+
+    .field-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+        margin-bottom: 5px;
+    }
+
+    .pp-select {
+        width: 100%;
+        background: var(--surface-2);
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 32px 8px 10px;
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        color: var(--text);
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        cursor: pointer;
+        transition: border-color 0.15s;
+    }
+
+    .pp-select:focus  { outline: none; border-color: var(--green-500); }
+    .pp-select:hover  { border-color: rgba(0,0,0,0.2); }
+
+    /* ── Predict Button ───────────────────────────────── */
+    .predict-btn {
+        width: 100%;
+        margin-top: 6px;
+        padding: 10px 14px;
+        background: var(--green-500);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: background 0.15s, transform 0.1s;
+    }
+
+    .predict-btn:hover   { background: var(--green-600); }
+    .predict-btn:active  { transform: scale(0.98); }
+    .predict-btn:disabled { background: var(--green-700); cursor: not-allowed; opacity: 0.8; }
+
+    .pp-spinner {
+        width: 13px; height: 13px;
+        border: 2px solid rgba(255,255,255,0.35);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: pp-spin 0.65s linear infinite;
+        display: none;
+    }
+
+    @@keyframes pp-spin { to { transform: rotate(360deg); } }
+
+    .pp-err {
+        font-size: 11.5px;
+        color: var(--red-600);
+        margin-top: 6px;
+        display: none;
+    }
+
+    /* ── Summary metrics ──────────────────────────────── */
+    .metric-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+
+    .metric-tile {
+        background: var(--surface-2);
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .metric-label { font-size: 11px; color: var(--muted); font-weight: 500; margin-bottom: 3px; }
+
+    .metric-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        font-family: 'DM Mono', monospace;
+        letter-spacing: -0.5px;
+    }
+
+    .metric-value.predicted { color: var(--green-600); }
+
+    /* ── Trend strip ──────────────────────────────────── */
+    .trend-strip {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 9px;
+        background: var(--surface-2);
+        color: var(--muted);
+        border: 0.5px solid var(--border);
+    }
+
+    .trend-strip.up   { background: var(--green-50);  color: var(--green-700); border-color: var(--green-200); }
+    .trend-strip.down { background: var(--red-50);    color: var(--red-600);   border-color: #fecaca; }
+    .trend-strip.flat { background: var(--amber-50);  color: #92400e;          border-color: #fcd34d; }
+
+    .pp-hint { font-size: 11.5px; color: var(--muted); line-height: 1.55; }
+
+    /* ── State info bar ───────────────────────────────── */
+    .state-bar {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 14px;
+        background: var(--green-50);
+        border-bottom: 0.5px solid var(--green-100);
+        font-size: 12px;
+        color: var(--green-700);
+    }
+
+    .state-bar strong { font-weight: 600; }
+
+    /* ── Outlook table ────────────────────────────────── */
+    .outlook-table { width: 100%; border-collapse: collapse; }
+
+    .outlook-table th {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+        text-align: left;
+        padding: 9px 14px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--surface-2);
+    }
+
+    .outlook-table td {
+        padding: 10px 14px;
+        font-size: 13px;
+        color: var(--text);
+        border-bottom: 0.5px solid var(--border);
+        vertical-align: middle;
+    }
+
+    .outlook-table tr:last-child td { border-bottom: none; }
+    .outlook-table tbody tr:hover td { background: var(--surface-2); }
+
+    .crop-name {
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .crop-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .mono { font-family: 'DM Mono', monospace; font-size: 12.5px; }
+
+    .change-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
+    .change-pill.up { background: var(--green-50);  color: var(--green-700); }
+    .change-pill.dn { background: var(--red-50);    color: var(--red-600); }
+
+    .rec-tag {
+        display: inline-flex;
+        align-items: center;
+        font-size: 11px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 0.5px solid;
+    }
+
+    .rec-tag.caution { background: var(--amber-50);  color: #92400e;         border-color: #fcd34d; }
+    .rec-tag.buy     { background: var(--green-50);  color: var(--green-700); border-color: var(--green-200); }
+    .rec-tag.hold    { background: var(--surface-2); color: var(--muted);    border-color: var(--border); }
+
+    /* ── Empty state ──────────────────────────────────── */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        color: var(--muted);
+        gap: 10px;
+        text-align: center;
+    }
+
+    .empty-state i { font-size: 28px; opacity: 0.35; }
+    .empty-state p { font-size: 13px; }
+
+    /* ── Chart wrapper ────────────────────────────────── */
+    .chart-wrap { padding: 16px 14px 14px; }
+
+    /* ── Responsive ───────────────────────────────────── */
+    @@media (max-width: 900px) {
+        .pp-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="pp-wrap">
+
+    <!-- Header -->
+    <div class="pp-header">
+        <div class="pp-header-left">
+            <h1>
+                <span class="leaf-icon">
+                    <i class="bi bi-flower2" style="font-size:13px;color:white;"></i>
+                </span>
+                Price Predictor
+            </h1>
+            <p>AI-powered crop price forecasting for the next season</p>
+        </div>
+        <span class="live-badge">
+            <span class="pulse-dot"></span>
+            Model live
+        </span>
+    </div>
+
+    <div class="pp-grid">
+
+        <!-- ── Sidebar ─────────────────────────────────── -->
+        <div class="pp-sidebar">
+
+            <!-- Selection card -->
+            <div class="pp-card">
+                <div class="pp-card-header">
+                    <span class="pp-card-title">Selection</span>
+                </div>
+                <div class="pp-card-body">
+                    <div class="field-group">
+                        <label class="field-label" for="state">State</label>
+                        <select id="state" class="pp-select">
+                            <option value="">Select state...</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label" for="market">Market</label>
+                        <select id="market" class="pp-select">
+                            <option value="">Select market...</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label" for="commodity">Crop</label>
+                        <select id="commodity" class="pp-select">
+                            <option value="">Select crop...</option>
+                        </select>
+                    </div>
+                    <button id="predictBtn" class="predict-btn">
+                        <i class="bi bi-search"></i>
+                        <span id="btnText">Predict Price</span>
+                        <div class="pp-spinner" id="spinner"></div>
+                    </button>
+                    <p class="pp-err" id="selectionError"></p>
+                </div>
+            </div>
+
+            <!-- Summary card -->
+            <div class="pp-card">
+                <div class="pp-card-header">
+                    <span class="pp-card-title">Summary</span>
+                    <span id="sourceChip" style="font-size:11px;color:var(--muted);"></span>
+                </div>
+                <div class="pp-card-body">
+                    <div class="metric-row">
+                        <div class="metric-tile">
+                            <div class="metric-label">Predicted</div>
+                            <div class="metric-value predicted" id="predictedKg">—</div>
+                        </div>
+                        <div class="metric-tile">
+                            <div class="metric-label">Current avg</div>
+                            <div class="metric-value" id="currentKg">—</div>
+                        </div>
+                    </div>
+                    <div class="trend-strip" id="trendStrip">
+                        <i class="bi bi-arrow-right"></i>
+                        <span id="trendText">Run a prediction to see the trend</span>
+                    </div>
+                    <p class="pp-hint" id="aiHint">Select state, market, and crop — then predict.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── Main ─────────────────────────────────────── -->
+        <div class="pp-main">
+            <div class="pp-card" style="flex:1">
+                <div class="pp-card-header">
+                    <span class="pp-card-title">Next Season Outlook</span>
+                </div>
+
+                <!-- State info bar (hidden until state selected) -->
+                <div class="state-bar" id="stateBar" style="display:none;">
+                    <i class="bi bi-geo-alt-fill" style="font-size:12px;"></i>
+                    Showing outlook for <strong id="stateLabel"></strong>
+                    <span id="cropCountLabel"></span>
+                </div>
+
+                <!-- Table view -->
+                <div id="tableView">
+                    <div class="empty-state" id="outlookEmpty">
+                        <i class="bi bi-table"></i>
+                        <p>Select a state above to load the season outlook</p>
+                    </div>
+                    <div id="outlookGrid" style="display:none; border:none; margin-top:10px; font-family:'DM Sans', sans-serif;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const API = "http://127.0.0.1:8000";
+
+    let seasonData = [];
+
+    const DOT_COLORS = ["#7F77DD", "#1D9E75", "#5DCAA5", "#EF9F27", "#D85A30",
+                        "#D4537E", "#378ADD", "#639922", "#BA7517", "#E24B4A"];
+
+    /* ── Utilities ─────────────────────────────────── */
+    function apiUrl(path) {
+        const sep = path.includes("?") ? "&" : "?";
+        return API + path + `${sep}_=${Date.now()}`;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function loadDropdown(selectId, path) {
+        try {
+            const controller = new AbortController();
+            const t = setTimeout(() => controller.abort(), 8000);
+            const res  = await fetch(apiUrl(path), { signal: controller.signal, cache: "no-store" });
+            clearTimeout(t);
+            const data = await res.json();
+            const $sel = $("#" + selectId);
+            $sel.find("option:not(:first)").remove();
+            (data.data || []).forEach(item => {
+                $sel.append($("<option>").val(item).text(item));
+            });
+        } catch (e) {
+            console.error("Dropdown load failed:", path, e);
+        }
+    }
+
+    async function loadDropdownWithRetry(selectId, path, tries = 3) {
+        for (let i = 0; i < tries; i++) {
+            await loadDropdown(selectId, path);
+            const hasItems = $("#" + selectId + " option").length > 1;
+            if (hasItems) return true;
+            await sleep(350 * Math.pow(2, i));
+        }
+        return false;
+    }
+
+    // Chart/tabs removed (table-only)
+
+    /* ── Render predictions table ──────────────────── */
+    function initGrid() {
+        if(!$("#outlookGrid").data("kendoGrid")) {
+            $("#outlookGrid").kendoGrid({
+                dataSource: { data: [], pageSize: 5 },
+                pageable: { pageSizes: false, refresh: false, info: true, numeric: true, previousNext: true },
+                sortable: true,
+                columns: [
+                    { field: "commodity", title: "Crop", template: "<span style='font-weight:500'>#= commodity #</span>" },
+                    { field: "current_price_per_kg", title: "Current (₹/kg)", template: "<span class='mono'>₹#= parseFloat(current_price_per_kg).toFixed(2) #</span>" },
+                    { field: "predicted_price_90d_per_kg", title: "90D Forecast", template: "<span class='mono' style='color:var(--green-600);font-weight:600'>₹#= parseFloat(predicted_price_90d_per_kg).toFixed(2) #</span>" },
+                    { title: "Change", template: function(dataItem) {
+                        const diff = dataItem.predicted_price_90d_per_kg - dataItem.current_price_per_kg;
+                        const pct  = ((diff / dataItem.current_price_per_kg) * 100).toFixed(1);
+                        const up   = diff >= 0;
+                        return `<span class="change-pill ${up ? 'up' : 'dn'}">${up ? '▲' : '▼'} ${Math.abs(pct)}%</span>`;
+                    }},
+                    { field: "recommendation", title: "Signal", template: function(dataItem) {
+                        const rec = (dataItem.recommendation || "").toLowerCase();
+                        const recClass = rec.includes("profitable") ? "buy" : rec.includes("stable") ? "hold" : "caution";
+                        const recLabel = rec.includes("profitable") ? "Good for Sowing" : rec.includes("stable") ? "Stable Market" : rec.includes("high risk") ? "High Risk" : "Moderate Risk";
+                        return `<span class="rec-tag ${recClass}">${recLabel}</span>`;
+                    }}
+                ]
+            });
+        }
+    }
+
+    /* ── Show / update outlook ─────────────────────── */
+    function showOutlook(rows) {
+        seasonData = rows;
+        $("#outlookEmpty").hide();
+        $("#outlookGrid").show();
+        const grid = $("#outlookGrid").data("kendoGrid");
+        if(grid) grid.dataSource.data(rows);
+        $("#cropCountLabel").text("— " + rows.length + " crops tracked");
+    }
+
+    /* ── Trend chip helper ─────────────────────────── */
+    function updateTrend(predicted, current) {
+        const diff  = predicted - current;
+        const strip = $("#trendStrip").removeClass("up down flat");
+        if (diff > 0) {
+            strip.addClass("up").html(
+                `<i class="bi bi-arrow-up-short" style="font-size:16px;"></i>
+                 Up ₹${Math.abs(diff).toFixed(2)}/kg — prices expected to rise`
+            );
+        } else if (diff < 0) {
+            strip.addClass("down").html(
+                `<i class="bi bi-arrow-down-short" style="font-size:16px;"></i>
+                 Down ₹${Math.abs(diff).toFixed(2)}/kg — prices may soften`
+            );
+        } else {
+            strip.addClass("flat").html(
+                `<i class="bi bi-arrow-right" style="font-size:14px;"></i>
+                 Stable — no significant movement expected`
+            );
+        }
+    }
+
+    /* ── Document ready ────────────────────────────── */
+    $(document).ready(async function () {
+        initGrid();
+
+        /* Load states */
+        $("#state").prop("disabled", true);
+        const ok = await loadDropdownWithRetry("state", "/dropdowns/states", 4);
+        $("#state").prop("disabled", false);
+        if (!ok) {
+            $("#selectionError").text("AI dropdowns couldn’t load. Ensure Python service is running on port 8000.").show();
+        }
+
+        /* State change → load markets + season outlook */
+        $("#state").on("change", async function () {
+            const state = $(this).val();
+            $("#commodity").find("option:not(:first)").remove();
+            $("#market").find("option:not(:first)").remove();
+
+            if (!state) {
+                $("#stateBar").hide();
+                $("#outlookEmpty").show();
+                $("#outlookGrid").hide();
+                return;
+            }
+
+            await loadDropdown("market", `/dropdowns/markets?state=${encodeURIComponent(state)}`);
+
+            /* Season outlook */
+            try {
+                $("#stateLabel").text(state);
+                $("#stateBar").show();
+                $("#outlookEmpty").text("Loading outlook...").show();
+                $("#outlookTable").hide();
+
+                const res  = await fetch(apiUrl("/predict/state_season"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ state })
+                });
+                const data = await res.json();
+
+                if (data.success && data.season_forecast.length) {
+                    showOutlook(data.season_forecast);
+                } else {
+                    $("#outlookEmpty").text("No season outlook available for this state.").show();
+                    $("#outlookTable").hide();
+                }
+            } catch (e) {
+                console.error("Season outlook error:", e);
+                $("#outlookEmpty").text("Failed to load outlook. Check API connection.").show();
+                $("#outlookTable").hide();
+            }
+        });
+
+        /* Market change → load commodities */
+        $("#market").on("change", async function () {
+            const state  = $("#state").val();
+            const market = $(this).val();
+            if (!state || !market) return;
+            await loadDropdown("commodity",
+                `/dropdowns/commodities?state=${encodeURIComponent(state)}&market=${encodeURIComponent(market)}`
+            );
+        });
+
+        /* Predict button */
+        $("#predictBtn").on("click", async function () {
+            const state     = $("#state").val();
+            const market    = $("#market").val();
+            const commodity = $("#commodity").val();
+            const $err      = $("#selectionError");
+
+            if (!state || !market || !commodity) {
+                $err.text("Please select all three fields to continue.").show();
+                return;
+            }
+
+            $err.hide();
+            $("#predictBtn").prop("disabled", true);
+            $("#btnText").text("Predicting...");
+            $("#spinner").show();
+            $("#aiHint").text("Running inference on historical market data...");
+
+            try {
+                const res  = await fetch(apiUrl("/predict/farmer"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ state, market, commodity })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const pred = parseFloat(data.predicted_price_per_kg);
+                    const curr = parseFloat(data.current_price_per_kg);
+
+                    $("#predictedKg").text(`₹${pred.toFixed(2)}/kg`);
+                    $("#currentKg").text(`₹${curr.toFixed(2)}/kg`);
+                    $("#sourceChip").text(`Source: ${data.source || "model"}`);
+                    updateTrend(pred, curr);
+                    $("#aiHint").text(`Prediction for ${commodity} in ${market}, ${state}.`);
+                } else {
+                    $err.text(data.message || "Prediction failed. Try again.").show();
+                    $("#aiHint").text("Model could not generate a prediction.");
+                }
+            } catch (e) {
+                console.error("Predict error:", e);
+                $err.text("Failed to connect to AI Engine. Is the service running?").show();
+                $("#aiHint").text("Service unavailable. Try again in a moment.");
+            } finally {
+                $("#predictBtn").prop("disabled", false);
+                $("#btnText").text("Predict Price");
+                $("#spinner").hide();
+            }
+        });
+    });
+</script>
+}

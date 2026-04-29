@@ -126,10 +126,10 @@
                 <div class="kpi-lbl">Pending Requests</div>
                 <div class="kpi-icon"><i class="fi fi-sr-hourglass-end"></i></div>
             </div>
-            <div class="kpi-val" id="pendingCount">--</div>
-            <div class="kpi-sub">
-                <span class="kpi-trend neutral"><i class="fi fi-rr-clock"></i> Awaiting</span>
-                action from you
+            <h2><span id="pendingCount" class="skeleton" style="min-width: 40px; display: inline-block;">0</span></h2>
+            <div class="stat-card-sub">
+                <span class="dot"></span>
+                <span>Awaiting action</span>
             </div>
             <i class="fi fi-sr-hourglass-end watermark"></i>
         </div>
@@ -139,10 +139,10 @@
                 <div class="kpi-lbl">In Progress</div>
                 <div class="kpi-icon"><i class="fi fi-sr-refresh"></i></div>
             </div>
-            <div class="kpi-val" id="inProgressCount">--</div>
-            <div class="kpi-sub">
-                <span class="kpi-trend neutral"><i class="fi fi-rr-spinner"></i> Active</span>
-                inspections running
+            <h2><span id="inProgressCount" class="skeleton" style="min-width: 40px; display: inline-block;">0</span></h2>
+            <div class="stat-card-sub">
+                <span class="dot"></span>
+                <span>Inspections running</span>
             </div>
             <i class="fi fi-sr-refresh watermark"></i>
         </div>
@@ -152,10 +152,10 @@
                 <div class="kpi-lbl">Completed</div>
                 <div class="kpi-icon"><i class="fi fi-sr-check-circle"></i></div>
             </div>
-            <div class="kpi-val" id="completedCount">--</div>
-            <div class="kpi-sub">
-                <span class="kpi-trend up"><i class="fi fi-rr-check"></i> Done</span>
-                successfully closed
+            <h2><span id="completedCount" class="skeleton" style="min-width: 40px; display: inline-block;">0</span></h2>
+            <div class="stat-card-sub">
+                <span class="dot"></span>
+                <span>Successfully closed</span>
             </div>
             <i class="fi fi-sr-check-circle watermark"></i>
         </div>
@@ -165,10 +165,10 @@
                 <div class="kpi-lbl">Total Assigned</div>
                 <div class="kpi-icon"><i class="fi fi-sr-layers"></i></div>
             </div>
-            <div class="kpi-val" id="totalCount">--</div>
-            <div class="kpi-sub">
-                <span class="kpi-trend neutral"><i class="fi fi-rr-list"></i> All time</span>
-                overall requests
+            <h2><span id="totalCount" class="skeleton" style="min-width: 40px; display: inline-block;">0</span></h2>
+            <div class="stat-card-sub">
+                <span class="dot"></span>
+                <span>Overall assigned</span>
             </div>
             <i class="fi fi-sr-layers watermark"></i>
         </div>
@@ -185,7 +185,9 @@
                 <i class="fi fi-rr-arrow-right"></i> View All Requests
             </button>
         </div>
-        <div id="recentGrid" style="width:100%;"></div>
+
+        <div id="gridSkeleton" class="skeleton chart-skeleton" style="height: 300px;"></div>
+        <div id="recentGrid" style="display:none;"></div>
     </div>
 
 </div>
@@ -243,17 +245,22 @@
             url: foApiUrl('/qc-requests'),
             type: 'GET',
             success: function (data) {
-                var rows = Array.isArray(data) ? data : [];
-                $('#pendingCount').text(rows.filter(x => normalizeStatus(x.status) === 'pending').length);
-                $('#inProgressCount').text(rows.filter(x => normalizeStatus(x.status) === 'scheduled').length);
-                $('#completedCount').text(rows.filter(x => normalizeStatus(x.status) === 'completed').length);
-                $('#totalCount').text(rows.length);
+                const rows = Array.isArray(data) ? data : [];
+
+                let pending = rows.filter(x => normalizeStatus(x.status) === "pending").length;
+                let inProgress = rows.filter(x => normalizeStatus(x.status) === "scheduled").length;
+                let completed = rows.filter(x => normalizeStatus(x.status) === "completed").length;
+
+                $("#pendingCount").removeClass('skeleton').text(pending);
+                $("#inProgressCount").removeClass('skeleton').text(inProgress);
+                $("#completedCount").removeClass('skeleton').text(completed);
+                $("#totalCount").removeClass('skeleton').text(rows.length);
                 renderHighDemandAlerts(rows);
             },
             error: function (xhr) {
                 if (handleFoUnauthorized(xhr)) return;
-                showFoLoadFailedAlert('dashboard counts');
-                $('#pendingCount, #inProgressCount, #completedCount, #totalCount').text('--');
+                $("#pendingCount, #inProgressCount, #completedCount, #totalCount").removeClass('skeleton').text('—');
+                showFoLoadFailedAlert("dashboard counts");
             }
         });
 
@@ -262,9 +269,13 @@
             url: foApiUrl('/today-schedules'),
             type: 'GET',
             success: function (data) {
-                loadGrid(Array.isArray(data) ? data : []);
+                $("#gridSkeleton").hide();
+                $("#recentGrid").show().empty();
+                loadGrid(data);
             },
             error: function (xhr) {
+                $("#gridSkeleton").hide();
+                $("#recentGrid").show();
                 if (handleFoUnauthorized(xhr)) return;
                 $('#recentGrid').html('<div style="padding:40px; text-align:center; color:#5a7257; font-size:14px;"><i class="fi fi-rr-calendar-clock" style="font-size:32px; display:block; margin-bottom:12px; color:#d1fae5;"></i>No schedules for today.</div>');
             }

@@ -64,64 +64,63 @@ async function getUnreadCount() {
     return 0;
 }
 function updateBellBadge(count) {
-    console.log("FINAL COUNT:", count);
-
     count = Number(count) || 0;
 
-    // Red dot
-    const dot = document.getElementById('fvBellDot');
-    if (dot) dot.hidden = count === 0;
-
-    // Drawer text
-    const text = document.getElementById('fvUnreadCountText');
+    const text = document.getElementById('fvUnread');
     if (text) text.textContent = count;
 
-    // Tab badge
-    const badge = document.getElementById('fvUnreadBadgeNum');
+    const badge = document.getElementById('fvUnreadBadge');
     if (badge) badge.textContent = count;
 
-    // 🔥 Bell icon count badge (NEW)
-    const bellCount = document.getElementById('fvBellCount');
-    if (bellCount) {
+    const bellBadge = document.getElementById('fvBellBadge');
+    if (bellBadge) {
         if (count > 0) {
-            bellCount.style.display = 'inline-block';
-            bellCount.textContent = count > 99 ? '99+' : count;
+            bellBadge.style.display = 'flex';
+            bellBadge.textContent = count > 99 ? '99+' : count;
         } else {
-            bellCount.style.display = 'none';
+            bellBadge.style.display = 'none';
         }
     }
 }
 
 async function loadNotifications() {
     try {
-        const res = await fvAuthFetch(`${NOTIF_API_BASE}/GetNotifications`);
-        const data = await res.json();
-
-        if (data?.success) {
+        const response = await fvAuthFetch(`${NOTIF_API_BASE}/GetNotifications`);
+        const data = await response.json();
+        if (data.success) {
             fvNotifs = data.data || [];
-            renderNotifList();
+            renderNotifs();
+            
+            const unreadCount = fvNotifs.filter(n => !n.isRead).length;
+            updateBellBadge(unreadCount);
         }
-
-    } catch (err) {
-        console.error("Load notifications error:", err);
+        return data;
+    } catch (error) {
+        console.error("Error fetching notifications:", error);
     }
 }
 
-async function markSingleRead(id) {
+async function markNotificationAsRead(notificationId) {
     try {
-        await fvAuthFetch(`${NOTIF_API_BASE}/MarkAsRead`, {
+        const response = await fvAuthFetch(`${NOTIF_API_BASE}/MarkAsRead`, {
             method: 'POST',
-            body: JSON.stringify(id)
+            body: JSON.stringify(notificationId)
         });
-
-        const n = fvNotifs.find(x => x.id == id);
-        if (n) n.isRead = true;
-
-        renderNotifList();
-        getUnreadCount();
-
-    } catch (err) {
-        console.error("Mark read error:", err);
+        const data = await response.json();
+        if (data.success) {
+            const notification = fvNotifs.find(n => n.id == notificationId);
+            if (notification) {
+                notification.isRead = true;
+                renderNotifs();
+                
+                const unreadCount = fvNotifs.filter(n => !n.isRead).length;
+                updateBellBadge(unreadCount);
+            }
+            showFvToast('Notification marked as read', 'success');
+        }
+    } catch (error) {
+        console.error("Error marking as read:", error);
+        showFvToast('Failed to mark as read', 'error');
     }
 }
 
@@ -129,25 +128,79 @@ async function deleteSingleNotif(id) {
     if (!confirm(fbT('notif_confirm_delete'))) return;
 
     try {
-        await fvAuthFetch(`${NOTIF_API_BASE}/DeleteNotification`, {
+        const response = await fvAuthFetch(`${NOTIF_API_BASE}/DeleteNotification`, {
             method: 'POST',
-            body: JSON.stringify(id)
+            body: JSON.stringify(notificationId)
         });
+        const data = await response.json();
+        if (data.success) {
+            fvNotifs = fvNotifs.filter(n => n.id != notificationId);
+            renderNotifs();
+            
+            const unreadCount = fvNotifs.filter(n => !n.isRead).length;
+            updateBellBadge(unreadCount);
+            
+            showFvToast('Notification deleted', 'success');
+        }
+    } catch (error) {
+        console.error("Error deleting notification:", error);
+        showFvToast('Failed to delete notification', 'error');
+    }
+}
 
-        fvNotifs = fvNotifs.filter(x => x.id != id);
-        renderNotifList();
-        getUnreadCount();
+function toggleDrawer() {
+    document.getElementById('fvSidebar')?.classList.toggle('open');
+    document.getElementById('fvOverlay')?.classList.toggle('open');
+}
 
         showFvToast(fbT('notif_deleted'));
 
     } catch {
         showFvToast(fbT('notif_delete_fail'), 'error');
     }
+
+    list.innerHTML = filtered.map(n => {
+        const timeStr = formatDate(n.createdAt || n.CreatedAt);
+        let iconClass = 'fi-rr-bell';
+        
+        const title = (n.title || '').toLowerCase();
+        if (title.includes('order')) iconClass = 'fi-rr-box-alt';
+        else if (title.includes('payment') || title.includes('money')) iconClass = 'fi-rr-usd-circle';
+        else if (title.includes('cart')) iconClass = 'fi-rr-shopping-cart';
+        else if (title.includes('wishlist')) iconClass = 'fi-rr-heart';
+
+        return `
+        <div class="fv-notif-item ${n.isRead ? '' : 'unread'}" data-id="${n.id}">
+            <div class="fv-notif-content" onclick="handleNotifClick(${n.id}, '${esc(n.redirectUrl || '#')}')">
+                <div class="fv-notif-icon">
+                    <i class="fi ${iconClass}" style="font-size:18px;color:var(--fv-primary)"></i>
+                </div>
+                <div style="flex:1">
+                    <div class="notif-title">${esc(n.title)}</div>
+                    <div class="notif-message" style="white-space:normal;">${esc(n.message)}</div>
+                    <div class="notif-time">${timeStr}</div>
+                </div>
+            </div>
+            <div class="fv-notif-actions-btns">
+                ${!n.isRead ? `
+                    <button onclick="event.stopPropagation(); markNotificationAsRead(${n.id})" 
+                            class="fv-notif-btn" title="Mark as read">
+                        ✓
+                    </button>
+                ` : ''}
+                <button onclick="event.stopPropagation(); deleteNotification(${n.id})" 
+                        class="fv-notif-btn" title="Delete">
+                    ✕
+                </button>
+            </div>
+        </div>
+        `;
+    }).join('');
 }
 
 async function fvMarkAllRead() {
     try {
-        await fvAuthFetch(`${NOTIF_API_BASE}/MarkAllRead`, {
+        const response = await fvAuthFetch(`${NOTIF_API_BASE}/MarkAllRead`, {
             method: 'POST',
             body: JSON.stringify({})
         });
@@ -167,9 +220,20 @@ async function fvClearAll() {
     if (!confirm(fbT('notif_confirm_clear'))) return;
 
     try {
-        await fvAuthFetch(`${NOTIF_API_BASE}/ClearAllNotifications`, {
+        const response = await fvAuthFetch(`${NOTIF_API_BASE}/ClearAllNotifications`, {
             method: 'POST'
         });
+        const data = await response.json();
+        if (data.success) {
+            fvNotifs = [];
+            renderNotifs();
+            updateBellBadge(0);
+            showFvToast('All notifications cleared', 'success');
+        }
+    } catch (error) {
+        showFvToast('Failed to clear notifications', 'error');
+    }
+}
 
         fvNotifs = [];
         renderNotifList();
@@ -182,27 +246,92 @@ async function fvClearAll() {
     }
 }
 
-/* ===================== UI ===================== */
 
-function handleNotifClick(id, url) {
-    const n = fvNotifs.find(x => x.id == id);
+/* ===================== TOAST ===================== */
 
-    if (n && !n.isRead) {
-        markSingleRead(id);
-    }
+window.showFvToast = function (message, type = 'success') {
+    const container = document.getElementById('fvToasts');
+    if (!container) return;
 
-    if (url && url !== '#') {
-        window.location.href = url;
-    }
+    const toast = document.createElement('div');
+    toast.className = `fv-toast ${type}`;
+
+    toast.innerHTML = `
+        <span>${esc(message)}</span>
+        <button onclick="this.parentElement.remove()">✕</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+};
+
+
+/* ===================== CART ===================== */
+
+// let vendorCart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+
+function saveCart() {
+    localStorage.setItem('vendor_cart', JSON.stringify(vendorCart));
 }
 
-function renderNotifList() {
-    const list = document.getElementById('fvNotifList');
-    if (!list) return;
+function loadCart() {
+    vendorCart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+}
 
-    const data = currentFvTab === 'unread'
-        ? fvNotifs.filter(n => !n.isRead)
-        : fvNotifs;
+window.addToCart = function (id, name, price) {
+    loadCart();
+
+    let item = vendorCart.find(x => x.id == id);
+
+    if (item) {
+        item.quantity++;
+        item.total = item.quantity * item.price;
+    } else {
+        vendorCart.push({
+            id,
+            name,
+            price,
+            quantity: 1,
+            total: price
+        });
+    }
+
+    saveCart();
+    renderCart();
+    showFvToast(`${name} added to cart`);
+};
+
+window.removeFromCart = function (id) {
+    loadCart();
+    vendorCart = vendorCart.filter(x => x.id != id);
+    saveCart();
+    renderCart();
+    showFvToast('Item removed');
+};
+
+window.updateCartQuantity = function (id, change) {
+    loadCart();
+
+    let item = vendorCart.find(x => x.id == id);
+    if (!item) return;
+
+    item.quantity += change;
+
+    if (item.quantity <= 0) {
+        vendorCart = vendorCart.filter(x => x.id != id);
+    } else {
+        item.total = item.quantity * item.price;
+    }
+
+    saveCart();
+    renderCart();
+};
+
+function renderCart() {
+    loadCart();
 
     if (!data.length) {
         list.innerHTML = `<div class="fv-notif-empty">🔔 ${fbT('notif_no_new')}</div>`;
@@ -221,21 +350,74 @@ function renderNotifList() {
                     <div style="font-size:10px;color:#9ca3af; margin-top:4px;">${formatDate(n.createdAt)}</div>
                 </div>
             </div>
-            <div class="fv-notif-actions-btns">
-                ${!n.isRead ? `
-                    <button onclick="event.stopPropagation(); markSingleRead(${n.id})" 
-                            class="fv-notif-btn" title="Mark as read">
-                        ✓
-                    </button>
-                ` : ''}
-                <button onclick="event.stopPropagation(); deleteSingleNotif(${n.id})" 
-                        class="fv-notif-btn" title="Delete">
-                    ✕
-                </button>
+            <div>
+                <button onclick="updateCartQuantity(${item.id},-1)">-</button>
+                <button onclick="updateCartQuantity(${item.id},1)">+</button>
+                <button onclick="removeFromCart(${item.id})">🗑</button>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
+
+    if (footer) footer.style.display = 'block';
+    if (totalEl) totalEl.innerText = '₹' + total;
 }
+
+function toggleCart() {
+    document.getElementById('cartSidebar')?.classList.toggle('active');
+}
+
+function proceedToCheckout() {
+    if (vendorCart.length > 0) {
+        window.location.href = '/Vendor/Checkout';
+    } else {
+        showFvToast('Cart is empty', 'error');
+    }
+} 
+
+
+/* ===================== WISHLIST ===================== */
+
+// let wishlist = JSON.parse(localStorage.getItem('vendor_wishlist') || '[]');
+
+function saveWishlist() {
+    localStorage.setItem('vendor_wishlist', JSON.stringify(wishlist));
+}
+
+window.toggleWishlist = function (id, name, price) {
+    let item = wishlist.find(x => x.id == id);
+
+    if (item) {
+        wishlist = wishlist.filter(x => x.id != id);
+        showFvToast('Removed from wishlist');
+    } else {
+        wishlist.push({ id, name, price });
+        showFvToast('Added to wishlist');
+    }
+
+    saveWishlist();
+};
+
+
+/* ===================== DASHBOARD ===================== */
+
+window.loadDashboardStats = async function () {
+    try {
+        const res = await fetch(`${window.API_BASE_URL}/user/stats`);
+        const result = await res.json();
+
+        if (result.success && result.data) {
+            const s = result.data;
+
+            document.getElementById('totalOrders').innerText = s.totalOrders || 0;
+            document.getElementById('totalSpent').innerText = '₹' + (s.totalSpent || 0);
+            document.getElementById('totalQuantity').innerText = (s.totalQuantity || 0) + ' kg';
+            document.getElementById('pendingDeliveries').innerText = s.pendingOrders || 0;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+};
+
 
 /* ===================== HELPERS ===================== */
 
@@ -315,10 +497,11 @@ window.fvTab = function (tab, btn) {
 
     btn?.classList.add('active');
 
-    renderNotifList();
+    renderNotifs();
 };
 
-window.markSingleRead = markSingleRead;
-window.deleteSingleNotif = deleteSingleNotif;
 window.fvMarkAllRead = fvMarkAllRead;
 window.fvClearAll = fvClearAll;
+window.markNotificationAsRead = markNotificationAsRead;
+window.deleteNotification = deleteNotification;
+window.handleNotifClick = handleNotifClick;
