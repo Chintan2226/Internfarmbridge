@@ -9,10 +9,15 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import mean_absolute_error, r2_score
 import joblib
+from pathlib import Path
+
+
 
 # ── STEP 1: Load ──────────────────────────────────────────
 print("📥 Loading cleaned dataset...")
-df = pd.read_csv("cleaned_data.csv")
+BASE_DIR = Path(__file__).resolve().parent
+file_path = BASE_DIR.parent / "Import Data" / "cleaned_data.csv"
+df = pd.read_csv(file_path)
 print(f"   Rows: {len(df)} | Columns: {df.columns.tolist()}")
 
 # ── STEP 2: Add extra features from existing columns ──────
