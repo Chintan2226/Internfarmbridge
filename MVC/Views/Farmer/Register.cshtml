@@ -66,73 +66,73 @@
         <div class="absolute inset-0 bg-primary/10 backdrop-blur-[2px]"></div>
     </div>
 
-    <main class="relative z-10 w-full min-h-screen flex items-center justify-center p-4 sm:px-6 py-6">
+    <main class="relative z-10 w-full min-h-screen flex items-center justify-center p-2 sm:px-6 py-2">
         
-        <div class="glass-card w-full max-w-[560px] p-6 sm:p-8 rounded-[2rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] flex flex-col items-center my-auto">
+        <div class="glass-card w-full max-w-[560px] p-5 sm:p-6 rounded-[2rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] flex flex-col items-center my-auto">
             
-            <div class="mb-5 flex flex-col items-center text-center">
-                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-2 shadow-lg">
-                    <span class="material-symbols-outlined text-on-primary text-2xl" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+            <div class="mb-3 flex flex-col items-center text-center">
+                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center mb-1 shadow-lg">
+                    <span class="material-symbols-outlined text-on-primary text-xl" style="font-variation-settings: 'FILL' 1;">agriculture</span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-primary tracking-tighter">FarmBridge</h1>
-                <p class="text-on-surface-variant font-medium text-xs sm:text-sm mt-1 tracking-tight">Create your digital agronomy account</p>
+                <h1 class="text-xl sm:text-2xl font-extrabold text-primary tracking-tighter">FarmBridge</h1>
+                <p class="text-on-surface-variant font-medium text-xs mt-1 tracking-tight">Create your digital agronomy account</p>
             </div>
 
-            <form id="registerForm" class="w-full space-y-3" onsubmit="event.preventDefault(); handleRegister(event); return false;" novalidate>
+            <form id="registerForm" class="w-full space-y-2" onsubmit="event.preventDefault(); handleRegister(event); return false;" novalidate>
                 
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Full Name <span class="text-red-600">*</span></label>
-                    <input id="fullName" class="form-input w-full px-5 py-3 rounded-full text-sm text-on-surface placeholder:text-on-surface-variant/50 shadow-inner" placeholder="Ramesh Kumar" type="text" required />
+                    <input id="fullName" class="form-input w-full px-4 py-2.5 rounded-full text-sm text-on-surface placeholder:text-on-surface-variant/50 shadow-inner" placeholder="Ramesh Kumar" type="text" required />
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Email Address <span class="text-red-600">*</span></label>
-                        <input id="email" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="you@example.com" type="email" required />
+                        <input id="email" class="form-input w-full px-4 py-2.5 rounded-full text-sm shadow-inner" placeholder="you@example.com" type="email" required />
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Mobile Number <span class="text-red-600">*</span></label>
-                        <input id="phone" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="9876543210" type="tel" maxlength="10" required />
+                        <input id="phone" class="form-input w-full px-4 py-2.5 rounded-full text-sm shadow-inner" placeholder="9876543210" type="tel" maxlength="10" required />
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">State</label>
-                        <input id="state" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="Gujarat" type="text" />
+                        <input id="state" class="form-input w-full px-4 py-2.5 rounded-full text-sm shadow-inner" placeholder="Gujarat" type="text" />
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">District</label>
-                        <input id="district" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="Anand" type="text" />
+                        <input id="district" class="form-input w-full px-4 py-2.5 rounded-full text-sm shadow-inner" placeholder="Anand" type="text" />
                     </div>
                 </div>
 
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Farm Address</label>
-                    <input id="address" class="form-input w-full px-5 py-3 rounded-full text-sm shadow-inner" placeholder="Village Road, Sector 12, Farm #42" type="text" />
+                    <input id="address" class="form-input w-full px-4 py-2.5 rounded-full text-sm shadow-inner" placeholder="Village Road, Sector 12, Farm #42" type="text" />
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Create Password <span class="text-red-600">*</span></label>
                         <div class="relative">
-                            <input id="password" class="form-input w-full pl-5 pr-10 py-3 rounded-full text-sm shadow-inner" placeholder="Min. 8 chars" type="password" required />
+                            <input id="password" class="form-input w-full pl-5 pr-10 py-2.5 rounded-full text-sm shadow-inner" placeholder="Min. 8 chars" type="password" required />
                             <button type="button" onclick="togglePassword('password', 'eye1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary">
                                 <span id="eye1" class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                         </div>
-                        <div class="flex gap-1 h-1 mt-1.5 mx-3" id="strengthBar">
+                        <div class="flex gap-1 h-1 mt-1 mx-3" id="strengthBar">
                             <div id="seg1" class="h-full flex-1 rounded-full bg-black/10 transition-colors"></div>
                             <div id="seg2" class="h-full flex-1 rounded-full bg-black/10 transition-colors"></div>
                             <div id="seg3" class="h-full flex-1 rounded-full bg-black/10 transition-colors"></div>
                             <div id="seg4" class="h-full flex-1 rounded-full bg-black/10 transition-colors"></div>
                         </div>
-                        <div id="strengthText" class="text-[10px] font-bold px-4 text-primary/60"></div>
+                        <div id="strengthText" class="text-[10px] font-bold px-4 text-primary/60 hidden"></div>
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold uppercase tracking-[0.1em] text-primary ml-4">Confirm Password <span class="text-red-600">*</span></label>
                         <div class="relative">
-                            <input id="confirmPassword" class="form-input w-full pl-5 pr-10 py-3 rounded-full text-sm shadow-inner" placeholder="Re-enter password" type="password" required />
+                            <input id="confirmPassword" class="form-input w-full pl-5 pr-10 py-2.5 rounded-full text-sm shadow-inner" placeholder="Re-enter password" type="password" required />
                             <button type="button" onclick="togglePassword('confirmPassword', 'eye2')" class="absolute right-3 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary">
                                 <span id="eye2" class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
@@ -140,12 +140,12 @@
                     </div>
                 </div>
 
-                <button id="submitBtn" class="agri-gradient w-full py-3.5 rounded-full text-on-primary font-bold text-base mt-2 shadow-[0_20px_40px_-10px_rgba(0,69,13,0.3)] hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300" type="submit">
+                <button id="submitBtn" class="agri-gradient w-full py-2.5 rounded-full text-on-primary font-bold text-base mt-2 shadow-[0_20px_40px_-10px_rgba(0,69,13,0.3)] hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300" type="submit">
                     Create My Account
                 </button>
             </form>
 
-            <div class="mt-4 text-center">
+            <div class="mt-3 text-center">
                 <p class="text-sm text-on-surface-variant font-medium">
                     Already have an account? 
                     <a href="/Farmer/Login" class="text-primary font-bold hover:text-primary-container hover:underline underline-offset-4 ml-1 transition-all">Sign In</a>

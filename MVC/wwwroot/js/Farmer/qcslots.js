@@ -133,11 +133,10 @@ $(document).ready(function () {
 
                 var d = res.data;
 
-                $("#kpiUpcoming").removeClass("skeleton").text(d.upcomingAppts);
-                $("#kpiAwaiting").removeClass("skeleton").text(d.awaitingResults);
-                $("#kpiTotalPassed").removeClass("skeleton").text(d.totalQcPassed);
-                $("#kpiGradeRate").removeClass("skeleton").text(d.premiumGradeRate + "%");
-
+                $("#kpiUpcoming").removeClass("fb-skeleton-text-inline").text(d.upcomingAppts);
+                $("#kpiAwaiting").removeClass("fb-skeleton-text-inline").text(d.awaitingResults);
+                $("#kpiTotalPassed").removeClass("fb-skeleton-text-inline").text(d.totalQcPassed);
+                $("#kpiGradeRate").removeClass("fb-skeleton-text-inline").text(d.premiumGradeRate + "%");
 
                 $("#gridSkeleton").hide();
                 $("#historyGrid").show().kendoGrid({

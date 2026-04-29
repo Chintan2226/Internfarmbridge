@@ -57,6 +57,9 @@ $(document).ready(function () {
 
     console.log("Farmer ID:", window.FARMER_ID);
 
+    FBSkeleton.showInline(".kpi-val");
+    FBSkeleton.show("#gridSkeleton", 5, 'list');
+
 
     /* ──────────────────────────────────────────────
        PAYMENTS GRID
@@ -88,11 +91,11 @@ $(document).ready(function () {
                 }
             });
 
-            $("#kpiLifetimeEarned").removeClass("skeleton").text(
+            $("#kpiLifetimeEarned").removeClass("fb-skeleton-text-inline").text(
                 "₹" + totalEarned.toLocaleString("en-IN")
             );
             
-            $("#kpiPendingPay").removeClass("skeleton").text(
+            $("#kpiPendingPay").removeClass("fb-skeleton-text-inline").text(
                 "₹" + totalPending.toLocaleString("en-IN")
             );
 
@@ -118,7 +121,7 @@ $(document).ready(function () {
             });
 
 
-            $("#gridSkeleton").hide();
+            FBSkeleton.hide("#gridSkeleton");
             $("#paymentsGrid").show().kendoGrid({
 
                 toolbar: ["search"],

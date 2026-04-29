@@ -6,76 +6,86 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
-    <link href="~/css/Farmer/crops.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/Farmer/qclots.css" rel="stylesheet" asp-append-version="true" />
 }
 
-<div class="db-wrap qc-db-wrap">
+<div class="db-wrap">
 
-    <div class="f-action-row qc-header-row qc-hdr">
-        <h2 class="qc-header-title">QC Appointments</h2>
-        <button id="btnOpenQCWindow" class="qc-req-btn"><i class="fi fi-rr-calendar-plus qc-btn-icon"></i> Request New QC Appointment</button>
+    <!-- Page Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h2 style="margin:0; font-size:22px; font-weight:800; color:#0a2108; display:flex; align-items:center; gap:10px;">
+                <i class="fi fi-sr-calendar-check" style="color:#10b981;"></i> Quality Check Slots
+            </h2>
+            <p style="margin:4px 0 0; font-size:13px; color:#5a7257;">Schedule and manage your crop quality inspections</p>
+        </div>
+        <button id="btnOpenQCWindow" class="premium-btn">
+            <i class="fi fi-rr-calendar-plus"></i> Request Appointment
+        </button>
     </div>
 
-    <section>
-        <div class="kpi-grid qc-kpi-grid">
-            <div class="kpi-card qc-kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Upcoming Appts</div>
-                    <div class="kpi-icon qc-icon-up"><i class="fi fi-rr-calendar text-white qc-lg-icon"></i></div>
-                </div>
-                <div class="kpi-val skeleton" id="kpiUpcoming" style="min-width: 40px; display: inline-block;">0</div>
-                <div class="watermark"><i class="fi fi-rr-calendar"></i></div>
+    <!-- KPI Cards -->
+    <div class="kpi-grid qc-kpi-grid">
+        <div class="kpi-card emerald-card">
+            <div class="kpi-top">
+                <div class="kpi-lbl">Upcoming Appts</div>
+                <div class="kpi-icon"><i class="fi fi-sr-calendar"></i></div>
             </div>
-            
-            <div class="kpi-card qc-kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Awaiting Results</div>
-                    <div class="kpi-icon qc-icon-wait"><i class="fi fi-rr-hourglass-end text-white qc-lg-icon"></i></div>
-                </div>
-                <div class="kpi-val skeleton" id="kpiAwaiting" style="min-width: 40px; display: inline-block;">0</div>
-                <div class="watermark"><i class="fi fi-rr-hourglass-end"></i></div>
-            </div>
- 
-            <div class="kpi-card qc-kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Total QC Passed</div>
-                    <div class="kpi-icon qc-icon-pass"><i class="fi fi-rr-badge-check text-white qc-lg-icon"></i></div>
-                </div>
-                <div class="kpi-val skeleton" id="kpiTotalPassed" style="min-width: 40px; display: inline-block;">0</div>
-                <div class="watermark"><i class="fi fi-rr-badge-check"></i></div>
-            </div>
- 
-            <div class="kpi-card qc-kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Premium Grade Rate</div>
-                    <div class="kpi-icon qc-icon-grade"><i class="fi fi-rr-star text-white qc-lg-icon"></i></div>
-                </div>
-                <div class="kpi-val skeleton" id="kpiGradeRate" style="min-width: 40px; display: inline-block;">0%</div>
-                <div class="watermark"><i class="fi fi-rr-star"></i></div>
-            </div>
+            <div class="kpi-val fb-skeleton-text-inline" id="kpiUpcoming">0</div>
+            <div class="kpi-sub">Next scheduled visits</div>
+            <i class="fi fi-sr-calendar watermark"></i>
         </div>
-    </section>
 
-    <section>
-        <div class="grid-card qc-grid-wrap">
-            <div class="grid-head qc-grid-head">
-                <div class="grid-title">Recent & Future Appointments</div>
+        <div class="kpi-card gold-card">
+            <div class="kpi-top">
+                <div class="kpi-lbl">Awaiting Results</div>
+                <div class="kpi-icon"><i class="fi fi-sr-hourglass-end"></i></div>
             </div>
-            <div class="kendo-widget-container">
-                <div id="gridSkeleton" class="skeleton chart-skeleton" style="height: 300px; width: 100%; border-radius: 12px; margin-top: 10px;"></div>
-                <div id="historyGrid" class="borderless-grid" style="display: none;"></div>
-            </div>
+            <div class="kpi-val fb-skeleton-text-inline" id="kpiAwaiting">0</div>
+            <div class="kpi-sub">Tests in-progress</div>
+            <i class="fi fi-sr-hourglass-end watermark"></i>
         </div>
-    </section>
+
+        <div class="kpi-card farm-card">
+            <div class="kpi-top">
+                <div class="kpi-lbl">Total Passed</div>
+                <div class="kpi-icon"><i class="fi fi-sr-badge-check"></i></div>
+            </div>
+            <div class="kpi-val fb-skeleton-text-inline" id="kpiTotalPassed">0</div>
+            <div class="kpi-sub">Verified inventory</div>
+            <i class="fi fi-sr-badge-check watermark"></i>
+        </div>
+
+        <div class="kpi-card fo-card">
+            <div class="kpi-top">
+                <div class="kpi-lbl">Premium Grade</div>
+                <div class="kpi-icon"><i class="fi fi-sr-star"></i></div>
+            </div>
+            <div class="kpi-val fb-skeleton-text-inline" id="kpiGradeRate">0%</div>
+            <div class="kpi-sub">A-Grade success rate</div>
+            <i class="fi fi-sr-star watermark"></i>
+        </div>
+    </div>
+
+    <!-- Appointment History -->
+    <div class="glass-panel">
+        <div style="margin-bottom:20px;">
+            <h3 style="margin:0; font-size:16px; font-weight:700; color:#0a2108;">Appointment History</h3>
+            <p style="margin:4px 0 0; font-size:12px; color:#5a7257;">Review your past and upcoming QC schedules</p>
+        </div>
+        <div class="kendo-widget-container">
+            <div id="gridSkeleton" class="fb-skeleton" style="height: 300px; width: 100%; border-radius:12px;"></div>
+            <div id="historyGrid" style="display: none;"></div>
+        </div>
+    </div>
 
 </div>
 
+<!-- QC Booking Window -->
 <div id="qcBookWindow" class="qc-book-win">
     <form id="qcBookForm" autocomplete="off" class="premium-form-container">
-        
         <div class="premium-form-body">
-            
+
             <div class="premium-section">
                 <div class="premium-section-header">
                     <div class="icon-wrap"><i class="fi fi-rr-building"></i></div>
@@ -126,7 +136,7 @@
             </div>
 
         </div>
-        
+
         <div class="premium-modal-footer">
             <button type="button" id="btnCloseQCWindow" class="premium-btn-cancel">Cancel</button>
             <div class="premium-actions">
@@ -135,7 +145,6 @@
                 </button>
             </div>
         </div>
-
     </form>
 </div>
 

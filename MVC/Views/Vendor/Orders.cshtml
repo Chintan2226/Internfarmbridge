@@ -12,23 +12,23 @@
                 <i class="fi fi-rr-shopping-bag"></i>
             </div>
             <div>
-                <h1 class="orders-page-title">My Orders</h1>
-                <p class="orders-page-desc">Track and manage your procurement history with FarmBridge</p>
+                <h1 class="orders-page-title" data-i18n="ord_title">My Orders</h1>
+                <p class="orders-page-desc" data-i18n="ord_subtitle">Track and manage your procurement history with FarmBridge</p>
             </div>
         </div>
         <div class="header-actions">
             <div class="search-box">
                 <i class="fi fi-rr-search"></i>
-                <input type="text" id="orderSearch" placeholder="Search by Order ID..." onkeyup="filterOrders()">
+                <input type="text" id="orderSearch" data-i18n-placeholder="ord_search_ph" placeholder="Search by Order ID..." onkeyup="filterOrders()">
             </div>
             <div class="filter-group">
                 <select id="statusFilter" onchange="filterOrders()">
-                    <option value="all">All Statuses</option>
-                    <option value="placed">Placed</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="dispatched">In Transit</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
+                    <option value="all" data-i18n="ord_status_all">All Statuses</option>
+                    <option value="placed" data-i18n="ord_status_placed">Placed</option>
+                    <option value="confirmed" data-i18n="ord_status_confirmed">Confirmed</option>
+                    <option value="dispatched" data-i18n="ord_status_transit">In Transit</option>
+                    <option value="delivered" data-i18n="ord_status_delivered">Delivered</option>
+                    <option value="cancelled" data-i18n="ord_status_cancelled">Cancelled</option>
                 </select>
             </div>
         </div>
@@ -46,18 +46,18 @@
             <div class="modal-icon error">
                 <i class="fi fi-rr-cross-circle"></i>
             </div>
-            <h4>Cancel Order</h4>
+            <h4 data-i18n="ord_cancel_title">Cancel Order</h4>
         </div>
-        <p class="modal-desc">Are you sure you want to cancel this order? This action cannot be undone once confirmed.</p>
+        <p class="modal-desc" data-i18n="ord_cancel_desc">Are you sure you want to cancel this order? This action cannot be undone once confirmed.</p>
         <div class="form-group">
-            <label for="cancelReason">Reason for Cancellation</label>
-            <textarea id="cancelReason" rows="3" placeholder="Please provide a brief reason..."></textarea>
+            <label for="cancelReason" data-i18n="ord_cancel_reason">Reason for Cancellation</label>
+            <textarea id="cancelReason" rows="3" data-i18n-placeholder="ord_cancel_ph" placeholder="Please provide a brief reason..."></textarea>
         </div>
         <div class="modal-buttons">
-            <button class="modal-btn modal-btn-secondary" onclick="closeCancelModal()">
+            <button class="modal-btn modal-btn-secondary" onclick="closeCancelModal()" data-i18n="ord_cancel_back">
                 Go Back
             </button>
-            <button class="modal-btn modal-btn-danger" onclick="confirmCancel()">
+            <button class="modal-btn modal-btn-danger" onclick="confirmCancel()" data-i18n="ord_cancel_confirm">
                 Confirm Cancellation
             </button>
         </div>
@@ -77,8 +77,8 @@
                 position: { pinned: true, top: 30, right: 30 },
                 autoHideAfter: 3000,
                 templates: [
-                    { type: "success", template: "<div><i class='fas fa-check-circle me-2'></i> #= message #</div>" },
-                    { type: "error", template: "<div><i class='fas fa-exclamation-circle me-2'></i> #= message #</div>" }
+                    { type: "success", template: "<div><i class='fi fi-rr-check me-2'></i> #= message #</div>" },
+                    { type: "error", template: "<div><i class='fi fi-rr-exclamation me-2'></i> #= message #</div>" }
                 ]
             }).data("kendoNotification");
 
@@ -119,29 +119,7 @@
         }
 
         function showOrderSkeletons() {
-            const container = $("#ordersContainer");
-            let html = '';
-            for (let i = 0; i < 6; i++) {
-                html += `
-                    <div class="order-card-premium glass-morphism skeleton-active">
-                        <div class="order-card-header">
-                            <div class="skeleton-pill w-40 h-20"></div>
-                            <div class="skeleton-pill w-80 h-30"></div>
-                        </div>
-                        <div class="order-card-body">
-                            <div class="order-meta-row">
-                                <div class="skeleton-pill flex-1 h-50"></div>
-                                <div class="skeleton-pill flex-1 h-50"></div>
-                            </div>
-                            <div class="skeleton-pill w-full h-80 mt-4"></div>
-                        </div>
-                        <div class="order-card-footer">
-                            <div class="skeleton-pill w-full h-50"></div>
-                        </div>
-                    </div>
-                `;
-            }
-            container.html(html);
+            FBSkeleton.show("#ordersContainer", 6, 'order');
         }
 
         function filterOrders() {
@@ -169,10 +147,10 @@
                             <div class="empty-icon-wrap">
                                 <i class="fi fi-rr-search-alt"></i>
                             </div>
-                            <h3>No matching orders found</h3>
-                            <p>We couldn't find any orders matching your criteria. Try adjusting your filters or browse our catalog.</p>
+                            <h3 data-i18n="ord_empty_title">No matching orders found</h3>
+                            <p class="text-muted" data-i18n="ord_empty_desc">Try adjusting your filters or search term to find what you're looking for.</p>
                             <a href="/Vendor/Catalog" class="btn-browse-catalog">
-                                <i class="fi fi-rr-shop"></i> Browse Catalog
+                                <i class="fi fi-rr-shop"></i> <span data-i18n="nav_crop_catalog">Browse Catalog</span>
                             </a>
                         </div>
                     `);
@@ -218,12 +196,12 @@
                             <div class="order-card-premium glass-morphism animate-in" style="animation-delay: ${index * 0.05}s">
                                 <div class="order-card-header">
                                     <div class="order-id-badge">
-                                        <span class="label">PURCHASE REF</span>
+                                        <span class="label" data-i18n="ord_ref">PURCHASE REF</span>
                                         <span class="id">#${order.orderNumber || order.orderId}</span>
                                     </div>
                                     <span class="order-status-badge ${statusClass}">
                                         <span class="status-dot"></span>
-                                        ${order.statusText || order.status}
+                                        ${(window.fbT ? fbT(order.statusText || order.status) : (order.statusText || order.status))}
                                     </span>
                                 </div>
                                 
@@ -232,14 +210,14 @@
                                         <div class="meta-item">
                                             <div class="meta-icon"><i class="fi fi-rr-calendar"></i></div>
                                             <div class="meta-content">
-                                                <small>Order Date</small>
+                                                <small data-i18n="ord_date">Order Date</small>
                                                 <strong>${orderDateStr}</strong>
                                             </div>
                                         </div>
                                         <div class="meta-item">
                                             <div class="meta-icon"><i class="fi fi-rr-box-open"></i></div>
                                             <div class="meta-content">
-                                                <small>Package</small>
+                                                <small data-i18n="ord_pkg">Package</small>
                                                 <strong>${order.itemCount || 0} Items</strong>
                                             </div>
                                         </div>
@@ -247,7 +225,7 @@
                                     
                                     <div class="order-price-card">
                                         <div class="price-details">
-                                            <span class="price-label">Grand Total</span>
+                                            <span class="price-label" data-i18n="ord_total">Grand Total</span>
                                             <span class="price-value">${formattedTotal}</span>
                                         </div>
                                     </div>
@@ -256,11 +234,13 @@
                                 <div class="order-card-footer">
                                     ${status !== 'cancelled' ? `
                                         <button class="btn-track-order" onclick="location.href='/Vendor/OrderTracking?id=${order.orderId}'">
-                                            <span>Track Order</span>
+                                            <span data-i18n="ord_track">Track Your Order</span>
+                                            <i class="fi fi-rr-arrow-right"></i>
                                         </button>
                                     ` : `
                                         <button class="btn-view-details" onclick="location.href='/Vendor/OrderTracking?id=${order.orderId}'">
-                                            <span>View Details</span>
+                                            <span data-i18n="ord_details">View Order Details</span>
+                                            <i class="fi fi-rr-eye"></i>
                                         </button>
                                     `}
                                     
@@ -271,7 +251,7 @@
                                     
                                     ${canCancel ? `
                                     <button class="btn-cancel-order" onclick="openCancelModal('${order.orderId}')" title="Cancel Order">
-                                        <i class="fi fi-rr-cross"></i>
+                                        <i class="fi fi-rr-cross-small notranslate"></i>
                                     </button>` : ''}
                                 </div>
                             </div>
@@ -281,6 +261,7 @@
                     }
                 });
                 container.html(html);
+                if (window.fbInit) fbInit();
             } catch (err) {
                 console.error("Critical display error:", err);
                 container.html('<div class="p-4 text-center"><h4>Oops! Something went wrong</h4><p>We encountered an error while displaying your orders. Please try refreshing the page.</p></div>');
@@ -307,11 +288,17 @@
                     body: JSON.stringify({ orderId: cancelOrderId, reason: reason })
                 });
                 const result = await res.json();
-                notification.show({ message: result.message }, result.success ? "success" : "error");
+                if (window.fbNotify) {
+                    fbNotify({ 
+                        message: result.message, 
+                        icon: result.success ? "success" : "error", 
+                        type: 'toast' 
+                    });
+                }
                 closeCancelModal();
                 loadOrders();
             } catch (e) {
-                notification.show({ message: "System Error" }, "error");
+                if (window.fbNotify) fbNotify({ message: "System Error", icon: "error", type: 'toast' });
             }
         }
 

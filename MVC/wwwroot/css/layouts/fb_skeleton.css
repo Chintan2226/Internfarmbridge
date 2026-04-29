@@ -1,0 +1,100 @@
+/* ========== FARMBRIDGE GLOBAL SKELETON SYSTEM ========== */
+
+:root {
+    --skeleton-bg: #f1f5f9;
+}
+
+/* Base Skeleton Class */
+.fb-skeleton {
+    background-color: var(--skeleton-bg);
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    display: block;
+    pointer-events: none;
+}
+
+/* Shimmer Animation (Subtle & Linear) */
+.fb-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: fb-shimmer 1.5s infinite linear;
+}
+
+@keyframes fb-shimmer {
+    to { transform: translateX(100%); }
+}
+
+/* Utilities */
+.fb-skeleton-text { height: 14px; width: 100%; margin-bottom: 10px; border-radius: 4px; }
+.fb-skeleton-title { height: 24px; width: 60%; margin-bottom: 16px; border-radius: 6px; }
+.fb-skeleton-pill { height: 32px; width: 100px; border-radius: 50px; }
+.fb-skeleton-circle { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
+.fb-skeleton-img { width: 100%; height: 180px; border-radius: 12px; margin-bottom: 16px; }
+
+/* Inline Text Skeleton */
+.fb-skeleton-text-inline {
+    color: transparent !important;
+    background-color: var(--skeleton-bg);
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    min-width: 40px;
+    display: inline-block;
+}
+
+.fb-skeleton-text-inline::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    animation: fb-shimmer 1.5s infinite linear;
+}
+
+/* Pattern: Global Card Skeleton */
+.fbs-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    pointer-events: none;
+    transition: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+/* Pattern: List Row Skeleton */
+.fb-skeleton-list-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Pattern: Button Skeleton */
+.fb-skeleton-btn {
+    height: 48px;
+    width: 100%;
+    border-radius: 12px;
+}
+
+/* Common Grid Container */
+.fbs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    width: 100%;
+}

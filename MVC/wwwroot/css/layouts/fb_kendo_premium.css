@@ -1,7 +1,7 @@
 /* FarmBridge Premium Kendo Grid Overrides (Platform-Wide) */
 
 /* General Grid Transparency */
-.k-grid, .k-widget, .k-grid-content {
+.k-grid, .k-grid-content {
     border: none !important;
     font-family: 'Inter', sans-serif !important;
     background: transparent !important;

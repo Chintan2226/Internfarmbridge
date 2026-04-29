@@ -1,163 +1,270 @@
 @{
-    ViewData["Title"] = "Account Settings";
+    ViewData["Title"] = "Profile";
     ViewData["UserRole"] = "Farmer";
     Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/pages/farmer/profile.css" asp-append-version="true" />
+    <style>
+        /* Profile-specific skeleton — only applies here since Dashboard.css is not loaded */
+        .prof-skeleton {
+            background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: prof-shimmer 1.5s infinite;
+            border-radius: 6px;
+            display: block;
+        }
+        @@keyframes prof-shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        /* Avatar ring pulse while loading */
+        #farmerAvatarWrap.loading {
+            animation: ring-pulse 1.5s infinite;
+        }
+        @@keyframes ring-pulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(16,185,129,0.15); }
+            50%       { box-shadow: 0 0 0 8px rgba(16,185,129,0.08); }
+        }
+        /* Stat value */
+        .stat-val {
+            font-size: 22px;
+            font-weight: 800;
+            color: #059669;
+            min-height: 28px;
+            min-width: 28px;
+            display: inline-block;
+        }
+        /* Form label */
+        .premium-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #5a7257;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        /* Responsive profile grid */
+        @@media (max-width: 900px) {
+            #profileLayoutGrid { grid-template-columns: 1fr !important; }
+        }
+    </style>
 }
 
-<div class="db-wrap" style="gap: 20px; padding-bottom: 20px;">
-    <section class="profile-layout" style="margin-top: 10px;">
-        
-        @* Sidebar *@
-        <div class="profile-sidebar">
-            <div class="profile-header">
-                <button class="k-button" style="position:absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border:none; color:#fff;" onclick="changeCover()"><i class="fi fi-rr-picture"></i></button>
-            </div>
-            
-            <div style="position: relative; padding: 50px 24px 20px; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                <div class="profile-avatar-wrap" id="farmerAvatarWrap" style="position: absolute; top: -40px; left: 50%; transform: translateX(-50%); cursor: pointer;" onclick="document.getElementById('photoInput').click()">
-                    <img id="farmerPhoto" src="" style="display:none; width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
-                    <div id="avatarPlaceholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fi fi-rr-user" style="font-size: 32px; color: #94a3b8;"></i>
-                    </div>
-                    <div class="photo-overlay">
-                        <i class="fi fi-rr-camera" style="color: #fff;"></i>
+<div class="db-wrap">
+
+    <!-- Page Header -->
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div>
+            <h2 style="margin:0; font-size:22px; font-weight:800; color:#0a2108; display:flex; align-items:center; gap:10px;">
+                <i class="fi fi-sr-user" style="color:#10b981;"></i> Account Settings
+            </h2>
+            <p style="margin:4px 0 0; font-size:13px; color:#5a7257;">Manage your personal information, farm details, and banking preferences</p>
+        </div>
+    </div>
+
+    <!-- Profile Layout -->
+    <div id="profileLayoutGrid" style="display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start;">
+
+        <!-- === SIDEBAR === -->
+        <div class="glass-panel" style="padding:0; overflow:hidden;">
+
+            <!-- Green Accent Header -->
+            <div style="height:90px; background:linear-gradient(135deg, #10b981, #047857);"></div>
+
+            <!-- Avatar + Info -->
+            <div style="display:flex; flex-direction:column; align-items:center; padding:0 20px 24px; margin-top:-46px;">
+
+                <!-- Avatar Circle -->
+                <div id="farmerAvatarWrap" class="loading"
+                     onclick="document.getElementById('photoInput').click()"
+                     title="Click to change photo"
+                     style="width:92px; height:92px; border-radius:50%; border:4px solid #fff;
+                            background:#ecfdf5; cursor:pointer; overflow:hidden; position:relative;
+                            display:flex; align-items:center; justify-content:center;
+                            box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+
+                    <!-- Photo (hidden until loaded) -->
+                    <img id="farmerPhoto" src="" alt="Profile Photo"
+                         style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; inset:0;" />
+
+                    <!-- Letter / Icon fallback -->
+                    <div id="avatarPlaceholder"
+                         style="display:flex; align-items:center; justify-content:center;
+                                width:100%; height:100%; position:absolute; inset:0;">
+                        <!-- Filled immediately by inline script below -->
+                        <span id="avatarLetter" style="font-size:36px; font-weight:800; color:#10b981; line-height:1;"></span>
                     </div>
                 </div>
-                
-                <h3 id="farmerNameLabel" class="skeleton" style="font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 4px 0; min-width: 150px; min-height: 22px;"></h3>
-                <p id="farmerMetaLabel" class="skeleton" style="font-size: 13px; color: #64748b; margin: 0 0 16px 0; min-width: 100px; min-height: 16px;"></p>
 
-                <div style="margin-bottom: 16px; display: flex; justify-content: center; gap: 8px;">
-                    <input type="file" id="photoInput" style="display: none;" accept="image/*" onchange="handlePhotoUpload(this)" />
-                    <button class="k-button" id="btnDeletePhoto" style="display:none; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 11px; padding: 4px 10px; border-radius: 6px;" onclick="deletePhoto()">
-                        <i class="fi fi-rr-trash" style="margin-right: 4px;"></i> <span data-i18n="profile_remove_photo">Remove Photo</span>
-                    </button>
+                <input type="file" id="photoInput" style="display:none;" accept="image/*" onchange="handlePhotoUpload(this)" />
+
+                <!-- Name & Location (pre-filled from JWT, refined by API) -->
+                <h3 id="farmerNameLabel"
+                    style="font-size:17px; font-weight:800; color:#0a2108; margin:14px 0 4px; text-align:center; word-break:break-word;"></h3>
+                <p id="farmerMetaLabel"
+                   style="font-size:13px; color:#5a7257; margin:0 0 12px; text-align:center;"></p>
+
+                <!-- Camera hint -->
+                <div style="font-size:11px; color:#94a3b8; display:flex; align-items:center; gap:4px; margin-bottom:16px;">
+                    <i class="fi fi-rr-camera"></i> Click avatar to change photo
                 </div>
 
-                <div style="text-align: left; padding-top: 16px; border-top: 1px solid #f1f5f9;">
-                    <div class="kpi-stat-row">
-                        <span class="kpi-stat-lbl" data-i18n="profile_active_listings">Active Listings</span>
-                        <span class="kpi-stat-val skeleton" id="statActiveListings" style="min-width: 20px; display: inline-block;">0</span>
+                <!-- Delete Photo (hidden until photo exists) -->
+                <button class="btn-premium-ghost" id="btnDeletePhoto"
+                        style="display:none; border-color:#fca5a5; color:#ef4444; font-size:12px; padding:6px 16px; margin-bottom:16px;"
+                        onclick="deletePhoto()">
+                    <i class="fi fi-rr-trash"></i>
+                    <span data-i18n="profile_remove_photo">Remove Photo</span>
+                </button>
+
+                <!-- Stats Grid -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;
+                            padding:16px 0; border-top:1px solid rgba(0,0,0,0.06); border-bottom:1px solid rgba(0,0,0,0.06);">
+                    <div style="text-align:center; padding:8px;">
+                        <div style="font-size:10px; font-weight:700; color:#5a7257; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;"
+                             data-i18n="profile_active_listings">Active Listings</div>
+                        <div class="stat-val prof-skeleton" id="statActiveListings" style="min-width:32px; min-height:28px;"></div>
                     </div>
-                    <div class="kpi-stat-row" style="border-bottom: none;">
-                        <span class="kpi-stat-lbl" data-i18n="profile_qc_passed">Quality Checks Passed</span>
-                        <span class="kpi-stat-val skeleton" id="statQCPassed" style="min-width: 20px; display: inline-block;">0</span>
+                    <div style="text-align:center; padding:8px;">
+                        <div style="font-size:10px; font-weight:700; color:#5a7257; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;"
+                             data-i18n="profile_qc_passed">QC Passed</div>
+                        <div class="stat-val prof-skeleton" id="statQCPassed" style="min-width:32px; min-height:28px;"></div>
                     </div>
                 </div>
 
-                <button class="btn-logout" onclick="logoutUser()">
-                    <i class="fi fi-rr-exit" style="margin-right: 6px;"></i> <span data-i18n="secure_logout">Secure Logout</span>
+                <!-- Logout -->
+                <button class="btn-premium-ghost" onclick="logoutUser()"
+                        style="width:100%; justify-content:center; border-color:#fca5a5;
+                               color:#ef4444; margin-top:16px;">
+                    <i class="fi fi-rr-exit"></i>
+                    <span data-i18n="secure_logout">Secure Logout</span>
                 </button>
             </div>
         </div>
 
-        @* Main Content *@
-        <div class="profile-main-card">
-            <form id="profileForm">
-                
-                @* Personal Section *@
-                <div class="section-title">
-                    <i class="fi fi-rr-user" style="color: #3b82f6;"></i> <span data-i18n="profile_personal_farm_details">Personal & Farm Details</span>
-                </div>
-                
-                <div class="row g-3" style="margin-bottom: 20px;">
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_full_name">Full Name</label>
-                        <input id="fullName" class="text-field skeleton" value="" />
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_mobile_number">Mobile Number</label>
-                        <input id="phoneNo" class="text-field skeleton" value="" disabled />
-                    </div>
-                </div>
-                
-                <div class="row g-3" style="margin-bottom: 20px;">
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_state">State</label>
-                        <input id="farmState" class="text-field skeleton" data-i18n-placeholder="profile_enter_state" />
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_district">District</label>
-                        <input id="farmDistrict" class="text-field skeleton" data-i18n-placeholder="profile_enter_district" />
+        <!-- === MAIN FORM === -->
+        <div class="glass-panel">
+            <form id="profileForm" autocomplete="off">
+
+                <!-- Personal & Farm Details -->
+                <div style="margin-bottom:28px;">
+                    <h4 style="font-size:13px; font-weight:700; color:#0a2108; margin:0 0 18px;
+                                padding-bottom:12px; border-bottom:1px solid rgba(0,0,0,0.06);
+                                display:flex; align-items:center; gap:8px;">
+                        <i class="fi fi-sr-id-card" style="color:#10b981;"></i> Personal &amp; Farm Details
+                    </h4>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div>
+                            <label class="premium-label" data-i18n="profile_full_name">Full Name</label>
+                            <input id="fullName" class="text-field" placeholder="Enter your full name" />
+                        </div>
+                        <div>
+                            <label class="premium-label" data-i18n="profile_mobile_number">Mobile Number</label>
+                            <input id="phoneNo" class="text-field" placeholder="Registered number" disabled
+                                   style="background:#f1f5f9; color:#94a3b8; cursor:not-allowed;" />
+                        </div>
+                        <div>
+                            <label class="premium-label" data-i18n="profile_state">State</label>
+                            <input id="farmState" class="text-field" data-i18n-placeholder="profile_enter_state" placeholder="e.g. Maharashtra" />
+                        </div>
+                        <div>
+                            <label class="premium-label" data-i18n="profile_district">District</label>
+                            <input id="farmDistrict" class="text-field" data-i18n-placeholder="profile_enter_district" placeholder="e.g. Pune" />
+                        </div>
+                        <div style="grid-column:1/-1;">
+                            <label class="premium-label" data-i18n="profile_farm_address">Farm Address</label>
+                            <input id="address" class="text-field" data-i18n-placeholder="profile_enter_address" placeholder="Full address of your farm" />
+                        </div>
                     </div>
                 </div>
 
-                <div class="row g-3" style="margin-bottom: 32px;">
-                    <div class="col-12 form-group">
-                        <label class="premium-label" data-i18n="profile_farm_address">Farm Address</label>
-                        <input id="address" class="text-field skeleton" data-i18n-placeholder="profile_enter_address" />
+                <!-- Bank Account & Payouts -->
+                <div style="margin-bottom:28px;">
+                    <h4 style="font-size:13px; font-weight:700; color:#0a2108; margin:0 0 18px;
+                                padding-bottom:12px; border-bottom:1px solid rgba(0,0,0,0.06);
+                                display:flex; align-items:center; gap:8px;">
+                        <i class="fi fi-sr-bank" style="color:#8b5cf6;"></i> Bank Account &amp; Payouts
+                    </h4>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div>
+                            <label class="premium-label" data-i18n="profile_bank_name">Bank Name</label>
+                            <input id="bankName" class="text-field" data-i18n-placeholder="profile_enter_bank" placeholder="e.g. SBI, HDFC" />
+                        </div>
+                        <div>
+                            <label class="premium-label" data-i18n="profile_branch_name">Branch Name</label>
+                            <input id="branchName" class="text-field" data-i18n-placeholder="profile_enter_branch" placeholder="e.g. Mumbai Main" />
+                        </div>
+                        <div>
+                            <label class="premium-label" data-i18n="profile_account_holder_name">Account Holder Name</label>
+                            <input id="acctName" class="text-field" placeholder="As per bank records" />
+                        </div>
+                        <div>
+                            <label class="premium-label" data-i18n="profile_account_type">Account Type</label>
+                            <select id="acctType" class="text-field" style="cursor:pointer; appearance:auto; -webkit-appearance:auto;">
+                                <option value="" disabled selected hidden>Select Account Type...</option>
+                                <option value="savings" data-i18n="profile_savings">Savings</option>
+                                <option value="current" data-i18n="profile_current">Current</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="premium-label" data-i18n="profile_account_number">Account Number</label>
+                            <input id="acctNo" type="password" class="text-field" placeholder="••••••••••••" />
+                            <div style="font-size:11px; color:#94a3b8; margin-top:4px; display:flex; align-items:center; gap:4px;">
+                                <i class="fi fi-rr-lock"></i>
+                                <span data-i18n="profile_hidden_for_security">Hidden for security</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="premium-label" data-i18n="profile_ifsc_code">IFSC Code</label>
+                            <input id="ifscCode" class="text-field" style="text-transform:uppercase;"
+                                   data-i18n-placeholder="profile_enter_ifsc" placeholder="e.g. SBIN0001234" />
+                        </div>
+                        <div style="grid-column:1/-1;">
+                            <label class="premium-label">
+                                UPI ID
+                                <span style="font-size:10px; color:#94a3b8; text-transform:none; font-weight:400;"
+                                      data-i18n="profile_optional">(Optional)</span>
+                            </label>
+                            <input id="upiId" class="text-field" data-i18n-placeholder="profile_enter_upi" placeholder="e.g. name@upi" />
+                        </div>
                     </div>
                 </div>
 
-                @* Banking Section *@
-                <div class="section-title" style="margin-top: 40px;">
-                    <i class="fi fi-rr-bank" style="color: #8b5cf6;"></i> <span data-i18n="profile_bank_account_payouts">Bank Account & Payouts</span>
+                <!-- Footer -->
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            padding-top:20px; border-top:1px solid rgba(0,0,0,0.06); flex-wrap:wrap; gap:12px;">
+                    <div style="font-size:12px; color:#94a3b8; display:flex; align-items:center; gap:6px;">
+                        <i class="fi fi-rr-shield-check" style="color:#10b981;"></i>
+                        <span data-i18n="profile_required_to_save_banking">All banking fields required together.</span>
+                    </div>
+                    <button type="button" class="premium-btn" onclick="saveProfile()">
+                        <i class="fi fi-rr-check"></i>
+                        <span data-i18n="profile_update_info">Update Profile</span>
+                    </button>
                 </div>
 
-                <div class="row g-3" style="margin-bottom: 20px;">
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_bank_name">Bank Name</label>
-                        <input id="bankName" class="text-field skeleton" data-i18n-placeholder="profile_enter_bank" />
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_branch_name">Branch Name</label>
-                        <input id="branchName" class="text-field skeleton" data-i18n-placeholder="profile_enter_branch" />
-                    </div>
-                </div>
-
-                <div class="row g-3" style="margin-bottom: 20px;">
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_account_holder_name">Account Holder Name</label>
-                        <input id="acctName" class="text-field skeleton" value="" />
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_account_type">Account Type</label>
-                        <select id="acctType" class="text-field skeleton" style="cursor: pointer;">
-                            <option value="" disabled selected hidden data-i18n="profile_select_acct_type">Select Account Type...</option>
-                            <option value="savings" data-i18n="profile_savings">Savings</option>
-                            <option value="current" data-i18n="profile_current">Current</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row g-3" style="margin-bottom: 20px;">
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_account_number">Account Number</label>
-                        <input id="acctNo" type="password" class="text-field skeleton" value="" />
-                        <div style="font-size: 11px; color:#94a3b8; margin-top:4px;" data-i18n="profile_hidden_for_security">Hidden for security.</div>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_ifsc_code">IFSC Code</label>
-                        <input id="ifscCode" class="text-field skeleton" data-i18n-placeholder="profile_enter_ifsc" style="text-transform: uppercase;" />
-                    </div>
-                </div>
-
-                <div class="row g-3" style="margin-bottom: 32px;">
-                    <div class="col-md-6 form-group">
-                        <label class="premium-label" data-i18n="profile_upi_id">UPI ID <span style="font-size:10px; color:#94a3b8; text-transform:none;" data-i18n="profile_optional">(Optional)</span></label>
-                        <input id="upiId" class="text-field skeleton" data-i18n-placeholder="profile_enter_upi" />
-                    </div>
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
-                    <div style="font-size: 13px; color: #64748b; margin-right: 20px;">
-                        <i class="fi fi-rr-info" style="color: #64748b; margin-right: 4px;"></i> <span data-i18n="profile_required_to_save_banking">Required for banking changes.</span>
-                    </div>
-                    <button type="button" class="btn-update" onclick="saveProfile()" data-i18n="profile_update_info">Update Profile</button>
-                </div>
             </form>
         </div>
+    </div>
 
-    </section>
 </div>
 
-<div id="authModal" style="display: none;"></div>
-
 @section Scripts {
+    <script>
+        // Immediately show name + first letter from JWT (no API wait needed)
+        document.addEventListener('DOMContentLoaded', function () {
+            var name = window.FARMER_NAME || '';
+            if (name) {
+                document.getElementById('farmerNameLabel').textContent = name;
+                var letter = name.charAt(0).toUpperCase();
+                document.getElementById('avatarLetter').textContent = letter;
+            } else {
+                document.getElementById('avatarLetter').textContent = 'F';
+            }
+        });
+    </script>
     <script src="~/js/Farmer/profile.js" asp-append-version="true"></script>
 }

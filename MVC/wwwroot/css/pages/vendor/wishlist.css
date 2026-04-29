@@ -235,7 +235,9 @@
 }
 
 .wishlist-card-remove i {
-    font-size: 14px;
+    font-size: 16px;
+    line-height: 1;
+    display: block;
 }
 
 .wishlist-card-remove:hover {

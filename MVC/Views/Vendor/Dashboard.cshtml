@@ -13,14 +13,14 @@
                 <i class="fi fi-rr-chart-histogram"></i>
             </div>
             <div class="header-text">
-                <h1 class="page-title">Business Overview</h1>
-                <p class="page-subtitle">Track your orders, spending, and procurement trends</p>
+                <h1 class="page-title" data-i18n="db_title">Business Overview</h1>
+                <p class="page-subtitle" data-i18n="db_subtitle">Track your orders, spending, and procurement trends</p>
             </div>
         </div>
         <div class="header-right">
             <div class="live-status-pill">
                 <span class="pulse-dot"></span>
-                <span>Live Dashboard</span>
+                <span data-i18n="db_live">Live Dashboard</span>
             </div>
         </div>
     </div>
@@ -144,7 +144,7 @@
                             <i class="fi fi-rr-shopping-bag"></i>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label">Total Orders</span>
+                            <span class="stat-label" data-i18n="db_total_orders">Total Orders</span>
                             <h2 class="stat-value">${data.totalOrders}</h2>
                         </div>
                     </div>
@@ -154,7 +154,7 @@
                             <i class="fi fi-rr-coins"></i>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label">Total Spent</span>
+                            <span class="stat-label" data-i18n="db_total_spent">Total Spent</span>
                             <h2 class="stat-value">&#8377;${(data.totalSpent || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h2>
                         </div>
                     </div>
@@ -164,7 +164,7 @@
                             <i class="fi fi-rr-box-open"></i>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label">Total Volume</span>
+                            <span class="stat-label" data-i18n="db_total_volume">Total Volume</span>
                             <h2 class="stat-value">${(data.totalQuantity || 0).toLocaleString('en-IN')} <small style="font-size: 13px; opacity: 0.7;">kg</small></h2>
                         </div>
                     </div>
@@ -174,7 +174,7 @@
                             <i class="fi fi-rr-time-fast"></i>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label">Pending</span>
+                            <span class="stat-label" data-i18n="db_pending">Pending</span>
                             <h2 class="stat-value">${data.pendingOrders}</h2>
                         </div>
                     </div>
@@ -183,8 +183,8 @@
                 <div class="charts-row">
                     <div class="chart-card glass-morphism reveal" style="transition-delay: 0.2s">
                         <div class="chart-header">
-                            <h3 class="chart-title">Purchase Activity</h3>
-                            <span class="chart-period">Current Year</span>
+                            <h3 class="chart-title" data-i18n="db_purchase_activity">Purchase Activity</h3>
+                            <span class="chart-period" data-i18n="db_current_year">Current Year</span>
                         </div>
                         <div class="chart-container">
                             <canvas id="ordersChart"></canvas>
@@ -192,7 +192,7 @@
                     </div>
                     <div class="chart-card glass-morphism reveal" style="transition-delay: 0.25s">
                         <div class="chart-header">
-                            <h3 class="chart-title">Category Spend</h3>
+                            <h3 class="chart-title" data-i18n="db_category_spend">Category Spend</h3>
                         </div>
                         <div class="chart-container">
                             <canvas id="categoryChart"></canvas>
@@ -202,18 +202,18 @@
 
                 <div class="recent-card glass-morphism reveal" style="transition-delay: 0.3s">
                     <div class="recent-header">
-                        <h3 class="section-title"><i class="fi fi-rr-receipt" style="color: var(--emerald-primary)"></i> Recent Activity</h3>
-                        <a href="/Vendor/Orders" class="btn-link-premium">View Full History <i class="fi fi-rr-arrow-right"></i></a>
+                        <h3 class="section-title"><i class="fi fi-rr-receipt" style="color: var(--emerald-primary)"></i> <span data-i18n="db_recent_activity">Recent Activity</span></h3>
+                        <a href="/Vendor/Orders" class="btn-link-premium"><span data-i18n="db_view_history">View Full History</span> <i class="fi fi-rr-arrow-right"></i></a>
                     </div>
                     <div class="premium-table-wrapper">
                         <table class="premium-table">
                             <thead>
                                 <tr>
-                                    <th>ORDER NUMBER</th>
-                                    <th>DATE</th>
-                                    <th>TOTAL AMOUNT</th>
-                                    <th>STATUS</th>
-                                    <th class="text-right">ACTION</th>
+                                    <th data-i18n="db_table_order">ORDER NUMBER</th>
+                                    <th data-i18n="db_table_date">DATE</th>
+                                    <th data-i18n="db_table_amount">TOTAL AMOUNT</th>
+                                    <th data-i18n="db_table_status">STATUS</th>
+                                    <th class="text-right" data-i18n="db_table_action">ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -250,6 +250,7 @@
                     </div>
                 </div>
             `;
+            if (window.fbInit) fbInit();
             
             setTimeout(() => {
                 $(".reveal").addClass("visible");
@@ -272,7 +273,7 @@
                 data: {
                     labels: hasTrendData ? data.monthlyLabels : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                     datasets: [{
-                        label: 'Purchases',
+                        label: (window.fbT ? fbT('nav_orders') : 'Orders'),
                         data: hasTrendData ? data.monthlySalesData : [0, 0, 0, 0, 0, 0],
                         backgroundColor: hasTrendData ? emeraldGradient : '#f1f5f9',
                         borderRadius: 6,
@@ -319,7 +320,7 @@
             new Chart(ctxCategory, {
                 type: 'doughnut',
                 data: {
-                    labels: hasCategoryData ? data.categoryLabels : ['No Data'],
+                    labels: hasCategoryData ? data.categoryLabels : [(window.fbT ? fbT('db_no_data') : 'No Data')],
                     datasets: [{
                         data: hasCategoryData ? data.categoryData : [1],
                         backgroundColor: hasCategoryData ? chartColors : ['#f1f5f9'],

@@ -56,6 +56,8 @@ $(document).ready(function () {
        1. KPI CARDS
     ────────────────────────────────────────────── */
 
+    /* KPIs start in skeleton state via HTML class fb-skeleton-text-inline */
+
     $.ajax({
         url: `${window.API_BASE}/${window.FARMER_ID}/dashboard`,
         type: "GET",
@@ -67,34 +69,28 @@ $(document).ready(function () {
 
                 var d = res.data;
 
-                var earningsEl = $("#kpiEarnings");
-                earningsEl.removeClass("skeleton").text(
-                    "₹" + (d.kpis.totalPaymentsReceived || 0).toLocaleString("en-IN")
-                );
+                $("#kpiEarnings")
+                    .removeClass("fb-skeleton-text-inline")
+                    .text("₹" + (d.kpis.totalPaymentsReceived || 0).toLocaleString("en-IN"));
 
-                var cropsEl = $("#kpiCrops");
-                cropsEl.removeClass("skeleton").text(
-                    d.kpis.totalCropsListed || 0
-                );
+                $("#kpiCrops")
+                    .removeClass("fb-skeleton-text-inline")
+                    .text(d.kpis.totalCropsListed || 0);
 
-                var pendingEl = $("#kpiPendingPay");
-                pendingEl.removeClass("skeleton").text(
-                    "₹" + (
-                        d.kpis.pendingPaymentsAmount ||
-                        d.kpis.pendingQcRequests ||
-                        0
-                    ).toLocaleString("en-IN")
-                );
+                $("#kpiPendingPay")
+                    .removeClass("fb-skeleton-text-inline")
+                    .text("₹" + (d.kpis.pendingPaymentsAmount || d.kpis.pendingQcRequests || 0).toLocaleString("en-IN"));
 
-                var qcEl = $("#kpiQC");
-                qcEl.removeClass("skeleton").text(
-                    d.kpis.confirmedQcSlots || 0
-                );
+                $("#kpiQC")
+                    .removeClass("fb-skeleton-text-inline")
+                    .text(d.kpis.confirmedQcSlots || 0);
             }
         },
 
         error: function (xhr) {
             if (handleUnauthorized(xhr)) return;
+            // Clear skeletons on error too
+            $(".kpi-val").removeClass("fb-skeleton-text-inline").text("--");
             showLoadError("dashboard KPIs");
         }
     });
@@ -104,6 +100,8 @@ $(document).ready(function () {
        2. INCOME HISTORY CHART
     ────────────────────────────────────────────── */
 
+    FBSkeleton.show("#chartSkeleton", 1, 'chart');
+
     $.ajax({
 
         url: `${window.API_BASE}/${window.FARMER_ID}/income-chart`,
@@ -111,7 +109,7 @@ $(document).ready(function () {
         headers: authHeaders(),
 
         success: function (res) {
-            $("#chartSkeleton").hide();
+            FBSkeleton.hide("#chartSkeleton");
             $("#incomeChart").show().kendoChart({
 
                 title: { visible: false },
@@ -119,13 +117,18 @@ $(document).ready(function () {
 
                 chartArea: {
                     background: "transparent",
-                    margin: { top: 10 }
+                    margin: { top: 0, left: 0, right: 0, bottom: 0 }
+                },
+
+                plotArea: {
+                    background: "transparent",
+                    border: { width: 0 }
                 },
 
                 seriesDefaults: {
                     type: "column",
-                    style: "smooth",
-                    opacity: 0.2
+                    border: { width: 0 },
+                    overlay: { gradient: "none" }
                 },
 
                 dataSource: {
@@ -133,34 +136,43 @@ $(document).ready(function () {
                 },
 
                 series: [{
-                    name: "Actual Revenue (₹)",
+                    name: "Revenue (₹)",
                     field: "amount",
-                    color: "#38a169",
-                    line: { width: 3 }
+                    color: "#10b981",
+                    highlight: {
+                        visible: true
+                    }
                 }],
 
                 valueAxis: {
                     labels: {
-                        format: "₹{0}",
-                        color: "#718096"
+                        format: "₹{0:N0}",
+                        color: "#5a7257",
+                        font: "12px Inter, sans-serif"
                     },
                     line: { visible: false },
                     majorGridLines: {
-                        color: "rgba(0,0,0,0.04)"
+                        color: "rgba(0,0,0,0.06)",
+                        dashType: "dash"
                     }
                 },
 
                 categoryAxis: {
                     field: "month",
                     majorGridLines: { visible: false },
-                    labels: { color: "#718096" },
+                    labels: {
+                        color: "#5a7257",
+                        font: "12px Inter, sans-serif"
+                    },
                     line: { color: "rgba(0,0,0,0.08)" }
                 },
 
                 tooltip: {
                     visible: true,
-                    template:
-                        "#= series.name #: ₹#= kendo.toString(value, 'n0') #"
+                    background: "#0a2108",
+                    color: "#fff",
+                    border: { width: 0 },
+                    template: "₹#= kendo.toString(value, 'n0') #"
                 }
 
             });
@@ -200,7 +212,8 @@ $(document).ready(function () {
                 };
             });
 
-        $("#gridSkeleton").hide();
+        $("#gridSkeleton").empty().hide();
+        $("#paymentsGridSkeleton").empty().hide();
         $("#paymentsGrid").show().kendoGrid({
 
                 dataSource: {

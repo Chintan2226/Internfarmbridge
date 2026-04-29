@@ -136,8 +136,8 @@
             <div class="tracking-col-left animate-in">
                 <div class="timeline-card glass-morphism">
                     <div class="card-header-flex">
-                        <h3 class="section-title"><i class="fi fi-rr-stats"></i> Delivery Journey</h3>
-                        <span class="live-tag"><span class="dot"></span> Live Updates</span>
+                        <h3 class="section-title"><i class="fi fi-rr-stats"></i> <span data-i18n="track_journey">Delivery Journey</span></h3>
+                        <span class="live-tag"><span class="dot"></span> <span data-i18n="track_live">Live Updates</span></span>
                     </div>
                     
                     <div class="modern-timeline">
@@ -145,6 +145,9 @@
                             let state = 'pending';
                             if (index < currentIdx) state = 'completed';
                             else if (index === currentIdx) state = 'active';
+
+                            const localizedLabel = fbT(`track_step_${step.key}`);
+                            const localizedDesc = state === 'pending' ? fbT('track_step_next') : fbT(`track_step_${step.key}_desc`);
 
                             return `
                                 <div class="timeline-node ${state}">
@@ -155,8 +158,8 @@
                                         <div class="node-line"></div>
                                     </div>
                                     <div class="node-content">
-                                        <div class="node-label">${step.label}</div>
-                                        <div class="node-desc">${state === 'pending' ? 'Estimated next' : step.desc}</div>
+                                        <div class="node-label">${localizedLabel}</div>
+                                        <div class="node-desc">${localizedDesc}</div>
                                     </div>
                                 </div>
                             `;
@@ -171,11 +174,11 @@
                     <div class="cancel-icon-wrap">
                         <i class="fas fa-ban"></i>
                     </div>
-                    <h2>This Order was Cancelled</h2>
-                    <p>We're sorry, but this procurement request has been cancelled. No further tracking updates are available for this journey.</p>
+                    <h2 data-i18n="track_cancel_title">This Order was Cancelled</h2>
+                    <p data-i18n="track_cancel_desc">We're sorry, but this procurement request has been cancelled. No further tracking updates are available for this journey.</p>
                     <div class="cancel-reason">
-                        <small>STATUS UPDATE</small>
-                        <span>CANCELLATION CONFIRMED</span>
+                        <small data-i18n="track_status_label">STATUS UPDATE</small>
+                        <span data-i18n="track_status_terminated">CANCELLATION CONFIRMED</span>
                     </div>
                 </div>
             </div>
@@ -187,8 +190,8 @@
                 <div class="info-summary-card glass-morphism animate-in" style="animation-delay: 0.1s">
                     <div class="status-banner">
                         <div class="status-text-wrap">
-                            <small>CURRENT STATE</small>
-                            <h4 style="color: ${isCancelled ? '#ef4444' : 'var(--track-primary)'}">${statusText}</h4>
+                            <small data-i18n="track_status_label">CURRENT STATE</small>
+                            <h4 style="color: ${isCancelled ? '#ef4444' : 'var(--track-primary)'}">${fbT(`ord_status_${data.status.toLowerCase()}`)}</h4>
                         </div>
                         <div class="tracking-id-pill">
                             <i class="fi fi-rr-paper-plane"></i>
@@ -200,15 +203,15 @@
                         <div class="mini-pill">
                             <i class="fi fi-rr-calendar"></i>
                             <div>
-                                <small>Ordered On</small>
-                                <span>${new Date(data.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                                <small data-i18n="track_ordered_on">Ordered On</small>
+                                <span>${new Date(data.orderDate).toLocaleDateString(window.CURRENT_LANG === 'gu' ? 'gu-IN' : (window.CURRENT_LANG === 'hi' ? 'hi-IN' : 'en-IN'), { day: '2-digit', month: 'short' })}</span>
                             </div>
                         </div>
                         <div class="mini-pill ${isCancelled ? '' : 'highlight'}">
                             <i class="fi fi-rr-${isCancelled ? 'cross-circle' : 'time-fast'}"></i>
                             <div>
-                                <small>${isCancelled ? 'Status' : 'Expected By'}</small>
-                                <span>${isCancelled ? 'Terminated' : (data.estimatedDelivery ? new Date(data.estimatedDelivery).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'TBD')}</span>
+                                <small>${isCancelled ? fbT('db_table_status') : fbT('track_expected_by')}</small>
+                                <span>${isCancelled ? fbT('track_status_terminated') : (data.estimatedDelivery ? new Date(data.estimatedDelivery).toLocaleDateString(window.CURRENT_LANG === 'gu' ? 'gu-IN' : (window.CURRENT_LANG === 'hi' ? 'hi-IN' : 'en-IN'), { day: '2-digit', month: 'short' }) : 'TBD')}</span>
                             </div>
                         </div>
                     </div>
@@ -216,7 +219,7 @@
 
                 <!-- Package Contents -->
                 <div class="package-card glass-morphism animate-in" style="animation-delay: 0.2s">
-                    <h3 class="section-title"><i class="fi fi-rr-box-open"></i> Items In Order</h3>
+                    <h3 class="section-title"><i class="fi fi-rr-box-open"></i> <span data-i18n="track_items">Items In Order</span></h3>
                     <div class="item-list">
                         ${data.items.map(item => `
                             <div class="item-row">
@@ -232,19 +235,19 @@
                     <!-- Billing Breakdown -->
                     <div class="billing-breakdown">
                         <div class="billing-row">
-                            <span>Subtotal</span>
+                            <span data-i18n="track_subtotal">Subtotal</span>
                             <span>&#8377;${subtotal.toFixed(2)}</span>
                         </div>
                         <div class="billing-row">
-                            <span>Service & Delivery</span>
+                            <span data-i18n="track_service">Service & Delivery</span>
                             <span>&#8377;${otherFees.toFixed(2)}</span>
                         </div>
                     </div>
                     
                     <div class="grand-total-footer" style="${isCancelled ? 'background: #fef2f2; border-color: #fee2e2;' : ''}">
                         <div class="total-label-wrap">
-                            <span style="${isCancelled ? 'color: #ef4444;' : ''}">FINAL TOTAL</span>
-                            <small>${isCancelled ? 'Refund processed/pending' : 'Inclusive of all taxes'}</small>
+                            <span style="${isCancelled ? 'color: #ef4444;' : ''}" data-i18n="track_final">FINAL TOTAL</span>
+                            <small>${isCancelled ? fbT('track_refund_hint') : fbT('track_tax_hint')}</small>
                         </div>
                         <div class="total-amount-wrap" style="${isCancelled ? 'color: #991b1b;' : ''}">&#8377;${parseFloat(data.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
@@ -252,6 +255,7 @@
             </div>
         `;
         document.getElementById('trackingContent').innerHTML = html;
+        if (window.fbInit) fbInit();
         document.querySelector('.tracking-page-wrapper').classList.add('visible');
     }
 
@@ -261,14 +265,15 @@
                 <div class="error-icon">
                     <i class="fi fi-rr-exclamation"></i>
                 </div>
-                <h3>Journey Interrupted</h3>
+                <h3 data-i18n="track_err_title">Journey Interrupted</h3>
                 <p>${msg}</p>
                 <button class="btn-premium" onclick="location.href='/Vendor/Orders'">
                     <i class="fi fi-rr-arrow-left"></i>
-                    Return to My Orders
+                    <span data-i18n="track_err_back">Return to My Orders</span>
                 </button>
             </div>
         `; 
+        if (window.fbInit) fbInit();
     }
 
     window.addEventListener('load', loadTracking);

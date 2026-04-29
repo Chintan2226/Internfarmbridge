@@ -14,13 +14,13 @@
                 <i class="fi fi-rr-wallet"></i>
             </div>
             <div>
-                <h1 class="page-title">Payment History</h1>
-                <p class="page-subtitle">Track your transactions and download settlement receipts</p>
+                <h1 class="page-title" data-i18n="pay_title">Payment History</h1>
+                <p class="page-subtitle" data-i18n="pay_subtitle">Track your transactions and download settlement receipts</p>
             </div>
         </div>
         <div class="header-right d-none d-md-block">
             <button class="btn-receipt" onclick="loadPayments()">
-                <i class="fi fi-rr-refresh"></i> Refresh History
+                <i class="fi fi-rr-refresh"></i> <span data-i18n="pay_refresh">Refresh History</span>
             </button>
         </div>
     </header>
@@ -54,19 +54,19 @@
     <div class="payments-filter-bar">
         <h2 class="section-title">
             <i class="fi fi-rr-list-check" style="color: var(--emerald-primary)"></i> 
-            Recent Transactions
+            <span data-i18n="pay_recent_transactions">Recent Transactions</span>
         </h2>
         <div class="filter-group">
             <select id="payStatusFilter" class="payment-select">
-                <option value="all">All Statuses</option>
-                <option value="success">Successful</option>
-                <option value="pending">Pending</option>
-                <option value="failed">Failed</option>
+                <option value="all" data-i18n="pay_status_all">All Statuses</option>
+                <option value="success" data-i18n="pay_status_success">Successful</option>
+                <option value="pending" data-i18n="pay_status_pending">Pending</option>
+                <option value="failed" data-i18n="pay_status_failed">Failed</option>
             </select>
             <select id="payMethodFilter" class="payment-select">
-                <option value="all">All Methods</option>
-                <option value="upi">UPI Payments</option>
-                <option value="card">Card / NetBanking</option>
+                <option value="all" data-i18n="pay_method_all">All Methods</option>
+                <option value="upi" data-i18n="pay_method_upi">UPI Payments</option>
+                <option value="card" data-i18n="pay_method_card">Card / NetBanking</option>
             </select>
         </div>
     </div>
@@ -132,7 +132,7 @@
                         <i class="fi fi-rr-check-circle"></i>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-label">Total Settled</span>
+                        <span class="stat-label" data-i18n="pay_total_settled">Total Settled</span>
                         <h2 class="stat-value">₹${totalPaid.toLocaleString('en-IN')}</h2>
                     </div>
                 </div>
@@ -141,7 +141,7 @@
                         <i class="fi fi-rr-clock"></i>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-label">Pending Settlements</span>
+                        <span class="stat-label" data-i18n="pay_pending_settlements">Pending Settlements</span>
                         <h2 class="stat-value">${pendingCount}</h2>
                     </div>
                 </div>
@@ -150,7 +150,7 @@
                         <i class="fi fi-rr-receipt"></i>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-label">Total Transactions</span>
+                        <span class="stat-label" data-i18n="pay_total_transactions">Total Transactions</span>
                         <h2 class="stat-value">${payments.length}</h2>
                     </div>
                 </div>
@@ -179,7 +179,7 @@
                 container.innerHTML = `
                     <div class="text-center py-5">
                         <i class="fi fi-rr-inbox mb-3 d-block" style="font-size: 48px; color: #cbd5e1;"></i>
-                        <p class="text-muted">No transactions matching your filters</p>
+                        <p class="text-muted" data-i18n="pay_no_match">No transactions matching your filters</p>
                     </div>
                 `;
                 return;
@@ -189,13 +189,13 @@
                 <table class="premium-table">
                     <thead>
                         <tr>
-                            <th>TRANSACTION ID</th>
-                            <th>ORDER ID</th>
-                            <th>AMOUNT</th>
-                            <th>METHOD</th>
-                            <th>STATUS</th>
-                            <th>DATE</th>
-                            <th class="text-right">ACTION</th>
+                            <th data-i18n="pay_table_id">TRANSACTION ID</th>
+                            <th data-i18n="pay_table_order">ORDER ID</th>
+                            <th data-i18n="pay_table_amount">AMOUNT</th>
+                            <th data-i18n="pay_table_method">METHOD</th>
+                            <th data-i18n="pay_table_status">STATUS</th>
+                            <th data-i18n="pay_table_date">DATE</th>
+                            <th class="text-right" data-i18n="pay_table_action">ACTION</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -218,11 +218,11 @@
                         <td><a href="/Vendor/Orders" class="order-id-link">${p.orderId || 'N/A'}</a></td>
                         <td><span class="amount-text">₹${(p.amount || 0).toLocaleString('en-IN')}</span></td>
                         <td><span class="pay-method-badge">${method}</span></td>
-                        <td><span class="pay-status-badge ${statusClass}">${status}</span></td>
+                        <td><span class="pay-status-badge ${statusClass}">${(window.fbT ? fbT(status) : status)}</span></td>
                         <td><span class="date-text">${date}</span></td>
                         <td class="text-right">
                             <button class="btn-receipt" onclick="viewReceipt('${p.transactionId}', '${p.orderId}', ${p.amount}, '${status}', '${method}')">
-                                <i class="fi fi-rr-download"></i> Receipt
+                                <i class="fi fi-rr-download"></i> <span data-i18n="pay_receipt">Receipt</span>
                             </button>
                         </td>
                     </tr>
@@ -231,6 +231,7 @@
 
             html += '</tbody></table>';
             container.innerHTML = html;
+            if (window.fbInit) fbInit();
             setTimeout(() => $(".reveal").addClass("visible"), 50);
         }
 
@@ -238,8 +239,8 @@
             document.getElementById('tableContainer').innerHTML = `
                 <div class="text-center py-5">
                     <i class="fi fi-rr-triangle-warning mb-3 d-block" style="font-size: 48px; color: #ef4444;"></i>
-                    <p class="text-danger">Failed to load payment history. Please try again.</p>
-                    <button class="btn-receipt mt-3 mx-auto" onclick="loadPayments()">Retry Connection</button>
+                    <p class="text-danger" data-i18n="pay_load_fail">Failed to load payment history. Please try again.</p>
+                    <button class="btn-receipt mt-3 mx-auto" onclick="loadPayments()" data-i18n="pay_retry">Retry Connection</button>
                 </div>
             `;
         }
