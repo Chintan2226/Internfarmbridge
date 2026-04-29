@@ -504,6 +504,9 @@
         color: var(--green-700);
         border: 0.5px solid var(--green-200);
     }
+    .demand-badge.high { background: var(--green-50); color: var(--green-700); border-color: var(--green-200); }
+    .demand-badge.med  { background: var(--amber-50); color: #92400e; border-color: #fcd34d; }
+    .demand-badge.low  { background: var(--red-50); color: var(--red-600); border-color: #fca5a5; }
 
     /* ── Chart wrapper ────────────────────────────────── */
     .chart-wrap { padding: 14px; }
@@ -677,9 +680,9 @@
 
     function updateKpis(rows) {
         const total = rows.length;
-        const highs = rows.filter(r => demandClass(r.demand_label) === "high").length;
+        const highs = rows.filter(r => (r.raw_score || 0) > 0.10).length;
         const avg = total
-            ? (rows.reduce((sum, r) => sum + (parseFloat(r.trend || 0) || 0), 0) / total)
+            ? (rows.reduce((sum, r) => sum + ((parseFloat(r.raw_score) || 0) * 100), 0) / total)
             : 0;
 
         $("#kpiTotal").text(total.toString());
@@ -713,6 +716,8 @@
             const trend = parseFloat(row.trend_pct ?? 0);
             const up    = (row.trend_dir || "up") === "up";
             const dot   = DOT_COLORS[i % DOT_COLORS.length];
+            const cls   = demandClass(row.demand_label);
+            const label = row.demand_label || "Moderate";
             $grid.append(`
                 <div class="demand-tile">
                     <div class="demand-tile-name">
@@ -721,7 +726,7 @@
                     </div>
                     <div class="demand-price">₹${parseFloat(row.current_price_per_kg).toFixed(2)}/kg</div>
                     <div class="demand-trend">${up ? "▲" : "▼"} ${trend.toFixed(1)}% trend</div>
-                    <span class="demand-badge">High demand</span>
+                    <span class="demand-badge ${cls}">${label}</span>
                 </div>
             `);
         });

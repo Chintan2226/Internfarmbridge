@@ -90,7 +90,7 @@
                             <td data-label="Farmer">${item.farmerName || "N/A"}</td>
                             <td data-label="Crop">${item.cropType || "N/A"}</td>
                             <td data-label="Qty">${item.quantity || 0} ${item.unit || "kg"}</td>
-                            <td data-label="Asking Price">â‚¹${Number(item.askingPrice || 0).toLocaleString('en-IN')}</td>
+                            <td data-label="Asking Price">₹${Number(item.askingPrice || 0).toLocaleString('en-IN')}</td>
                             <td data-label="Status">${statusPill(item.status)}</td>
                             <td data-label="Date & Time">${fmtDateTime(item)}</td>
                             <td data-label="Action">

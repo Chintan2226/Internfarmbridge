@@ -36,12 +36,14 @@ namespace MVC.Filters
                 // Reject expired tokens or tokens that don't belong to the farmer role
                 if (jwt.ValidTo < DateTime.UtcNow || role?.ToLower() != "farmer")
                 {
+                    Console.WriteLine($"Token rejected. ValidTo: {jwt.ValidTo}, UtcNow: {DateTime.UtcNow}, Role: {role}");
                     context.Result = new RedirectToActionResult("Login", "Farmer", null);
                     return;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Token parsing failed: {ex.Message}");
                 context.Result = new RedirectToActionResult("Login", "Farmer", null);
                 return;
             }

@@ -2,10 +2,12 @@
 
 const FO_NAV = [
     { icon: 'fi fi-rr-apps',         i18n: 'nav_dashboard',   text: 'Dashboard',          url: '/FieldOfficer/Dashboard' },
-    { icon: 'fi fi-rr-clipboard-list', i18n: 'nav_qc_requests', text: 'QC Requests',       url: '/FieldOfficer/QCRequest' },
-    { icon: 'fi fi-rr-search-alt',   i18n: 'nav_history',     text: 'Inspection History',  url: '/FieldOfficer/InspectionHistory' },
-    { icon: 'fi fi-rr-credit-card',  i18n: 'nav_payments',    text: 'Payment History',     url: '/FieldOfficer/PaymentHistory' },
     { icon: 'fi fi-rr-user',         i18n: 'nav_profile',     text: 'Profile',             url: '/FieldOfficer/Profile' },
+    { icon: 'fi fi-rr-clipboard-list', i18n: 'nav_qc_requests', text: 'QC Requests',       url: '/FieldOfficer/QCRequest' },
+    { icon: 'fi fi-rr-settings-sliders', i18n: 'nav_quality_params', text: 'Quality Params', url: '/FieldOfficer/QualityParams' },
+    { icon: 'fi fi-rr-check-circle',   i18n: 'nav_history',     text: 'Inspection History',  url: '/FieldOfficer/InspectionHistory' },
+    { icon: 'fi fi-rr-book-open-reader', i18n: 'nav_catalog', text: 'Catalog',       url: '/FieldOfficer/Catalog' },
+    { icon: 'fi fi-rr-credit-card',  i18n: 'nav_payments',    text: 'Payment History',     url: '/FieldOfficer/PaymentHistory' }
 ];
 
 let foNotifs = [], foCurrentTab = 'all';
@@ -170,9 +172,20 @@ async function foClearAll() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (window.jQuery) {
+        $.ajaxSetup({
+            beforeSend: function (xhr) {
+                const token = getFoAuthToken();
+                if (token) {
+                    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                }
+            }
+        });
+    }
     buildFoNav();
     buildFoDrawerNav();
     buildFoBottomNav();
+    loadFoUserProfile();
     
     await getFoUnreadCount();
     await getFoNotifications();
@@ -326,6 +339,65 @@ window.foClearAll = foClearAll;
 window.foMarkNotificationAsRead = foMarkNotificationAsRead;
 window.foDeleteNotification = foDeleteNotification;
 window.foTab = foTab;
+
+function loadFoUserProfile() {
+    const avatarEl = document.getElementById('foAvatar');
+    if (!avatarEl) return;
+    
+    const base = window.API_BASE || 'http://localhost:5020/api/FieldOfficer';
+    foAuthFetch(base + `/profile/me`)
+        .then(r => r.json())
+        .then(res => {
+            if (res?.success && res.data) {
+                const user = res.data;
+                const initials = (user.firstName?.[0] || 'F') + (user.lastName?.[0] || 'O');
+                avatarEl.textContent = initials.toUpperCase();
+                avatarEl.title = user.firstName + ' ' + user.lastName;
+                if (user.profileImageUrl) {
+                    avatarEl.style.backgroundImage = `url('${user.profileImageUrl}')`;
+                    avatarEl.style.backgroundSize = 'cover';
+                    avatarEl.style.backgroundPosition = 'center';
+                    avatarEl.textContent = '';
+                }
+            }
+        })
+        .catch(() => { });
+}
+
+function foOpenAuthorizedWindow(path) {
+    const token = getFoAuthToken();
+    if (!token) {
+        handleFoUnauthorized({ status: 401 });
+        return;
+    }
+
+    const base = window.API_BASE || 'http://localhost:5020/api/FieldOfficer';
+    const url = path.startsWith('http') ? path : `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+    
+    fetch(url, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` }
+    })
+        .then(response => {
+            if (handleFoUnauthorized(response)) return null;
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            if (!blob) return;
+            const objectUrl = URL.createObjectURL(blob);
+            window.open(objectUrl, '_blank', 'noopener');
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+        })
+        .catch(() => {
+            showFoLoadFailedAlert('report');
+        });
+}
+
+window.loadFoUserProfile = loadFoUserProfile;
+window.foOpenAuthorizedWindow = foOpenAuthorizedWindow;
 
 /* Toast utility */
 window.showFoToast = function (message, type = 'success') {

@@ -821,6 +821,7 @@ async def predict_admin_post(req: AdminPredictRequest):
             "trend": trend_str,
             "trend_pct": abs(trend_pct),
             "trend_dir": "up" if r["raw_score"] >= 0 else "down",
+            "demand_label": r["demand_label"],
         })
 
     response = {

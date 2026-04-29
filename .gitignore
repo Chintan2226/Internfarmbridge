@@ -27,7 +27,10 @@ publish/
 # ==============================
 # 🔹 ASP.NET / CONFIG
 # ==============================
+appsettings.json
 appsettings.Development.json
+API/appsettings.json
+MVC/appsettings.json
 secrets.json
 # Note: appsettings.json is usually pushed to GitHub. 
 # Only ignore it if it contains sensitive production passwords!

@@ -65,13 +65,13 @@
             align-items: center;
             gap: 8px;
         }
-        .fo-section-title i { color: #3b82f6; }
+        .fo-section-title i { color: #1a5c2a; }
         .fo-view-all {
             font-size: 13px;
             font-weight: 600;
-            color: #3b82f6;
+            color: #1a5c2a;
             text-decoration: none;
-            background: rgba(59,130,246,0.08);
+            background: rgba(26,92,42,0.08);
             padding: 6px 14px;
             border-radius: 20px;
             border: none;
@@ -79,20 +79,20 @@
             transition: all 0.2s;
             font-family: inherit;
         }
-        .fo-view-all:hover { background: rgba(59,130,246,0.15); }
+        .fo-view-all:hover { background: rgba(26,92,42,0.15); }
 
-        /* KPI card overrides for FO blue theme */
-        .fo-blue-card .kpi-icon  { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        /* KPI card overrides for FO legacy green theme */
+        .fo-green-card1 .kpi-icon { background: linear-gradient(135deg, #2e7d32, #1a5c2a); }
         .fo-amber-card .kpi-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .fo-green-card .kpi-icon { background: linear-gradient(135deg, #10b981, #047857); }
+        .fo-green-card2 .kpi-icon { background: linear-gradient(135deg, #10b981, #047857); }
         .fo-violet-card .kpi-icon{ background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-        .fo-blue-card  { border-top: 3px solid #3b82f6 !important; }
+        .fo-green-card1 { border-top: 3px solid #2e7d32 !important; }
         .fo-amber-card { border-top: 3px solid #f59e0b !important; }
-        .fo-green-card { border-top: 3px solid #10b981 !important; }
+        .fo-green-card2 { border-top: 3px solid #10b981 !important; }
         .fo-violet-card{ border-top: 3px solid #8b5cf6 !important; }
-        .fo-blue-card  .kpi-val { color: #1d4ed8; }
+        .fo-green-card1 .kpi-val { color: #1a5c2a; }
         .fo-amber-card .kpi-val { color: #d97706; }
-        .fo-green-card .kpi-val { color: #059669; }
+        .fo-green-card2 .kpi-val { color: #059669; }
         .fo-violet-card .kpi-val{ color: #7c3aed; }
     </style>
 }
@@ -103,13 +103,13 @@
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
         <div>
             <h2 style="margin:0; font-size:22px; font-weight:800; color:#0a2108; display:flex; align-items:center; gap:10px;">
-                <i class="fi fi-sr-apps" style="color:#3b82f6;"></i> Field Officer Dashboard
+                <i class="fi fi-sr-apps" style="color:#1a5c2a;"></i> Field Officer Dashboard
             </h2>
             <p style="margin:4px 0 0; font-size:13px; color:#5a7257;">Your daily inspection overview and schedule</p>
         </div>
         <div id="foOfficerBadge"
-             style="display:flex; align-items:center; gap:8px; background:rgba(59,130,246,0.1);
-                    color:#1d4ed8; padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600;">
+             style="display:flex; align-items:center; gap:8px; background:rgba(26,92,42,0.1);
+                    color:#0d4620; padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600;">
             <i class="fi fi-rr-shield-check"></i>
             <span id="foOfficerName">Loading...</span>
         </div>
@@ -121,7 +121,7 @@
     <!-- KPI Cards -->
     <div class="fo-kpi-grid">
 
-        <div class="kpi-card fo-blue-card">
+        <div class="kpi-card fo-green-card1">
             <div class="kpi-top">
                 <div class="kpi-lbl">Pending Requests</div>
                 <div class="kpi-icon"><i class="fi fi-sr-hourglass-end"></i></div>
@@ -332,7 +332,7 @@
                         template: function (d) {
                             var s = normalizeStatus(d.status);
                             if (s === 'in progress' || s === 'scheduled')
-                                return `<button class="premium-btn" style="padding:6px 14px; font-size:12px; border-radius:8px; background:linear-gradient(135deg,#3b82f6,#1d4ed8);" onclick="location.href='/FieldOfficer/QualityForm?id=${d.id}'"><i class="fi fi-rr-clipboard-list"></i> Assess</button>`;
+                                return `<button class="premium-btn" style="padding:6px 14px; font-size:12px; border-radius:8px; background:linear-gradient(135deg,#1a5c2a,#0d4620);" onclick="location.href='/FieldOfficer/QualityForm?id=${d.id}'"><i class="fi fi-rr-clipboard-list"></i> Assess</button>`;
                             if (s === 'completed')
                                 return `<button class="btn-premium-ghost" style="padding:6px 14px; font-size:12px;" onclick="location.href='/FieldOfficer/InspectionDetail?id=${d.id}'"><i class="fi fi-rr-eye"></i> View</button>`;
                             return '<span style="color:#aaa;">—</span>';

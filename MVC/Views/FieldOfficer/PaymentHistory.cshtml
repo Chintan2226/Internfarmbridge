@@ -146,7 +146,7 @@
             </div>
             <div class="ph-card">
                 <div class="ph-card-label">Total Amount</div>
-                <div class="ph-card-value">â‚¹${Number(totalAmount).toLocaleString('en-IN')}</div>
+                <div class="ph-card-value">₹${Number(totalAmount).toLocaleString('en-IN')}</div>
             </div>
         `;
 
@@ -177,7 +177,7 @@
                 <tr>
                     <td data-label="UTR / Reference"><strong>${p.utrReference}</strong></td>
                     <td data-label="Crop">${p.cropName}</td>
-                    <td data-label="Amount" class="ph-amount">â‚¹${Number(p.amount).toLocaleString('en-IN')}</td>
+                    <td data-label="Amount" class="ph-amount">₹${Number(p.amount).toLocaleString('en-IN')}</td>
                     <td data-label="Type"><span class="ph-type-badge ${typeClass}">${typeText}</span></td>
                     <td data-label="Status"><span class="ph-status-badge ${statusClass}">${statusText}</span></td>
                     <td data-label="Date">${date}</td>
@@ -247,7 +247,7 @@
             </div>
             <div class="ph-detail-row">
                 <span class="ph-detail-label">Amount</span>
-                <span class="ph-detail-value">â‚¹${Number(payment.amount).toLocaleString('en-IN')}</span>
+                <span class="ph-detail-value">₹${Number(payment.amount).toLocaleString('en-IN')}</span>
             </div>
             <div class="ph-detail-row">
                 <span class="ph-detail-label">Payment Mode</span>
