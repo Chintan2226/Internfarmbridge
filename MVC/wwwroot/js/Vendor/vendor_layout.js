@@ -126,7 +126,7 @@ async function markSingleRead(id) {
 }
 
 async function deleteSingleNotif(id) {
-    if (!confirm('Delete this notification?')) return;
+    if (!confirm(fbT('notif_confirm_delete'))) return;
 
     try {
         await fvAuthFetch(`${NOTIF_API_BASE}/DeleteNotification`, {
@@ -138,10 +138,10 @@ async function deleteSingleNotif(id) {
         renderNotifList();
         getUnreadCount();
 
-        showFvToast('Notification deleted');
+        showFvToast(fbT('notif_deleted'));
 
     } catch {
-        showFvToast('Delete failed', 'error');
+        showFvToast(fbT('notif_delete_fail'), 'error');
     }
 }
 
@@ -156,7 +156,7 @@ async function fvMarkAllRead() {
         renderNotifList();
         getUnreadCount();
 
-        showFvToast('All marked as read');
+        showFvToast(fbT('notif_marked_read'));
 
     } catch {
         showFvToast('Update failed', 'error');
@@ -164,7 +164,7 @@ async function fvMarkAllRead() {
 }
 
 async function fvClearAll() {
-    if (!confirm('Clear all notifications?')) return;
+    if (!confirm(fbT('notif_confirm_clear'))) return;
 
     try {
         await fvAuthFetch(`${NOTIF_API_BASE}/ClearAllNotifications`, {
@@ -175,10 +175,10 @@ async function fvClearAll() {
         renderNotifList();
         getUnreadCount();
 
-        showFvToast('All notifications cleared');
+        showFvToast(fbT('notif_cleared'));
 
     } catch {
-        showFvToast('Clear failed', 'error');
+        showFvToast(fbT('notif_clear_fail'), 'error');
     }
 }
 
@@ -205,7 +205,7 @@ function renderNotifList() {
         : fvNotifs;
 
     if (!data.length) {
-        list.innerHTML = `<div class="fv-notif-empty">🔔 No notifications</div>`;
+        list.innerHTML = `<div class="fv-notif-empty">🔔 ${fbT('notif_no_new')}</div>`;
         return;
     }
 
@@ -216,7 +216,7 @@ function renderNotifList() {
                     <i class="fi fi-rr-bell" style="font-size:18px;color:var(--fv-primary)"></i>
                 </div>
                 <div style="flex:1">
-                    <div style="font-size:13px;font-weight:600;">${esc(n.title || 'Notification')}</div>
+                    <div style="font-size:13px;font-weight:600;">${esc(n.title || fbT('notif_default_title'))}</div>
                     <div style="font-size:12px;color:var(--fv-muted); margin-top:4px;">${esc(n.message || '')}</div>
                     <div style="font-size:10px;color:#9ca3af; margin-top:4px;">${formatDate(n.createdAt)}</div>
                 </div>

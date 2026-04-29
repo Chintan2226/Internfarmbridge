@@ -9,48 +9,48 @@
 <div id="locationModal" class="location-modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="section-title" id="locationModalTitle" style="margin:0">Add Delivery Location</h3>
+            <h3 class="section-title" id="locationModalTitle" data-i18n="prof_add_loc_title" style="margin:0">Add Delivery Location</h3>
             <button onclick="closeLocationModal()" style="background:none; border:none; font-size:24px; color:#94a3b8; cursor:pointer">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label class="form-label">Address Line <span style="color:#ef4444">*</span></label>
+                <label class="form-label"><span data-i18n="prof_addr_label">Address Line</span> <span style="color:#ef4444">*</span></label>
                 <div class="input-wrapper">
                     <i class="fi fi-rr-map-marker input-icon"></i>
-                    <input type="text" class="form-control" id="modalAddress" placeholder="Street, Area, Building">
+                    <input type="text" class="form-control" id="modalAddress" data-i18n-placeholder="prof_addr_ph" placeholder="Street, Area, Building">
                 </div>
             </div>
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">City <span style="color:#ef4444">*</span></label>
+                    <label class="form-label"><span data-i18n="prof_city_label">City</span> <span style="color:#ef4444">*</span></label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-city input-icon"></i>
-                        <input type="text" class="form-control" id="modalCity" placeholder="City">
+                        <input type="text" class="form-control" id="modalCity" data-i18n-placeholder="prof_city_ph" placeholder="City">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">State <span style="color:#ef4444">*</span></label>
+                    <label class="form-label"><span data-i18n="prof_state_label">State</span> <span style="color:#ef4444">*</span></label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-map input-icon"></i>
-                        <input type="text" class="form-control" id="modalState" placeholder="State">
+                        <input type="text" class="form-control" id="modalState" data-i18n-placeholder="prof_state_ph" placeholder="State">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Pincode <span style="color:#ef4444">*</span></label>
+                    <label class="form-label"><span data-i18n="prof_pin_label">Pincode</span> <span style="color:#ef4444">*</span></label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-mailbox input-icon"></i>
-                        <input type="text" class="form-control" id="modalPincode" placeholder="Pincode">
+                        <input type="text" class="form-control" id="modalPincode" data-i18n-placeholder="prof_pin_ph" placeholder="Pincode">
                     </div>
                 </div>
                 <div class="form-group" style="display: flex; align-items: center; gap: 10px; padding-top: 30px;">
                     <input type="checkbox" id="modalIsDefault" style="width: 20px; height: 20px; cursor: pointer;">
-                    <label for="modalIsDefault" class="form-label" style="margin:0; cursor: pointer;">Set as Default Address</label>
+                    <label for="modalIsDefault" class="form-label" style="margin:0; cursor: pointer;" data-i18n="prof_set_default">Set as Default Address</label>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-premium btn-outline" style="padding: 10px 20px;" onclick="closeLocationModal()">Cancel</button>
-            <button class="btn-premium btn-emerald" style="padding: 10px 20px;" onclick="saveLocation()">Save Location</button>
+            <button class="btn-premium btn-outline" style="padding: 10px 20px;" onclick="closeLocationModal()" data-i18n="prof_cancel">Cancel</button>
+            <button class="btn-premium btn-emerald" style="padding: 10px 20px;" onclick="saveLocation()" data-i18n="prof_save_loc">Save Location</button>
         </div>
     </div>
 </div>
@@ -69,19 +69,19 @@
         <input type="file" id="photoInput" accept="image/jpeg,image/png" style="display:none" onchange="uploadPhoto(this)">
         
         <h2 class="profile-name" id="profileName"><div class="skeleton" style="height:28px; width:150px; margin:0 auto"></div></h2>
-        <p class="profile-role">Registered Vendor</p>
+        <p class="profile-role" data-i18n="prof_role">Registered Vendor</p>
 
         <div class="profile-stats">
             <div class="profile-stat">
-                <span class="stat-label">Member Since</span>
+                <span class="stat-label" data-i18n="prof_member_since">Member Since</span>
                 <span class="stat-value" id="memberSince">-</span>
             </div>
             <div class="profile-stat">
-                <span class="stat-label">Total Orders</span>
+                <span class="stat-label" data-i18n="prof_total_orders">Total Orders</span>
                 <span class="stat-value" id="totalOrders">-</span>
             </div>
             <div class="profile-stat">
-                <span class="stat-label">Total Spent</span>
+                <span class="stat-label" data-i18n="prof_total_spent">Total Spent</span>
                 <span class="stat-value" id="totalSpent">-</span>
             </div>
         </div>
@@ -93,55 +93,55 @@
         <section class="glass-card section-card">
             <div class="section-header">
                 <h2 class="section-title">
-                    <i class="fi fi-rr-briefcase"></i> Business Information
+                    <i class="fi fi-rr-briefcase"></i> <span data-i18n="prof_biz_info">Business Information</span>
                 </h2>
                 <div class="header-actions">
                     <button class="btn-premium btn-emerald" onclick="saveProfile()">
-                        <i class="fi fi-rr-disk"></i> Save Profile
+                        <i class="fi fi-rr-disk"></i> <span data-i18n="prof_save">Save Profile</span>
                     </button>
                 </div>
             </div>
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">Business Name <span style="color:#ef4444">*</span></label>
+                    <label class="form-label" data-i18n="prof_biz_name">Business Name <span style="color:#ef4444">*</span></label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-building input-icon"></i>
-                        <input type="text" class="form-control" id="businessName" placeholder="Enter business name">
+                        <input type="text" class="form-control" id="businessName" data-i18n-placeholder="prof_biz_name_ph" placeholder="Enter business name">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">GSTIN / Tax ID</label>
+                    <label class="form-label" data-i18n="prof_gstin">GSTIN / Tax ID</label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-document input-icon"></i>
                         <input type="text" class="form-control readonly" id="gstin" readonly>
                     </div>
                     <div class="warning-hint">
-                        <i class="fi fi-rr-info" style="font-size:14px"></i> Tax details locked. Contact support to update.
+                        <i class="fi fi-rr-info" style="font-size:14px"></i> <span data-i18n="prof_gst_hint">Tax details locked. Contact support to update.</span>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Contact Person <span style="color:#ef4444">*</span></label>
+                    <label class="form-label" data-i18n="prof_contact">Contact Person <span style="color:#ef4444">*</span></label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-user input-icon"></i>
-                        <input type="text" class="form-control" id="contactPerson" placeholder="Primary contact name">
+                        <input type="text" class="form-control" id="contactPerson" data-i18n-placeholder="prof_contact_ph" placeholder="Primary contact name">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Phone Number <span style="color:#ef4444">*</span></label>
+                    <label class="form-label" data-i18n="prof_phone">Phone Number <span style="color:#ef4444">*</span></label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-phone-call input-icon"></i>
-                        <input type="tel" class="form-control" id="phone" placeholder="+91 XXXX-XXXXXX">
+                        <input type="tel" class="form-control" id="phone" data-i18n-placeholder="prof_phone_ph" placeholder="+91 XXXX-XXXXXX">
                     </div>
                 </div>
                 <div class="form-group full-width">
-                    <label class="form-label">Official Email Address</label>
+                    <label class="form-label" data-i18n="prof_email">Official Email Address</label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-envelope input-icon"></i>
                         <input type="email" class="form-control readonly" id="email" readonly>
                     </div>
                     <div class="warning-hint">
-                        <i class="fi fi-rr-info" style="font-size:14px"></i> Verified email address cannot be changed directly.
+                        <i class="fi fi-rr-info" style="font-size:14px"></i> <span data-i18n="prof_email_hint">Verified email address cannot be changed directly.</span>
                     </div>
                 </div>
             </div>
@@ -151,11 +151,11 @@
         <section class="glass-card section-card">
             <div class="section-header">
                 <h2 class="section-title">
-                    <i class="fi fi-rr-truck-side"></i> Delivery Locations
+                    <i class="fi fi-rr-truck-side"></i> <span data-i18n="prof_delivery">Delivery Locations</span>
                 </h2>
                 <div class="header-actions">
-                    <button class="btn-premium btn-outline" onclick="openAddLocationModal()">
-                        <i class="fi fi-rr-add"></i> Add New
+                    <button class="btn-premium btn-outline" onclick="openLocationModal()">
+                        <i class="fi fi-rr-add"></i> <span data-i18n="prof_add_new">Add New</span>
                     </button>
                 </div>
             </div>
@@ -171,28 +171,28 @@
         <section class="glass-card section-card">
             <div class="section-header">
                 <h2 class="section-title">
-                    <i class="fi fi-rr-shield-check"></i> Security & Password
+                    <i class="fi fi-rr-shield-check"></i> <span data-i18n="prof_security">Security & Password</span>
                 </h2>
                 <div class="header-actions">
                     <button class="btn-premium btn-emerald" onclick="changePassword()">
-                        <i class="fi fi-rr-refresh"></i> Update Password
+                        <i class="fi fi-rr-refresh"></i> <span data-i18n="prof_update_pw">Update Password</span>
                     </button>
                 </div>
             </div>
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">Current Password</label>
+                    <label class="form-label" data-i18n="prof_curr_pw">Current Password</label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-lock input-icon"></i>
                         <input type="password" class="form-control" id="currentPw" placeholder="••••••••">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">New Password</label>
+                    <label class="form-label" data-i18n="prof_new_pw">New Password</label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-key input-icon"></i>
-                        <input type="password" class="form-control" id="newPw" placeholder="8+ chars with special char" onkeyup="checkPasswordStrength()">
+                        <input type="password" class="form-control" id="newPw" data-i18n-placeholder="prof_pw_len_hint" placeholder="8+ chars with special char" onkeyup="checkPasswordStrength()">
                     </div>
                     <div class="strength-meter">
                         <div id="strengthBar" class="strength-bar"></div>
@@ -200,7 +200,7 @@
                     <div id="strengthText" class="strength-text"></div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Confirm New Password</label>
+                    <label class="form-label" data-i18n="prof_conf_pw">Confirm New Password</label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-shield-check input-icon"></i>
                         <input type="password" class="form-control" id="confirmPw" placeholder="Confirm password">
@@ -235,7 +235,7 @@
                     updateAvatar(profile.profileImageUrl || profile.ProfileImageUrl, bizName);
 
                     document.getElementById('memberSince').innerText =
-                        profile.memberSince ? new Date(profile.memberSince).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+                        profile.memberSince ? new Date(profile.memberSince).toLocaleDateString(window.CURRENT_LANG === 'gu' ? 'gu-IN' : (window.CURRENT_LANG === 'hi' ? 'hi-IN' : 'en-IN'), { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
 
                     document.getElementById('totalOrders').innerText = stats?.totalOrders || stats?.TotalOrders || 0;
                     document.getElementById('totalSpent').innerText =
@@ -285,8 +285,8 @@
                 container.innerHTML = `
                     <div class="location-item full-width" style="text-align:center; padding: 60px; border-style: dashed;">
                         <i class="fi fi-rr-map-marker-cross" style="font-size: 40px; color: #94a3b8; display:block; margin-bottom:20px"></i>
-                        <p style="color: #64748b; font-weight: 700; font-size: 18px;">No delivery locations found.</p>
-                        <p style="font-size:14px; color: #94a3b8; margin-top:8px">Add a location to start ordering produce.</p>
+                        <p style="color: #64748b; font-weight: 700; font-size: 18px;" data-i18n="prof_no_loc">No delivery locations found.</p>
+                        <p style="font-size:14px; color: #94a3b8; margin-top:8px" data-i18n="prof_add_loc_desc">Add a location to start ordering produce.</p>
                     </div>`;
                 return;
             }
@@ -295,36 +295,40 @@
                 const id = loc.id || loc.Id;
                 return `
                 <div class="location-item ${loc.isDefault || loc.IsDefault ? 'is-default' : ''}">
-                    ${(loc.isDefault || loc.IsDefault) ? '<span class="location-tag">Default</span>' : ''}
+                    ${(loc.isDefault || loc.IsDefault) ? `<span class="location-tag">${fbT('prof_loc_default')}</span>` : ''}
                     <div class="loc-address">
                         ${escapeHtml(loc.addressLine1 || loc.address || loc.Address || '')}
                     </div>
                     <div class="loc-meta-grid">
                         <div class="loc-meta-item">
-                            <i class="fi fi-rr-city"></i> ${escapeHtml(loc.city || loc.City || '')}
+                            <i class="fi fi-rr-city"></i> <strong>${fbT('prof_loc_city')}:</strong> ${escapeHtml(loc.city || loc.City || '')}
                         </div>
                         <div class="loc-meta-item">
-                            <i class="fi fi-rr-map"></i> ${escapeHtml(loc.state || loc.State || '')}
+                            <i class="fi fi-rr-map"></i> <strong>${fbT('prof_loc_state')}:</strong> ${escapeHtml(loc.state || loc.State || '')}
                         </div>
                         <div class="loc-meta-item">
-                            <i class="fi fi-rr-mailbox"></i> ${escapeHtml(loc.zipCode || loc.pincode || loc.Pincode || '')}
+                            <i class="fi fi-rr-mailbox"></i> <strong>${fbT('prof_loc_pin')}:</strong> ${escapeHtml(loc.zipCode || loc.pincode || loc.Pincode || '')}
                         </div>
                     </div>
                     <div class="loc-actions">
                         <button class="action-btn btn-edit" onclick="openEditLocationModal(${id})">
-                            <i class="fi fi-rr-edit"></i> Edit
+                            <i class="fi fi-rr-edit"></i> ${(window.fbT ? fbT('prof_loc_edit') : 'Edit')}
                         </button>
                         <button class="action-btn btn-delete" onclick="deleteLocation(${id})">
-                            <i class="fi fi-rr-trash"></i> Delete
+                            <i class="fi fi-rr-trash"></i> ${(window.fbT ? fbT('prof_loc_delete') : 'Delete')}
                         </button>
                     </div>
                 </div>
             `; }).join('');
         }
 
-        function openAddLocationModal() {
+        function openLocationModal() {
             editingLocationId = null;
-            document.getElementById('locationModalTitle').innerText = 'Add Delivery Location';
+            const titleEl = document.getElementById('locationModalTitle');
+            titleEl.setAttribute('data-i18n', 'prof_add_loc_title');
+            if (window.fbApplyLang) fbApplyLang(window.CURRENT_LANG);
+            else if (window.fbInit) fbInit();
+            
             document.getElementById('modalAddress').value = '';
             document.getElementById('modalCity').value = '';
             document.getElementById('modalState').value = '';
@@ -338,7 +342,10 @@
             if (!location) return;
 
             editingLocationId = id;
-            document.getElementById('locationModalTitle').innerText = 'Edit Location';
+            const titleEl = document.getElementById('locationModalTitle');
+            titleEl.setAttribute('data-i18n', 'prof_edit_loc_title');
+            if (window.fbApplyLang) fbApplyLang(window.CURRENT_LANG);
+            else if (window.fbInit) fbInit();
             document.getElementById('modalAddress').value = location.addressLine1 || location.address || '';
             document.getElementById('modalCity').value = location.city || '';
             document.getElementById('modalState').value = location.state || '';
@@ -401,15 +408,26 @@
 
         async function deleteLocation(id) {
             Swal.fire({
-                title: 'Are you sure?',
-                text: "This delivery location will be permanently removed.",
+                title: window.fbT ? fbT('prof_delete_confirm_title') : 'Are you sure?',
+                text: window.fbT ? fbT('prof_delete_confirm_msg') : "This delivery location will be permanently removed.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#059669',
+                confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'Yes, delete it!'
+                confirmButtonText: window.fbT ? fbT('prof_loc_delete') : 'Delete',
+                cancelButtonText: window.fbT ? fbT('prof_cancel') : 'Cancel',
+                borderRadius: '16px',
+                customClass: {
+                    popup: 'glass-morphism'
+                }
             }).then(async (result) => {
                 if (result.isConfirmed) {
+                    Swal.fire({
+                        title: window.fbT ? fbT('prof_delete_loading') : 'Deleting...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                    
                     try {
                         const response = await authorizedFetch(`${API_URL}/addresses/delete/${id}`, { method: 'DELETE' });
                         const res = await response.json();
@@ -597,6 +615,9 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', loadProfile);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfile();
+            if (window.fbInit) fbInit();
+        });
     </script>
 }

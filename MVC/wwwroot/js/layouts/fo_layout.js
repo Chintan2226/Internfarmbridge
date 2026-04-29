@@ -1,10 +1,11 @@
 /* FarmBridge — Field Officer Layout JS */
 
 const FO_NAV = [
-    { icon: 'fi fi-rr-apps', i18n: 'nav_dashboard', text: 'Dashboard', url: '/FieldOfficer/Dashboard' },
-    { icon: 'fi fi-rr-users', i18n: 'nav_my_farmers', text: 'My Farmers', url: '/FieldOfficer/Farmers' },
-    { icon: 'fi fi-rr-checkbox', i18n: 'nav_approvals', text: 'Approvals', url: '/FieldOfficer/Approvals' },
-    { icon: 'fi fi-rr-user', i18n: 'nav_profile', text: 'Profile', url: '/FieldOfficer/Profile' },
+    { icon: 'fi fi-rr-apps',         i18n: 'nav_dashboard',   text: 'Dashboard',          url: '/FieldOfficer/Dashboard' },
+    { icon: 'fi fi-rr-clipboard-list', i18n: 'nav_qc_requests', text: 'QC Requests',       url: '/FieldOfficer/QCRequest' },
+    { icon: 'fi fi-rr-search-alt',   i18n: 'nav_history',     text: 'Inspection History',  url: '/FieldOfficer/InspectionHistory' },
+    { icon: 'fi fi-rr-credit-card',  i18n: 'nav_payments',    text: 'Payment History',     url: '/FieldOfficer/PaymentHistory' },
+    { icon: 'fi fi-rr-user',         i18n: 'nav_profile',     text: 'Profile',             url: '/FieldOfficer/Profile' },
 ];
 
 let foNotifs = [], foCurrentTab = 'all';
@@ -25,7 +26,7 @@ function getFoAuthToken() {
 async function foAuthFetch(url, options = {}) {
     const token = getFoAuthToken();
     if (!token) {
-        window.location.href = '/Auth/Login';
+        window.location.href = '/StaffAuth/Login';
         throw new Error("No auth token");
     }
     const headers = {
@@ -35,7 +36,7 @@ async function foAuthFetch(url, options = {}) {
     };
     const response = await fetch(url, { ...options, headers });
     if (response.status === 401) {
-        window.location.href = '/Auth/Login';
+        window.location.href = '/StaffAuth/Login';
         throw new Error("Unauthorized");
     }
     return response;

@@ -28,17 +28,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/lib/kendo/kendo.common.min.css" rel="stylesheet" />
     <link href="~/lib/kendo/kendo.default-v2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/layouts/farmer_layout.css" asp-append-version="true" />
-
-    
-<link rel="stylesheet" href="~/css/pages/shared/layouts__farmerlayout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layouts/fb_skeleton.css" asp-append-version="true" />
 
 
     @RenderSection("Styles", required: false)
-    <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
-    
+
     <script>
         window.fbServerTranslations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
             Localizer.GetAllStrings(includeParentCultures: true).ToDictionary(s => s.Name, s => s.Value)
@@ -63,12 +60,12 @@
             var path = Context.Request.Path.ToString().ToLower();
         }
             <li><a href="/Farmer/Dashboard" title="Dashboard" class="fv-nav-link @(path.Contains("/farmer/dashboard") ? "active" : "")"><i class="fi fi-rr-apps"></i><span data-i18n="nav_dashboard">Dashboard</span></a></li>
-            <li><a href="/Farmer/Crops" title="My Crops" class="fv-nav-link @(path.Contains("/farmer/crops") ? "active" : "")"><i class="fi fi-rr-sprout"></i><span data-i18n="nav_my_crops">My Crops</span></a></li>
+            <li><a href="/Farmer/Crops" title="My Crops" class="fv-nav-link @(path.Contains("/farmer/crops") ? "active" : "")"><i class="fi fi-sr-shopping-basket"></i><span data-i18n="nav_my_crops">My Crops</span></a></li>
             <li><a href="/Farmer/QCSlots" title="QC Slots" class="fv-nav-link @(path.Contains("/farmer/qcslots") ? "active" : "")"><i class="fi fi-rr-calendar"></i><span data-i18n="nav_qc_slots">QC Slots</span></a></li>
             <li><a href="/Farmer/Payments" title="Payments" class="fv-nav-link @(path.Contains("/farmer/payments") ? "active" : "")"><i class="fi fi-rr-credit-card"></i><span data-i18n="nav_payments">Payments</span></a></li>
             <li><a href="/Farmer/Inquiries" title="Inquiries" class="fv-nav-link @(path.Contains("/farmer/inquiries") ? "active" : "")"><i class="fi fi-rr-envelope"></i><span data-i18n="nav_inquiries">Inquiries</span></a></li>
             <li><a href="/Farmer/Profile" title="Profile" class="fv-nav-link @(path.Contains("/farmer/profile") ? "active" : "")"><i class="fi fi-rr-user"></i><span data-i18n="nav_profile">Profile</span></a></li>
-            <li><a href="/Farmer/News" title="News" class="fv-nav-link @(path.Contains("/farmer/news") ? "active" : "")"><i class="fi fi-rr-newspaper"></i><span>News</span></a></li>
+            <li><a href="/Farmer/News" title="News" class="fv-nav-link @(path.Contains("/farmer/news") ? "active" : "")"><i class="fi fi-sr-newspaper"></i><span>News</span></a></li>
         </ul>
         <div class="fv-sidebar-foot">
             <a href="javascript:void(0)" onclick="logout()" title="Logout" class="fv-drawer-link fv-logout-mobile">
@@ -104,8 +101,9 @@
         <span id="fvBellBadge" class="bell-badge" style="display: none;">0</span>
         <span id="fvBellDot" class="bell-dot" hidden></span>
     </button>
-    <div class="fv-avatar" id="fvAvatar" onclick="location.href='/Farmer/Profile'" title="Profile">
-        F
+    <div class="fv-avatar" id="fvAvatar" onclick="location.href='/Farmer/Profile'" title="My Profile" style="overflow:hidden; position:relative;">
+        <img id="fvAvatarImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; inset:0; border-radius:50%;" />
+        <span id="fvAvatarLetter" style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:14px; font-weight:700; color:#fff;">F</span>
     </div>
 </div>
         </header>
@@ -210,27 +208,61 @@ window.API_BASE = "http://localhost:5020/api/FarmerApp";
 window.CURRENT_LANG = '@currentLang';
 
 if (!window.FARMER_ID || window.FARMER_ID === 0) {
-    window.location.href = "/Auth/Login";
+    window.location.href = "/Farmer/Login";
 }
 
-// Global Avatar Display Logic
+// Topbar avatar — set letter from JWT, then try to load photo from API
 document.addEventListener('DOMContentLoaded', function() {
-    const avatarImg = document.getElementById('fvAvatarImg');
-    const avatarLetter = document.getElementById('fvAvatarLetter');
-    const fvAvatar = document.getElementById('fvAvatar');
+    var avatarImg    = document.getElementById('fvAvatarImg');
+    var avatarLetter = document.getElementById('fvAvatarLetter');
 
-    if (window.PROFILE_IMAGE) {
-        if (avatarImg) {
-            avatarImg.src = window.PROFILE_IMAGE;
+    // 1. Set letter immediately from JWT (no network wait)
+    var letter = 'F';
+    if (window.FARMER_NAME && window.FARMER_NAME.length > 0) {
+        letter = window.FARMER_NAME.charAt(0).toUpperCase();
+    }
+    if (avatarLetter) avatarLetter.textContent = letter;
+
+    // 2. Try photo from JWT (available if token was issued after photo upload)
+    if (window.PROFILE_IMAGE && avatarImg) {
+        avatarImg.src = window.PROFILE_IMAGE;
+        avatarImg.onload = function() {
             avatarImg.style.display = 'block';
-        }
-        if (avatarLetter) avatarLetter.style.display = 'none';
-    } else if (window.FARMER_NAME) {
-        if (avatarLetter) {
-            avatarLetter.textContent = window.FARMER_NAME.charAt(0).toUpperCase();
-            avatarLetter.style.display = 'block';
-        }
-        if (avatarImg) avatarImg.style.display = 'none';
+            if (avatarLetter) avatarLetter.style.display = 'none';
+        };
+        avatarImg.onerror = function() {
+            avatarImg.style.display = 'none';
+            if (avatarLetter) avatarLetter.style.display = 'flex';
+            // Fall through to API fetch below
+            fetchProfilePhoto();
+        };
+    } else {
+        // 3. JWT had no photo — fetch latest from API
+        fetchProfilePhoto();
+    }
+
+    function fetchProfilePhoto() {
+        if (!window.FARMER_ID || !window.API_BASE) return;
+        var token = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
+        if (!token) return;
+        token = decodeURIComponent(token[1]);
+
+        fetch(window.API_BASE + '/' + window.FARMER_ID + '/profile', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res && res.success && res.data && res.data.imageUrl) {
+                if (avatarImg) {
+                    avatarImg.src = res.data.imageUrl;
+                    avatarImg.onload = function() {
+                        avatarImg.style.display = 'block';
+                        if (avatarLetter) avatarLetter.style.display = 'none';
+                    };
+                }
+            }
+        })
+        .catch(function() { /* silently ignore — letter avatar remains */ });
     }
 });
 </script>
@@ -278,11 +310,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 </script>
 
-<script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
-<script src="~/js/layouts/site.js" asp-append-version="true"></script>
-<script src="~/js/layouts/farmer_layout.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/farmer_layout.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/site.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/fb_skeleton_helper.js" asp-append-version="true"></script>
 
 @RenderSection("Scripts", required: false)
 </body>
 </html>
-

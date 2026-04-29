@@ -335,8 +335,8 @@
     position: absolute;
     top: 12px;
     right: 12px;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     background: white;
     border-radius: 50%;
     display: flex;
@@ -344,19 +344,23 @@
     justify-content: center;
     cursor: pointer;
     z-index: 5;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    color: #94a3b8;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    color: #64748b; /* Darker gray for better visibility */
 }
 
 .wishlist-heart-float i {
-    font-size: 14px;
-    transition: transform 0.2s;
+    font-size: 16px;
+    transition: transform 0.2s ease;
+    line-height: 1;
+    display: block;
 }
 
 .wishlist-heart-float:hover {
     transform: scale(1.1);
     color: #ef4444;
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.15);
 }
 
 .wishlist-heart-float:active {
@@ -365,10 +369,11 @@
 
 .wishlist-heart-float.active {
     color: #ef4444;
+    background: white;
 }
 
 .wishlist-heart-float.active i {
-    font-weight: 900;
+    transform: scale(1.1);
 }
 
 .catalog-product-body {

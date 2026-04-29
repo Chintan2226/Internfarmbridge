@@ -40,7 +40,7 @@ window.addToCart = function(id, name, price, imageIcon) {
         existing.quantity++;
         existing.total = existing.quantity * existing.price;
     } else {
-        vendorCart.push({ id: id, name: name, price: price, quantity: 1, total: price, image: imageIcon || 'fa-seedling' });
+        vendorCart.push({ id: id, name: name, price: price, quantity: 1, total: price, image: imageIcon || 'fi-rr-seedling' });
     }
     saveCart();
     renderCart();
@@ -123,7 +123,7 @@ window.toggleWishlist = function(id, name, price, imageIcon) {
         wishlist = wishlist.filter(item => item.id != id);
         showToast('Removed from wishlist', 'info');
     } else {
-        wishlist.push({ id: id, name: name, price: price, image: imageIcon || 'fa-seedling' });
+        wishlist.push({ id: id, name: name, price: price, image: imageIcon || 'fi-rr-seedling' });
         showToast('Added to wishlist', 'success');
     }
     saveWishlist();
@@ -159,37 +159,11 @@ function toggleNotifs(e) { $('#notifDrawer').toggleClass('open'); renderNotifica
 
 // ============ Premium Toast ============
 function showToast(msg, type = 'success') {
-    const container = $('#fbToastContainer');
-    if (container.length === 0) {
-        $('body').append('<div id="fbToastContainer" class="fb-toast-container"></div>');
+    if (window.fbNotify) {
+        fbNotify({ message: msg, icon: type, type: 'toast' });
+    } else {
+        console.log("Toast:", msg);
     }
-    
-    const id = 'toast-' + Math.random().toString(36).substr(2, 9);
-    const iconMap = {
-        'success': 'fi-rr-check-circle',
-        'error': 'fi-rr-cross-circle',
-        'warning': 'fi-rr-exclamation',
-        'info': 'fi-rr-info'
-    };
-    
-    const toastHtml = `
-        <div id="${id}" class="fb-toast ${type} glass-morphism">
-            <div class="fb-toast-icon"><i class="fi ${iconMap[type] || 'fi-rr-info'}"></i></div>
-            <div class="fb-toast-content">
-                <div class="fb-toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
-                <div class="fb-toast-message">${msg}</div>
-            </div>
-            <button class="fb-toast-close" onclick="$('#${id}').addClass('fade-out'); setTimeout(() => $('#${id}').remove(), 300);">&times;</button>
-        </div>
-    `;
-    
-    const $toast = $(toastHtml);
-    $('#fbToastContainer').append($toast);
-    
-    setTimeout(() => {
-        $toast.addClass('fade-out');
-        setTimeout(() => $toast.remove(), 300);
-    }, 4000);
 }
 window.showToast = showToast;
 
@@ -215,3 +189,16 @@ $(document).ready(function() {
     renderCart();
     renderNotifications();
 });
+
+// ============ Skeleton Loader Helpers ============
+window.showCardSkeleton = function(containerId, cardCount = 4) {
+    if (typeof window.FBSkeleton === 'object') {
+        FBSkeleton.show(containerId, cardCount, 'product');
+    }
+};
+
+window.showGridSkeleton = function(containerId, rowCount = 5) {
+    if (typeof window.FBSkeleton === 'object') {
+        FBSkeleton.show(containerId, rowCount, 'list');
+    }
+};

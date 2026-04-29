@@ -7,85 +7,113 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Farmer/Dashboard.css" asp-append-version="true" />
-    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
 }
 
 <div class="db-wrap">
+
+    <!-- Quick Action Row -->
     <div class="f-action-row">
-        <button class="f-btn" onclick="location.href='/Farmer/Crops'"><i class="ph-bold ph-plant"></i> List New Crop</button>
-        <button class="f-btn" onclick="location.href='/Farmer/QCSlots'"><i class="ph-bold ph-calendar-check"></i> Book QC Appointment</button>
-        <button class="f-btn" onclick="location.href='/Farmer/Inquiries'"><i class="ph-bold ph-headset"></i> Help & Support</button>
+        <button class="f-btn" onclick="location.href='/Farmer/Crops'">
+            <i class="fi fi-rr-sprout"></i>
+            <span>List New Crop</span>
+        </button>
+        <button class="f-btn" onclick="location.href='/Farmer/QCSlots'">
+            <i class="fi fi-rr-calendar-check"></i>
+            <span>Book QC Appointment</span>
+        </button>
+        <button class="f-btn" onclick="location.href='/Farmer/Inquiries'">
+            <i class="fi fi-rr-headset"></i>
+            <span>Help &amp; Support</span>
+        </button>
     </div>
 
-    <section>
-        <div class="kpi-grid dash-kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Total Earnings</div>
-                    <div class="kpi-icon" style="background:var(--grad-rev);"><i class="ph-duotone ph-currency-inr" style="color:white; font-size: 26px;"></i></div>
-                    <i class="ph-duotone ph-currency-inr watermark"></i>
-                </div>
-                <div class="kpi-val skeleton" id="kpiEarnings">₹0</div>
-                <div class="kpi-sub"><span class="kpi-trend up"><i class="ph-bold ph-trend-up"></i> Collected</span> to your bank accounts</div>
+    <!-- KPI Cards -->
+    <div class="kpi-grid dash-kpi-grid">
+        <div class="kpi-card emerald-card">
+            <div class="kpi-top">
+                <div class="kpi-lbl">Total Earnings</div>
+                <div class="kpi-icon"><i class="fi fi-sr-wallet"></i></div>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Pending Payments</div>
-                    <div class="kpi-icon" style="background:var(--grad-vend);"><i class="ph-duotone ph-hourglass-high" style="color:white; font-size: 26px;"></i></div>
-                    <i class="ph-duotone ph-hourglass-high watermark"></i>
-                </div>
-                <div class="kpi-val skeleton" id="kpiPendingPay">₹0</div>
-                <div class="kpi-sub"><span class="kpi-trend neutral"><i class="ph-bold ph-minus"></i> Awaiting</span> buyer confirmation</div>
+            <div class="kpi-val" id="kpiEarnings">₹--</div>
+            <div class="kpi-sub">
+                <span class="kpi-trend up"><i class="fi fi-rr-arrow-trend-up"></i> Verified</span>
+                Collected in bank
             </div>
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Active Crops Listed</div>
-                    <div class="kpi-icon" style="background:var(--grad-farm);"><i class="ph-duotone ph-plant" style="color:white; font-size: 26px;"></i></div>
-                    <i class="ph-duotone ph-plant watermark"></i>
-                </div>
-                <div class="kpi-val skeleton" id="kpiCrops">0</div>
-                <div class="kpi-sub"><span class="kpi-trend up"><i class="ph-bold ph-check-circle"></i> Verified</span> by FarmBridge</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="kpi-lbl">Upcoming QC Slots</div>
-                    <div class="kpi-icon" style="background:var(--grad-fo);"><i class="ph-duotone ph-shield-check" style="color:white; font-size: 26px;"></i></div>
-                    <i class="ph-duotone ph-shield-check watermark"></i>
-                </div>
-                <div class="kpi-val skeleton" id="kpiQC">0</div>
-                <div class="kpi-sub"><span class="kpi-trend neutral"><i class="ph-bold ph-calendar"></i> Scheduled</span> for future dates</div>
-            </div>
+            <i class="fi fi-sr-wallet watermark"></i>
         </div>
-    </section>
 
-    <section>
-        <div class="dash-split-layout">
-            <div class="chart-card" style="padding: 20px;">
-                <div class="chart-head" style="margin-bottom: 10px;">
-                    <div>
-                        <div class="chart-title">Income History</div>
-                        <div class="chart-sub">Your monthly earnings summary</div>
-                    </div>
-                </div>
-                <div class="kendo-widget-container">
-                    <div id="chartSkeleton" class="skeleton chart-skeleton"></div>
-                    <div id="incomeChart" style="height: 200px; display: none;"></div>
-                </div>
+        <div class="kpi-card gold-card">
+            <div class="kpi-top">
+                <div class="kpi-lbl">Pending Payments</div>
+                <div class="kpi-icon"><i class="fi fi-sr-hourglass-end"></i></div>
             </div>
-
-            <div class="grid-card" style="padding: 20px; overflow: hidden; display: flex; flex-direction: column;">
-                <div class="grid-head" style="margin-bottom: 10px;">
-                    <div class="grid-title">Recent Payments & Clearances</div>
-                </div>
-                <div class="kendo-widget-container" style="flex: 1;">
-                    <div id="gridSkeleton" class="skeleton chart-skeleton" style="height: 100%;"></div>
-                    <div id="paymentsGrid" class="borderless-grid" style="display: none;"></div>
-                </div>
+            <div class="kpi-val" id="kpiPendingPay">₹--</div>
+            <div class="kpi-sub">
+                <span class="kpi-trend neutral"><i class="fi fi-rr-clock"></i> Awaiting</span>
+                Buyer confirmation
             </div>
+            <i class="fi fi-sr-hourglass-end watermark"></i>
         </div>
-    </section>
+
+        <div class="kpi-card farm-card">
+            <div class="kpi-top">
+                <div class="kpi-lbl">Active Crops</div>
+                <div class="kpi-icon"><i class="fi fi-sr-leaf"></i></div>
+            </div>
+            <div class="kpi-val" id="kpiCrops">--</div>
+            <div class="kpi-sub">
+                <span class="kpi-trend up"><i class="fi fi-rr-check-circle"></i> Live</span>
+                On marketplace
+            </div>
+            <i class="fi fi-sr-leaf watermark"></i>
+        </div>
+
+        <div class="kpi-card fo-card">
+            <div class="kpi-top">
+                <div class="kpi-lbl">Upcoming QC</div>
+                <div class="kpi-icon"><i class="fi fi-sr-shield-check"></i></div>
+            </div>
+            <div class="kpi-val" id="kpiQC">--</div>
+            <div class="kpi-sub">
+                <span class="kpi-trend neutral"><i class="fi fi-rr-calendar"></i> Scheduled</span>
+                Future visits
+            </div>
+            <i class="fi fi-sr-shield-check watermark"></i>
+        </div>
+    </div>
+
+    <!-- Charts & Grid -->
+    <div class="dash-split-layout">
+
+        <!-- Income Chart -->
+        <div class="glass-panel" style="overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h3 style="margin:0; font-size:16px; font-weight:700; color:#0a2108;">Income Overview</h3>
+                    <p style="margin:4px 0 0; font-size:12px; color:#5a7257;">Your monthly performance analytics</p>
+                </div>
+            </div>
+            <div id="chartSkeleton" style="width:100%;"></div>
+            <div id="incomeChart" style="width:100%; height:260px; display:none;"></div>
+        </div>
+
+        <!-- Recent Transactions Grid -->
+        <div class="glass-panel" style="overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h3 style="margin:0; font-size:16px; font-weight:700; color:#0a2108;">Recent Transactions</h3>
+                    <p style="margin:4px 0 0; font-size:12px; color:#5a7257;">Latest payment clearances and history</p>
+                </div>
+                <a href="/Farmer/Payments" style="font-size:13px; font-weight:600; color:#10b981; text-decoration:none;">View All</a>
+            </div>
+            <div id="gridSkeleton" style="width:100%;"></div>
+            <div id="paymentsGrid" style="width:100%; display:none;"></div>
+        </div>
+
+    </div>
+
 </div>
 
 @section Scripts {
-<script src="~/js/Farmer/dashboard.js" asp-append-version="true"></script>
+    <script src="~/js/Farmer/dashboard.js" asp-append-version="true"></script>
 }

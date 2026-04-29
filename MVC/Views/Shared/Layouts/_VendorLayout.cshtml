@@ -34,6 +34,8 @@
     <link rel="stylesheet" href="~/css/layouts/vendor_layout.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/vendor/vendor_dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layouts/fb_skeleton.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
     @RenderSection("Styles", required: false)
 
@@ -63,35 +65,35 @@
             <li>
                 <a href="/Vendor/Catalog" class="fv-nav-link @(path.Contains("/vendor/catalog") ? "active" : "")">
                     <i class="fi fi-rr-shop"></i>
-                    <span>Crops</span>
+                    <span data-i18n="nav_crop_catalog">Crops</span>
                 </a>
             </li>
 
             <li>
                 <a href="/Vendor/Orders" class="fv-nav-link @(path.Contains("/vendor/orders") ? "active" : "")">
                     <i class="fi fi-rr-box-alt"></i>
-                    <span>Orders</span>
+                    <span data-i18n="nav_orders">Orders</span>
                 </a>
             </li>
 
             <li>
                 <a href="/Vendor/Dashboard" class="fv-nav-link @(path.Contains("/vendor/dashboard") ? "active" : "")">
                     <i class="fi fi-rr-apps"></i>
-                    <span>Dashboard</span>
+                    <span data-i18n="nav_dashboard">Dashboard</span>
                 </a>
             </li>
 
             <li>
                 <a href="/Vendor/Payments" class="fv-nav-link @(path.Contains("/vendor/payments") ? "active" : "")">
                     <i class="fi fi-rr-credit-card"></i>
-                    <span>Payments</span>
+                    <span data-i18n="nav_payments">Payments</span>
                 </a>
             </li>
 
             <li>
                 <a href="/Vendor/Profile" class="fv-nav-link @(path.Contains("/vendor/profile") ? "active" : "")">
                     <i class="fi fi-rr-user"></i>
-                    <span>Profile</span>
+                    <span data-i18n="nav_profile">Profile</span>
                 </a>
             </li>
         </ul>
@@ -99,7 +101,7 @@
         <div class="fv-sidebar-foot">
             <a href="javascript:void(0)" onclick="logoutVendor()" class="fv-nav-link">
                 <i class="fi fi-rr-exit"></i>
-                <span>Logout</span>
+                <span data-i18n="nav_logout">Logout</span>
             </a>
         </div>
     </nav>
@@ -113,7 +115,14 @@
                 <button class="fv-menu-btn" onclick="toggleDrawer()">
                     <i class="fi fi-rr-bars-staggered"></i>
                 </button>
-                <h1 class="fv-page-title">@title</h1>
+                @{
+                    var titleKey = "title_dashboard";
+                    if (path.Contains("/vendor/catalog")) titleKey = "title_catalog";
+                    else if (path.Contains("/vendor/orders")) titleKey = "title_orders";
+                    else if (path.Contains("/vendor/payments")) titleKey = "title_payments";
+                    else if (path.Contains("/vendor/profile")) titleKey = "title_profile";
+                }
+                <h1 class="fv-page-title" data-i18n="@titleKey">@title</h1>
             </div>
 
             <div class="fv-topbar-right">
@@ -124,9 +133,9 @@
                         <i class="fi fi-rr-globe"></i>
                     </button>
                     <div class="fb-lang-dropdown">
-                        <button onclick="switchLang('en')">English</button>
-                        <button onclick="switchLang('hi')">हिन्दी</button>
-                        <button onclick="switchLang('gu')">ગુજરાતી</button>
+                        <button class="fb-lang-option" data-lang="en" onclick="switchLang('en')">English</button>
+                        <button class="fb-lang-option" data-lang="hi" onclick="switchLang('hi')">हिन्दी</button>
+                        <button class="fb-lang-option" data-lang="gu" onclick="switchLang('gu')">ગુજરાતી</button>
                     </div>
                 </div>
 
@@ -163,21 +172,21 @@
     <!-- Notification Drawer -->
     <div class="fv-notif" id="fvNotif">
         <div class="fv-notif-header">
-            <span>Notifications</span>
+            <span data-i18n="nav_notifications">Notifications</span>
             <button onclick="toggleNotifDrawer(event)">✕</button>
         </div>
 
         <div class="fv-notif-actions">
-            <small><span id="fvUnreadCountText">0</span> unread</small>
+            <small><span id="fvUnreadCountText">0</span> <span data-i18n="notif_unread">unread</span></small>
             <div style="display:flex; gap: 12px; align-items:center;">
-                <button onclick="fvMarkAllRead()">Mark all read</button>
-                <button onclick="fvClearAll()" style="color: #ff6b6b; text-decoration: none;">Clear all</button>
+                <button onclick="fvMarkAllRead()" data-i18n="notif_mark_all">Mark all read</button>
+                <button onclick="fvClearAll()" style="color: #ff6b6b; text-decoration: none;" data-i18n="notif_clear_all">Clear all</button>
             </div>
         </div>
 
         <div class="fv-notif-tabs">
-            <button class="active" onclick="fvTab('all', this)">All</button>
-            <button onclick="fvTab('unread', this)">Unread <span id="fvUnreadBadgeNum">0</span></button>
+            <button class="active" onclick="fvTab('all', this)" data-i18n="notif_tab_all">All</button>
+            <button onclick="fvTab('unread', this)"><span data-i18n="notif_tab_unread">Unread</span> <span id="fvUnreadBadgeNum">0</span></button>
         </div>
 
         <div id="fvNotifList" class="fv-notif-list"></div>
@@ -190,17 +199,68 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kendo.cdn.telerik.com/2023.1.117/js/kendo.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script src="~/js/Vendor/vendor_dashboard.js" asp-append-version="true"></script>
     <script src="~/js/Vendor/vendor_layout.js" asp-append-version="true"></script>
     <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
+    <script src="~/js/layouts/fb_skeleton_helper.js" asp-append-version="true"></script>
 
     <script>
+        // Premium Notification Helper
+        window.fbNotify = function(options) {
+            const { title, message, icon = 'success', type = 'toast', timer = 3000 } = options;
+            
+            if (type === 'toast') {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: timer,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+                Toast.fire({
+                    icon: icon,
+                    title: message || title
+                });
+            } else {
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: icon,
+                    confirmButtonColor: '#15803d',
+                    confirmButtonText: 'OK',
+                    borderRadius: '16px',
+                    customClass: {
+                        popup: 'glass-morphism',
+                        title: 'premium-title'
+                    }
+                });
+            }
+        };
+
         function logoutVendor() {
-            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 UTC; path=/;";
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.href = "/Vendor/Login";
+            Swal.fire({
+                title: window.fbT ? fbT('secure_logout') : 'Logout?',
+                text: "Are you sure you want to end your session?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#15803d',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Yes, Logout',
+                borderRadius: '16px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 UTC; path=/;";
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = "/Vendor/Login";
+                }
+            });
         }
     </script>
 

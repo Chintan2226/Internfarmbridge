@@ -8,22 +8,23 @@
 <div class="wishlist-header-area">
     <h1 class="wishlist-title">
         <i class="fi fi-rr-heart"></i>
-        My Wishlist
+        <span data-i18n="wish_title">My Wishlist</span>
     </h1>
     <button class="btn-clear-all" id="btnClearAll" onclick="clearAllWishlist()" style="display: none;">
-        <i class="fi fi-rr-trash"></i> Clear All
+        <i class="fi fi-rr-trash"></i> <span data-i18n="wish_clear">Clear All</span>
     </button>
 </div>
 
 <div id="wishlistGrid">
 </div>
 
-<!-- Quantity Selection Modal for Direct Add from Wishlist -->
 <div id="wishlistQuantityModal" style="display: none; padding: 0;">
     <div class="premium-modal-card">
         <div id="wishlistModalIcon" style="margin-bottom: 24px;"></div>
         <h3 id="wishlistModalProductName" style="font-family: var(--font-display); color: var(--green-900); margin-bottom: 8px; font-weight: 800; font-size: 22px;">Product Name</h3>
-        <div id="wishlistModalStock" style="font-family: var(--font-body); color: #64748b; font-size: 14px; font-weight: 600; background: #f1f5f9; display: inline-block; padding: 4px 12px; border-radius: 20px;">Available: 0 kg</div>
+        <div id="wishlistModalStock" style="font-family: var(--font-body); color: #64748b; font-size: 14px; font-weight: 600; background: #f1f5f9; display: inline-block; padding: 4px 12px; border-radius: 20px;">
+            <span data-i18n="wish_qty_avail">Available</span>: 0 kg
+        </div>
         
         <div class="quantity-stepper">
             <button id="wishlistQtyMinus" class="step-btn"><i class="fi fi-rr-minus-small"></i></button>
@@ -33,15 +34,15 @@
         </div>
 
         <div class="price-display">
-            <div style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.5px;">Estimated Investment</div>
+            <div style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.5px;" data-i18n="wish_qty_total">Estimated Investment</div>
             <span id="wishlistModalTotalPrice">₹0</span>
         </div>
 
         <div class="popup-actions" style="display: flex; gap: 16px; justify-content: center; margin-top: 10px;">
-            <button id="cancelWishlistQtyBtn" class="premium-modal-btn btn-cancel">Cancel</button>
+            <button id="cancelWishlistQtyBtn" class="premium-modal-btn btn-cancel" data-i18n="wish_qty_cancel">Cancel</button>
             <button id="confirmWishlistQtyBtn" class="premium-modal-btn btn-confirm">
                 <i class="fi fi-rr-shopping-cart-add"></i>
-                <span>Add to Cart</span>
+                <span data-i18n="wish_qty_add">Add to Cart</span>
             </button>
         </div>
     </div>
@@ -78,8 +79,8 @@
 
         async function loadWishlist() {
             try {
-                if (typeof window.showCardSkeleton === 'function') {
-                    window.showCardSkeleton('#wishlistGrid', 4);
+                if (typeof window.FBSkeleton === 'object') {
+                    FBSkeleton.show('#wishlistGrid', 4, 'product');
                 }
                 const response = await authorizedFetch(`${API_URL}/wishlist`);
                 if (!response) return;
@@ -118,7 +119,7 @@
                 <div class="wishlist-category-section">
                     <div class="wishlist-category-title">
                         <div class="wishlist-category-icon"><i class="fi fi-rr-apps"></i></div>
-                        <span>${escapeHtml(category)}</span>
+                        <span>${fbT('cat_cat_' + category.toLowerCase()) || escapeHtml(category)}</span>
                     </div>
                     <div class="wishlist-grid">`;
 
@@ -136,26 +137,26 @@
 
                     html += `
                     <div class="wishlist-card">
-                        <button class="wishlist-card-remove" onclick="removeFromWishlist(${item.productId}, '${grade}')" title="Remove from wishlist">
-                            <i class="fas fa-times"></i>
+                        <button class="wishlist-card-remove" onclick="removeFromWishlist(${item.productId}, '${grade}')" title="${fbT('wish_remove')}">
+                            <i class="fi fi-rr-cross-small"></i>
                         </button>
                         <div class="wishlist-card-img">
                             ${media}
-                            ${grade ? `<div class="wishlist-grade-badge">Grade ${grade}</div>` : ''}
+                            ${grade ? `<div class="wishlist-grade-badge">${fbT('wish_grade')} ${grade}</div>` : ''}
                         </div>
                         <div class="wishlist-card-body">
                             <div class="wishlist-card-name">${escapeHtml(cleanName)}</div>
                             <div class="wishlist-card-category">
-                                <i class="fi fi-rr-tag"></i> ${escapeHtml(item.category || 'Farm Product')}
+                                <i class="fi fi-rr-tag"></i> ${escapeHtml(item.category || fbT('cat_cat_other'))}
                             </div>
                             <div class="wishlist-card-price">
                                 ₹${(item.avgPrice || 0).toLocaleString('en-IN')}<small>/${item.unit || 'kg'}</small>
                             </div>
                             <div class="wishlist-card-stock">
-                                <i class="fi fi-rr-box"></i> ${(item.quantityAvailable || 0).toLocaleString()} ${item.unit || 'kg'} in stock
+                                <i class="fi fi-rr-box"></i> ${(item.quantityAvailable || 0).toLocaleString()} ${item.unit || 'kg'} ${fbT('wish_in_stock')}
                             </div>
                             <button class="btn-wishlist-add-cart" onclick="openWishlistQuantityModal(${item.productId}, '${escapeHtml(cleanName)}', ${item.avgPrice || 0}, ${item.quantityAvailable || 0}, '${grade}', '${img || ''}')">
-                                <i class="fi fi-rr-shopping-cart-add"></i> Add to Cart
+                                <i class="fi fi-rr-shopping-cart-add"></i> ${fbT('wish_add_cart')}
                             </button>
                         </div>
                     </div>`;
@@ -167,16 +168,17 @@
             if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
         }
 
-        function renderEmptyState(message = "Items added to your wishlist will appear here.") {
+        function renderEmptyState(message = "") {
+            const emptyMsg = message || fbT('wish_empty');
             document.getElementById('btnClearAll').style.display = 'none';
             const container = document.getElementById('wishlistGrid');
             container.innerHTML = `
             <div class="wishlist-empty">
                 <i class="fi fi-rr-heart"></i>
-                <h4>Your wishlist is empty</h4>
-                <p>${message}</p>
+                <h4>${fbT('wish_empty')}</h4>
+                <p>${emptyMsg}</p>
                 <a href="/Vendor/Catalog" class="btn-browse-catalog">
-                    <i class="fi fi-rr-shop"></i> Browse Catalog
+                    <i class="fi fi-rr-shop"></i> ${fbT('wish_browse')}
                 </a>
             </div>`;
             if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
@@ -189,14 +191,14 @@
                 if (response?.ok) {
                     wishlistItems = wishlistItems.filter(item => !(item.productId === productId && (item.grade || '') === (grade || '')));
                     renderWishlist();
-                    showToast('Removed from wishlist', 'success');
+                    showToast(fbT('wish_removed'), 'success');
                 }
-            } catch (error) { showToast('Failed to remove item', 'error'); }
+            } catch (error) { showToast(fbT('wish_remove_fail'), 'error'); }
         }
 
         async function clearAllWishlist() {
-            if (!confirm('Are you sure you want to clear your entire wishlist?')) return;
-            showToast('Clearing wishlist...', 'info');
+            if (!confirm(fbT('wish_confirm_clear'))) return;
+            showToast(fbT('wish_clearing'), 'info');
             try {
                 for (const item of wishlistItems) {
                     const gradeParam = item.grade ? `?grade=${encodeURIComponent(item.grade)}` : '';
@@ -255,8 +257,8 @@
         function showToast(message, type) {
             const toast = document.createElement('div');
             toast.className = `toast-message toast-${type}`;
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            const icon = type === 'success' ? 'fi-rr-check' : type === 'error' ? 'fi-rr-exclamation' : 'fi-rr-info';
+            toast.innerHTML = `<i class="fi ${icon}"></i> ${message}`;
             document.body.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3000);
         }

@@ -65,52 +65,52 @@
         <div class="absolute inset-0 bg-gradient-to-tr from-primary/30 to-black/20 backdrop-blur-[2px]"></div>
     </div>
 
-    <main class="relative z-10 flex items-center justify-center min-h-screen w-full px-4 py-4 sm:px-6">
+    <main class="relative z-10 flex items-center justify-center min-h-screen w-full px-4 py-2 sm:px-6">
         
-        <div class="glass-card w-full max-w-[600px] p-6 sm:p-8 rounded-[2rem] shadow-2xl">
+        <div class="glass-card w-full max-w-[600px] p-5 sm:p-6 rounded-[2rem] shadow-2xl">
             
-            <div class="mb-5 text-center flex flex-col items-center">
-                <div class="inline-flex items-center justify-center w-12 h-12 mb-2 rounded-full bg-primary shadow-lg">
-                    <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+            <div class="mb-3 text-center flex flex-col items-center">
+                <div class="inline-flex items-center justify-center w-10 h-10 mb-1 rounded-full bg-primary shadow-lg">
+                    <span class="material-symbols-outlined text-white text-xl" style="font-variation-settings: 'FILL' 1;">agriculture</span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary mb-1">Vendor Portal</h1>
+                <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-primary mb-1">Vendor Portal</h1>
                 <p class="text-on-surface-variant font-medium text-xs sm:text-sm">Join our network of sustainable agricultural partners</p>
             </div>
 
-            <form id="vendorRegisterForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4" onsubmit="event.preventDefault(); handleVendorRegister(); return false;" novalidate>
+            <form id="vendorRegisterForm" class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3" onsubmit="event.preventDefault(); handleVendorRegister(); return false;" novalidate>
                 
                 <div class="col-span-1 sm:col-span-2 space-y-1">
                     <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Business Name <span class="text-red-600">*</span></label>
                     <input id="businessName" type="text" required
-                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
                            placeholder="Organic Farms Ltd." />
                 </div>
 
                 <div class="col-span-1 space-y-1">
                     <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Contact Person <span class="text-red-600">*</span></label>
                     <input id="contactPerson" type="text" required
-                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
                            placeholder="John Doe" />
                 </div>
 
                 <div class="col-span-1 space-y-1">
                     <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Mobile Number <span class="text-red-600">*</span></label>
                     <input id="phone" type="tel" required
-                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
                            placeholder="+91 9876543210" />
                 </div>
 
                 <div class="col-span-1 sm:col-span-2 space-y-1">
                     <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Email Address <span class="text-red-600">*</span></label>
                     <input id="email" type="email" required
-                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
                            placeholder="contact@business.com" />
                 </div>
 
                 <div class="col-span-1 sm:col-span-2 space-y-1">
                     <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">GST Number (Optional)</label>
                     <input id="gstin" type="text" 
-                           class="w-full bg-white/60 border border-black/5 rounded-xl px-5 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all uppercase" 
+                           class="w-full bg-white/60 border border-black/5 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all uppercase" 
                            placeholder="22AAAAA0000A1Z5" />
                 </div>
 
@@ -118,7 +118,7 @@
                     <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Password <span class="text-red-600">*</span></label>
                     <div class="relative">
                         <input id="password" type="password" required
-                               class="w-full bg-white/60 border border-black/5 rounded-xl pl-5 pr-10 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                               class="w-full bg-white/60 border border-black/5 rounded-xl pl-4 pr-10 py-2.5 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
                                placeholder="••••••••" />
                         <button type="button" onclick="togglePassword('password', 'eye1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-primary transition-colors">
                             <span id="eye1" class="material-symbols-outlined text-[18px]">visibility</span>
@@ -130,7 +130,7 @@
                     <label class="block text-[10px] font-bold tracking-widest text-primary/80 uppercase ml-2">Confirm <span class="text-red-600">*</span></label>
                     <div class="relative">
                         <input id="confirmPassword" type="password" required
-                               class="w-full bg-white/60 border border-black/5 rounded-xl pl-5 pr-10 py-3 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
+                               class="w-full bg-white/60 border border-black/5 rounded-xl pl-4 pr-10 py-2.5 focus:bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-black/30 text-sm shadow-inner transition-all" 
                                placeholder="••••••••" />
                         <button type="button" onclick="togglePassword('confirmPassword', 'eye2')" class="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-primary transition-colors">
                             <span id="eye2" class="material-symbols-outlined text-[18px]">visibility</span>
@@ -138,14 +138,14 @@
                     </div>
                 </div>
 
-                <div class="col-span-1 sm:col-span-2 mt-2">
-                    <button id="registerBtn" type="submit" class="w-full py-3.5 rounded-full bg-gradient-to-br from-primary to-primary-container text-white font-bold text-base shadow-[0_10px_20px_-5px_rgba(0,69,13,0.4)] hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
+                <div class="col-span-1 sm:col-span-2 mt-1">
+                    <button id="registerBtn" type="submit" class="w-full py-2.5 rounded-full bg-gradient-to-br from-primary to-primary-container text-white font-bold text-base shadow-[0_10px_20px_-5px_rgba(0,69,13,0.4)] hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
                         Register Account
                     </button>
                 </div>
             </form>
 
-            <p class="mt-4 text-center text-sm text-on-surface-variant font-medium">
+            <p class="mt-3 text-center text-sm text-on-surface-variant font-medium">
                 Already registered? <a href="/vendor/login" class="text-primary font-bold hover:text-primary-container hover:underline underline-offset-4 ml-1 transition-all">Sign In</a>
             </p>
         </div>

@@ -37,7 +37,7 @@ async function authFetch(url, options = {}) {
     
     if (!token) {
         console.error("No auth token available");
-        window.location.href = '/Auth/Login';
+        window.location.href = '/Farmer/Login';
         throw new Error("No auth token");
     }
     
@@ -54,7 +54,7 @@ async function authFetch(url, options = {}) {
     
     if (response.status === 401) {
         console.error("Unauthorized - redirecting to login");
-        window.location.href = '/Auth/Login';
+        window.location.href = '/Farmer/Login';
         throw new Error("Unauthorized");
     }
     

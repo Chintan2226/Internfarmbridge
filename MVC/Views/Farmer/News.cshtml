@@ -4,41 +4,103 @@
     ViewData["UserRole"] = "Farmer";
     Layout = "~/Views/Shared/Layouts/_FarmerLayout.cshtml";
 }
-<h2>Google Search Results</h2>
 
-<form method="get">
-    <input type="text" name="query" class="form-control" placeholder="Search..." />
-    <br />
-    <button class="btn btn-primary">Search</button>
-</form>
+@section Styles {
+    <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
+    <style>
+        .news-search-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: rgba(255,255,255,0.5);
+            border-radius: 14px;
+            padding: 10px 16px;
+            border: 1px solid rgba(255,255,255,0.7);
+            max-width: 480px;
+        }
+        .news-search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+            color: #0a2108;
+            font-family: inherit;
+        }
+        .news-search-bar input::placeholder { color: #94a3b8; }
+        .news-search-bar button {
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .news-search-bar button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .news-favicon { width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:4px; }
+        .empty-state { text-align:center; padding:60px 20px; color:#5a7257; }
+        .empty-state i { font-size:48px; color:#d1fae5; display:block; margin-bottom:16px; }
+    </style>
+}
 
-<hr />
+<div class="db-wrap">
 
-@foreach (var item in Model)
-{
-    <div class="card mb-3 p-3">
-        <div class="row">
+    <!-- Page Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+            <h2 style="margin:0; font-size:22px; font-weight:800; color:#0a2108; display:flex; align-items:center; gap:10px;">
+                <i class="fi fi-sr-newspaper" style="color:#10b981;"></i> Agricultural News
+            </h2>
+            <p style="margin:4px 0 0; font-size:13px; color:#5a7257;">Stay updated with the latest market trends and farming tips</p>
+        </div>
+        <form method="get" style="margin:0;">
+            <div class="news-search-bar">
+                <i class="fi fi-rr-search" style="color:#94a3b8;"></i>
+                <input type="text" name="query" placeholder="Search agriculture news..."
+                       value="@Context.Request.Query["query"]" />
+                <button type="submit">Search</button>
+            </div>
+        </form>
+    </div>
 
-            @if (!string.IsNullOrEmpty(item.Thumbnail))
+    <!-- News Results -->
+    <div class="news-grid">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
             {
-                <div class="col-md-2">
-                    <img src="@item.Thumbnail"
-                         style="width:150px;height:150px;object-fit:cover;margin-top:8px;" />
+                <div class="news-card glass-panel">
+                    @if (!string.IsNullOrEmpty(item.Thumbnail))
+                    {
+                        <div class="news-thumb">
+                            <img src="@item.Thumbnail" alt="Thumbnail" />
+                        </div>
+                    }
+                    <div class="news-content">
+                        <div class="news-meta">
+                            <span class="news-source"><i class="fi fi-sr-globe"></i> @item.Source</span>
+                        </div>
+                        <h3 class="news-title">
+                            <a href="@item.Link" target="_blank">@item.Title</a>
+                        </h3>
+                        <p class="news-snippet">@item.Snippet</p>
+                        <div class="news-footer">
+                            <a href="@item.Link" target="_blank" class="read-more">Read Full Story <i class="fi fi-rr-arrow-small-right"></i></a>
+                        </div>
+                    </div>
                 </div>
             }
-
-            <div class="col-md-10">
-                <h5>
-                    <a href="@item.Link" target="_blank">
-                        @item.Title
-                    </a>
-                </h5>
-
-                <p>@item.Snippet</p>
-
-                <small class="text-muted">@item.Source</small>
+        }
+        else
+        {
+            <div class="empty-state glass-panel">
+                <i class="fi fi-sr-search-alt"></i>
+                <p>No news results found. Try a different search query.</p>
             </div>
-
-        </div>
+        }
     </div>
-}
+</div>

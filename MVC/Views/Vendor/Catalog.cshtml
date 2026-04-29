@@ -8,20 +8,20 @@
 <div class="catalog-page-header">
     <div>
         <h1 class="catalog-page-title">
-            <i class="fi fi-rr-sprout"></i>
-            Product Catalog
+            <i class="fi fi-rr-seedling"></i>
+            <span data-i18n="cat_title">Product Catalog</span>
         </h1>
-        <p class="catalog-page-subtitle">Premium harvests sourced directly from certified farmers</p>
+        <p class="catalog-page-subtitle" data-i18n="cat_subtitle">Premium harvests sourced directly from certified farmers</p>
     </div>
     <div class="header-buttons">
         <button class="wishlist-top-btn" onclick="location.href='/Vendor/Wishlist'">
             <i class="fi fi-rr-heart"></i>
-            My Wishlist
+            <span data-i18n="cat_wishlist">My Wishlist</span>
             <span class="wishlist-count" id="wishlistCount">0</span>
         </button>
         <button class="cart-redirect-btn" onclick="location.href='/Vendor/Checkout'">
             <i class="fi fi-rr-shopping-cart"></i>
-            Cart
+            <span data-i18n="cat_cart">Cart</span>
             <span class="cart-badge" id="headerCartCount">0</span>
         </button>
     </div>
@@ -30,22 +30,22 @@
 <div class="catalog-filters">
     <div class="search-container">
         <i class="fi fi-rr-search"></i>
-        <input type="text" class="filter-input" id="searchInput" placeholder="Search by crop name, category, grade..."
+        <input type="text" class="filter-input" id="searchInput" data-i18n-placeholder="cat_search_ph" placeholder="Search by crop name, category, grade..."
                autocomplete="off">
     </div>
     <!-- Custom Category Dropdown -->
     <div class="fb-dropdown" id="categoryDropdown">
         <div class="fb-dropdown-trigger">
-            <span><i class="fi fi-rr-apps" style="margin-right: 8px;"></i> All Categories</span>
-            <i class="fas fa-chevron-down"></i>
+            <span><i class="fi fi-rr-apps" style="margin-right: 8px;"></i> <span data-i18n="cat_all_cat">All Categories</span></span>
+            <i class="fi fi-rr-angle-small-down"></i>
         </div>
         <div class="fb-dropdown-menu">
-            <div class="fb-dropdown-item active" data-value="all"><i class="fi fi-rr-apps"></i> All Categories</div>
-            <div class="fb-dropdown-item" data-value="Grain">🌾 Grains</div>
-            <div class="fb-dropdown-item" data-value="Oilseed">🌻 Oilseeds</div>
-            <div class="fb-dropdown-item" data-value="Pulse">🫘 Pulses</div>
-            <div class="fb-dropdown-item" data-value="Spice">🌶️ Spices</div>
-            <div class="fb-dropdown-item" data-value="Other">📦 Others</div>
+            <div class="fb-dropdown-item active" data-value="all"><i class="fi fi-rr-apps"></i> <span data-i18n="cat_all_cat">All Categories</span></div>
+            <div class="fb-dropdown-item" data-value="Grain">🌾 <span data-i18n="cat_cat_grain">Grains</span></div>
+            <div class="fb-dropdown-item" data-value="Oilseed">🌻 <span data-i18n="cat_cat_oilseed">Oilseeds</span></div>
+            <div class="fb-dropdown-item" data-value="Pulse">🫘 <span data-i18n="cat_cat_pulse">Pulses</span></div>
+            <div class="fb-dropdown-item" data-value="Spice">🌶️ <span data-i18n="cat_cat_spice">Spices</span></div>
+            <div class="fb-dropdown-item" data-value="Other">📦 <span data-i18n="cat_cat_other">Others</span></div>
         </div>
         <select id="categoryFilter" style="display: none;">
             <option value="all">All Categories</option>
@@ -60,14 +60,14 @@
     <!-- Custom Sort Dropdown -->
     <div class="fb-dropdown" id="sortDropdown">
         <div class="fb-dropdown-trigger">
-            <span><i class="fi fi-rr-sort-amount-down" style="margin-right: 8px;"></i> Default Sort</span>
-            <i class="fas fa-chevron-down"></i>
+            <span><i class="fi fi-rr-sort-amount-down" style="margin-right: 8px;"></i> <span data-i18n="cat_def_sort">Default Sort</span></span>
+            <i class="fi fi-rr-angle-small-down"></i>
         </div>
         <div class="fb-dropdown-menu">
-            <div class="fb-dropdown-item active" data-value="default"><i class="fi fi-rr-refresh"></i> Default Sort</div>
-            <div class="fb-dropdown-item" data-value="price-low"><i class="fi fi-rr-arrow-trend-up"></i> Price: Low to High</div>
-            <div class="fb-dropdown-item" data-value="price-high"><i class="fi fi-rr-arrow-trend-down"></i> Price: High to Low</div>
-            <div class="fb-dropdown-item" data-value="newest"><i class="fi fi-rr-clock"></i> Newest First</div>
+            <div class="fb-dropdown-item active" data-value="default"><i class="fi fi-rr-refresh"></i> <span data-i18n="cat_def_sort">Default Sort</span></div>
+            <div class="fb-dropdown-item" data-value="price-low"><i class="fi fi-rr-arrow-trend-up"></i> <span data-i18n="cat_price_low">Price: Low to High</span></div>
+            <div class="fb-dropdown-item" data-value="price-high"><i class="fi fi-rr-arrow-trend-down"></i> <span data-i18n="cat_price_high">Price: High to Low</span></div>
+            <div class="fb-dropdown-item" data-value="newest"><i class="fi fi-rr-clock"></i> <span data-i18n="cat_newest">Newest First</span></div>
         </div>
         <select id="sortFilter" style="display: none;">
             <option value="default">Default Sort</option>
@@ -81,12 +81,13 @@
 <!-- Search Results Info -->
 <div id="searchResultsInfo"
      style="display: none; padding: 10px 15px; background: #e8f5e9; border-radius: 8px; margin-bottom: 15px;">
-    <i class="fas fa-info-circle"></i>
-    Showing search results for: <strong id="searchQueryText"></strong>
-    <button id="clearSearch" class="btn btn-sm btn-link" style="float: right;">Clear</button>
+    <i class="fi fi-rr-info"></i>
+    <span data-i18n="cat_search_results">Showing search results for:</span> <strong id="searchQueryText"></strong>
+    <button id="clearSearch" class="btn btn-sm btn-link" style="float: right;" data-i18n="cat_clear">Clear</button>
 </div>
 
 <div id="catalogGrid">
+    <!-- FBSkeleton will inject cards here via catalog.js or inline script -->
 </div>
 
 <div id="quantityWindow" style="display: none; padding: 0;">
@@ -95,12 +96,12 @@
             <div id="popupProductIcon" class="modal-icon-wrap"></div>
             <div class="modal-text-wrap">
                 <h3 id="popupProductName">Product Name</h3>
-                <div id="popupStockInfo" class="stock-badge">Available: 0 kg</div>
+                <div id="popupStockInfo" class="stock-badge"><span data-i18n="cat_qty_avail">Available</span>: 0 kg</div>
             </div>
         </div>
         
         <div class="quantity-control-section">
-            <label class="qty-label">Order Quantity</label>
+            <label class="qty-label" data-i18n="cat_qty_title">Order Quantity</label>
             <div class="modern-stepper-pill">
                 <button id="qtyMinus" class="pill-step-btn"><i class="fi fi-rr-minus-small"></i></button>
                 <div class="pill-input-area">
@@ -112,16 +113,16 @@
         </div>
 
         <div class="price-display-card">
-            <div class="price-label">Estimated Total Investment</div>
+            <div class="price-label" data-i18n="cat_qty_total">Estimated Total Investment</div>
             <div id="popupTotalPrice" class="total-price-value">₹0</div>
         </div>
 
         <div class="modal-footer-actions">
             <button id="cancelQtyBtn" class="btn-modal-cancel">
-                <i class="fi fi-rr-cross-small"></i> Cancel
+                <i class="fi fi-rr-cross-small"></i> <span data-i18n="cat_qty_cancel">Cancel</span>
             </button>
             <button id="confirmQtyBtn" class="btn-modal-confirm">
-                <i class="fi fi-rr-shopping-cart-add"></i> Add to Cart
+                <i class="fi fi-rr-shopping-cart-add"></i> <span data-i18n="cat_qty_add">Add to Cart</span>
             </button>
         </div>
     </div>
@@ -259,8 +260,8 @@
         async function loadCatalogFromDatabase() {
             const category = document.getElementById('categoryFilter').value;
             try {
-                if (typeof window.showCardSkeleton === 'function') {
-                    window.showCardSkeleton('#catalogGrid', 8);
+                if (typeof window.FBSkeleton === 'object') {
+                    FBSkeleton.show('#catalogGrid', 8, 'product');
                 }
                 let url = `${API_URL}/catalog?category=${encodeURIComponent(category)}&search=`;
                 const response = await authorizedFetch(url);
@@ -277,7 +278,7 @@
                     await loadWishlistIds();
                     applySortAndDisplay();
                 } else {
-                    document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products found</p></div>';
+                    document.getElementById('catalogGrid').innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fi fi-rr-box-open-full fa-3x mb-3"></i><p>No products found</p></div>';
                 }
             } catch (error) {
                 console.error('Database load error:', error);
@@ -311,7 +312,7 @@
         function displayProducts(products) {
             const grid = document.getElementById('catalogGrid');
             if (!products || products.length === 0) {
-                grid.innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products found</p></div>';
+                grid.innerHTML = '<div class="catalog-empty" style="text-align:center; padding: 40px;"><i class="fi fi-rr-box-open-full fa-3x mb-3"></i><p>No products found</p></div>';
                 return;
             }
 
@@ -325,7 +326,7 @@
                 const media = img ? `<img src="${img}" alt="${escapeHtml(displayName)}">` : `
                     <div class="no-image-placeholder">
                         <div class="placeholder-icon-wrapper">
-                            <i class="fi fi-rr-sprout"></i>
+                            <i class="fi fi-rr-seedling"></i>
                             <div class="placeholder-text">FarmBridge</div>
                         </div>
                     </div>`;
@@ -336,7 +337,7 @@
                         ${p.grade ? `<div class="catalog-product-badge">Grade ${p.grade}</div>` : ''}
                         <div class="wishlist-heart-float ${isInWishlist ? 'active' : ''}" 
                              onclick="toggleWishlistItem(${p.id}, '${escapeHtml(p.name)}', ${price}, '${p.grade || ''}', event)">
-                            <i class="${isInWishlist ? 'fas' : 'far'} fa-heart"></i>
+                            <i class="${isInWishlist ? 'fi fi-sr-heart' : 'fi fi-rr-heart'}"></i>
                         </div>
                         ${media}
                     </div>
@@ -346,16 +347,17 @@
                             ₹${price.toLocaleString('en-IN')}<small>/${p.unit || 'kg'}</small>
                         </div>
                         <div class="catalog-product-stock">
-                            <i class="fi fi-rr-box"></i> ${p.quantityAvailable || 0} ${p.unit || 'kg'} in stock
+                            <i class="fi fi-rr-box"></i> ${p.quantityAvailable || 0} ${p.unit || 'kg'} <span data-i18n="cat_in_stock">in stock</span>
                         </div>
                         <button class="btn-catalog-add-cart" onclick='addToCart(${p.id}, "${escapeHtml(p.name)}", ${price}, ${p.quantityAvailable || 0}, "${img || ''}", "${p.grade || ''}")'>
-                            <i class="fi fi-rr-shopping-cart-add"></i> Add to Cart
+                            <i class="fi fi-rr-shopping-cart-add"></i> <span data-i18n="cat_add_cart">Add to Cart</span>
                         </button>
                     </div>
                 </div>`;
             });
             html += '</div>';
             grid.innerHTML = html;
+            if (window.fbInit) fbInit();
             updateHeaderCartCount();
         }
 
@@ -372,7 +374,7 @@
                 const response = await authorizedFetch(url, { method: isActive ? 'DELETE' : 'POST' });
                 if (response?.ok) {
                     btn.classList.toggle('active');
-                    btn.querySelector('i').className = btn.classList.contains('active') ? 'fas fa-heart' : 'far fa-heart';
+                    btn.querySelector('i').className = btn.classList.contains('active') ? 'fi fi-sr-heart' : 'fi fi-rr-heart';
                     if (isActive) wishlistIds = wishlistIds.filter(key => key !== wishlistKey);
                     else wishlistIds.push(wishlistKey);
                     updateWishlistCount();
@@ -391,7 +393,8 @@
                 grade: grade 
             };
             document.getElementById('popupProductName').innerText = grade ? `${name} (Grade ${grade})` : name;
-            document.getElementById('popupStockInfo').innerText = `Available: ${currentProduct.max} kg`;
+            const availLabel = window.fbT ? fbT('cat_qty_avail') : 'Available';
+            document.getElementById('popupStockInfo').innerText = `${availLabel}: ${currentProduct.max} kg`;
             
             const iconDiv = document.getElementById('popupProductIcon');
             iconDiv.innerHTML = img
@@ -435,11 +438,16 @@
                     body: JSON.stringify({ cropId: currentProduct.id, quantity: qty })
                 });
                 if (response?.ok) {
-                    notification.show({ message: "Added to cart successfully!" }, "success");
+                    if (window.fbNotify) {
+                        fbNotify({ message: "Added to cart successfully!", icon: "success", type: 'toast' });
+                    }
                     $("#quantityWindow").data("kendoWindow").close();
                     updateHeaderCartCount();
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e); 
+                if (window.fbNotify) fbNotify({ message: "Failed to add to cart", icon: "error", type: 'toast' });
+            }
         }
 
         function escapeHtml(text) {

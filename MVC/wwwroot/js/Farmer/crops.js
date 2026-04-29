@@ -92,7 +92,7 @@ $(document).ready(function () {
         success: function (response) {
             var rows = (response.data || []).map(mapListingToRow);
 
-            $("#gridSkeleton").hide();
+            if (typeof FBSkeleton !== 'undefined') FBSkeleton.hide("#gridSkeleton");
             updateStatsBar(rows);
 
             if (rows.length === 0) {
@@ -379,7 +379,7 @@ function reloadListings() {
         success: function (response) {
             var rows = (response.data || []).map(mapListingToRow);
 
-            $("#gridSkeleton").hide();
+            if (typeof FBSkeleton !== 'undefined') FBSkeleton.hide("#gridSkeleton");
             updateStatsBar(rows);
 
             if (rows.length === 0) {
@@ -511,7 +511,7 @@ function displaySearchResults(results) {
 }
 
 function displayNoResults() {
-    $("#gridSkeleton").hide();
+    if (typeof FBSkeleton !== 'undefined') FBSkeleton.hide("#gridSkeleton");
     $("#cropsEmpty").show();          // already exists in cshtml
 
     var lv = $("#cropsGrid").data("kendoListView");
@@ -522,7 +522,7 @@ function displayNoResults() {
 }
 
 function displaySearchResults(results) {
-    $("#gridSkeleton").hide();
+    if (typeof FBSkeleton !== 'undefined') FBSkeleton.hide("#gridSkeleton");
     $("#cropsEmpty").hide();
 
     var rows = results.map(function(r) {

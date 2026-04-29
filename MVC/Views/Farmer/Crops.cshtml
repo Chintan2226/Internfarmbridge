@@ -10,82 +10,87 @@
 }
 
 <!-- Page Header -->
-<div class="crops-page-header">
-    <div>
-        <h1 class="crops-page-title">
-            <i class="fi fi-rr-sprout"></i> My Crops
-        </h1>
-        <div class="crops-page-sub">Manage your crop listings and track quality check requests</div>
-    </div>
-    <button class="btn-list-new" onclick="openCropWindow()">
-        <i class="fi fi-rr-plus"></i> List New Crop
-    </button>
-</div>
-
-<!-- Search Bar - Improved UI -->
-<div class="crop-search-wrapper" style="margin-bottom: 20px; padding: 0 0 16px 0;">
-    <div class="crop-search-container" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <div class="crop-search-input-wrapper" style="flex: 1; min-width: 250px; position: relative;">
-            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 14px;"></i>
-            <input type="text" id="cropSearchInput" 
-                   class="crop-search-input" 
-                   placeholder="Search by crop name, variety..."
-                   autocomplete="off"
-                   style="width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; background: #fff; transition: all 0.2s;">
+<div class="crops-page-header glass-panel">
+    <div class="header-main">
+        <div class="header-icon-box">
+            <i class="fi fi-sr-leaf"></i>
         </div>
-        <select id="cropStatusFilter" class="crop-status-filter" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; background: #fff; min-width: 130px;">
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="draft">Draft</option>
-            <option value="qc_passed">QC Passed</option>
-        </select>
-        <button id="clearCropSearchBtn" class="crop-clear-search" style="background: none; border: none; color: #6b7280; cursor: pointer; font-size: 13px; display: none;">
-            <i class="fas fa-times-circle"></i> Clear
+        <div class="header-text">
+            <h1 class="crops-page-title">My Crop Inventory</h1>
+            <p class="crops-page-sub">Manage your listings, track quality checks, and monitor sales</p>
+        </div>
+    </div>
+    <div class="header-actions">
+        <button class="btn-list-new premium-btn" onclick="openCropWindow()">
+            <i class="fi fi-rr-add"></i> 
+            <span>List New Crop</span>
         </button>
     </div>
 </div>
 
-<!-- Search Results Info - Improved -->
-<div id="searchResultsInfo" 
-     style="display:none; padding: 10px 15px; background: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px; margin-bottom: 20px;">
-    <i class="fas fa-info-circle" style="color: #10b981;"></i>
-    <span style="color: #166534;">Showing results for: <strong id="searchQueryText"></strong></span>
-    <button id="clearCropSearch" 
-            style="float:right; background: none; border: none; color: #10b981; cursor: pointer; font-weight: 500;">
-        <i class="fas fa-times"></i> Clear
-    </button>
+<!-- Search & Filter Bar -->
+<div class="crop-search-section glass-panel">
+    <div class="search-container">
+        <div class="search-input-group">
+            <i class="fi fi-rr-search search-icon"></i>
+            <input type="text" id="cropSearchInput" 
+                   class="premium-input" 
+                   placeholder="Search by crop name, variety, or ID..."
+                   autocomplete="off">
+            <button id="clearCropSearchBtn" class="clear-btn" style="display: none;">
+                <i class="fi fi-rr-cross-circle"></i>
+            </button>
+        </div>
+        
+        <div class="filter-group">
+            <div class="filter-item">
+                <label>Status</label>
+                <select id="cropStatusFilter" class="premium-select">
+                    <option value="">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="draft">Draft</option>
+                    <option value="qc_passed">QC Passed</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label>Sort By</label>
+                <select id="cropSortFilter" class="premium-select">
+                    <option value="newest">Newest First</option>
+                    <option value="price_high">Price: High to Low</option>
+                    <option value="price_low">Price: Low to High</option>
+                </select>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Stats Bar -->
 <div class="crops-stats-bar" id="cropsStatsBar">
-    <div class="stat-chip chip-active">
+    <div class="stat-chip chip-active" title="Crops currently visible to buyers">
         <span class="chip-dot"></span>
-        <span id="statActive" class="skeleton" style="min-width: 20px; display: inline-block;"></span> Active
+        <span class="stat-count" id="statActive">--</span>
+        <span class="stat-label">Active</span>
     </div>
-    <div class="stat-chip chip-draft">
+    <div class="stat-chip chip-draft" title="Saved listings not yet published">
         <span class="chip-dot"></span>
-        <span id="statDraft" class="skeleton" style="min-width: 20px; display: inline-block;"></span> Draft
+        <span class="stat-count" id="statDraft">--</span>
+        <span class="stat-label">Drafts</span>
     </div>
-    <div class="stat-chip chip-qc">
+    <div class="stat-chip chip-qc" title="Crops awaiting or undergoing quality check">
         <span class="chip-dot"></span>
-        <span id="statQC" class="skeleton" style="min-width: 20px; display: inline-block;"></span> QC Scheduled
+        <span class="stat-count" id="statQC">--</span>
+        <span class="stat-label">QC In-Progress</span>
     </div>
-    <div class="stat-chip chip-sold">
+    <div class="stat-chip chip-sold" title="Successfully sold produce">
         <span class="chip-dot"></span>
-        <span id="statSold" class="skeleton" style="min-width: 20px; display: inline-block;"></span> Sold
+        <span class="stat-count" id="statSold">--</span>
+        <span class="stat-label">Sold</span>
     </div>
 </div>
 
 <!-- Card Grid -->
 <div id="gridSkeleton" class="fb-skeleton-grid-cards" style="padding: 24px 0;">
-    <div class="fb-skeleton-card" style="height: 220px;"></div>
-    <div class="fb-skeleton-card" style="height: 220px;"></div>
-    <div class="fb-skeleton-card" style="height: 220px;"></div>
-    <div class="fb-skeleton-card" style="height: 220px;"></div>
-    <div class="fb-skeleton-card" style="height: 220px;"></div>
-    <div class="fb-skeleton-card" style="height: 220px;"></div>
-    <div class="fb-skeleton-card" style="height: 220px;"></div>
-    <div class="fb-skeleton-card" style="height: 220px;"></div>
+    <!-- FBSkeleton will inject here -->
 </div>
 <div id="cropsGrid" style="display:none;"></div>
 

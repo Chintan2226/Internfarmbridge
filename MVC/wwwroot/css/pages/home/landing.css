@@ -1034,8 +1034,10 @@ section {
 }
 
 .how-step-icon {
+  display: inline-block;
   font-size: 36px;
   color: var(--green-600);
+  line-height: 1;
 }
 
 .how-step-title {
@@ -2029,11 +2031,7 @@ section {
   background: linear-gradient(135deg, var(--saffron), #f5a623);
 }
 
-.how-step-icon {
-  font-size: 36px;
-  color: var(--green-600);
-  fill: 1;
-}
+/* Step icons styles moved up to line 1036 */
 
 
 /* FOOTER */

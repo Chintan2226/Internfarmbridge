@@ -46,31 +46,33 @@ function loadProfile() {
             if (!res.success) return;
             var p = res.data;
 
-            // Sidebar info
+            // Name & location — update now that API has confirmed data
             var displayName = p.fullName || window.FARMER_NAME || "FarmBridge User";
-            $("#farmerNameLabel").removeClass("skeleton").text(displayName);
-            $("#farmerMetaLabel").removeClass("skeleton").text([p.district, p.state].filter(Boolean).join(", ") || fbT("profile_location_not_set"));
+            $("#farmerNameLabel").text(displayName);
+            $("#farmerMetaLabel").text([p.district, p.state].filter(Boolean).join(", ") || fbT("profile_location_not_set"));
 
-            // Avatar placeholder
+            // Avatar letter (also set by inline script instantly, but update here with API name)
             var firstLetter = displayName.charAt(0).toUpperCase();
-            $("#avatarPlaceholder").html(`<span style="font-size: 32px; color: #10b981; font-weight: 800;">${firstLetter}</span>`);
+            $("#avatarLetter").text(firstLetter);
 
-            // Bind fields
-            $("#fullName").removeClass("skeleton").val(p.fullName || "");
-            $("#phoneNo").removeClass("skeleton").val(p.phone || "");
-            $("#farmState").removeClass("skeleton").val(p.state || "");
-            $("#farmDistrict").removeClass("skeleton").val(p.district || "");
-            $("#address").removeClass("skeleton").val(p.address || "");
-            $("#bankName").removeClass("skeleton").val(p.bankName || "");
-            $("#branchName").removeClass("skeleton").val(p.branchName || "");
-            $("#acctName").removeClass("skeleton").val(p.accountHolderName || "");
-            $("#acctNo").removeClass("skeleton").val(p.accountNumber || "");
-            $("#ifscCode").removeClass("skeleton").val(p.ifscCode || "");
-            $("#upiId").removeClass("skeleton").val(p.upiId || "");
-            $("#acctType").removeClass("skeleton");
+            // Bind form fields
+            $("#fullName").val(p.fullName || "");
+            $("#phoneNo").val(p.phone || "");
+            $("#farmState").val(p.state || "");
+            $("#farmDistrict").val(p.district || "");
+            $("#address").val(p.address || "");
+            $("#bankName").val(p.bankName || "");
+            $("#branchName").val(p.branchName || "");
+            $("#acctName").val(p.accountHolderName || "");
+            $("#acctNo").val(p.accountNumber || "");
+            $("#ifscCode").val(p.ifscCode || "");
+            $("#upiId").val(p.upiId || "");
             if (p.accountType) $("#acctType").val(p.accountType);
 
-            // Photo management
+            // Remove loading ring
+            $("#farmerAvatarWrap").removeClass("loading");
+
+            // Photo display
             window.CURRENT_PHOTO_URL = p.imageUrl || "";
             if (p.imageUrl) {
                 $("#farmerPhoto").attr("src", p.imageUrl).show();
@@ -99,8 +101,8 @@ function loadProfileKpis() {
             if (!res.success || !res.data) return;
             var kpis = res.data.kpis;
             if (kpis) {
-                $("#statActiveListings").removeClass("skeleton").text(kpis.totalCropsListed || 0);
-                $("#statQCPassed").removeClass("skeleton").text(kpis.confirmedQcSlots || 0);
+                $("#statActiveListings").removeClass("prof-skeleton").text(kpis.totalCropsListed || 0);
+                $("#statQCPassed").removeClass("prof-skeleton").text(kpis.confirmedQcSlots || 0);
             }
         }
     });
