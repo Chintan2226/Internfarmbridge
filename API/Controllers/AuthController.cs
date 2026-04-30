@@ -114,7 +114,7 @@ namespace API.Controllers
             }
         }
 
-        // Farmer Login
+       // Farmer Login
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] vm_FarmerLogin model)
@@ -150,6 +150,12 @@ namespace API.Controllers
 
                 var token = _jwtService.GenerateJwtToken(user.Id, user.Email, user.Role, additionalClaims);
 
+                // 👉 ADDED THIS BLOCK: Tell the frontend to show the Welcome Modal
+                Response.Cookies.Append("ShowWelcomeGuide", "true", new CookieOptions { 
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(5), // Temporary cookie
+                    Path = "/" // Applies to the whole site
+                });
+
                 return Ok(new Dictionary<string, object>
                 {
                     { "success", true },
@@ -170,7 +176,6 @@ namespace API.Controllers
                 return StatusCode(500, new { success = false, message = $"Error during login: {ex.Message}" });
             }
         }
-
         // Verify Token
         [HttpGet("verify")]
         public IActionResult VerifyToken()

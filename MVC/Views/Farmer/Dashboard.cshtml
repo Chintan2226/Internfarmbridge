@@ -114,6 +114,60 @@
 
 </div>
 
+<!-- ========================================== -->
+<!-- FARMER WELCOME MODAL (QUICK ACTIONS)       -->
+<!-- ========================================== -->
+<div class="fb-modal-overlay" id="farmerWelcomeModal">
+    <div class="fb-modal" style="width: 500px; max-width: 90vw; margin: auto;">
+        
+        <!-- Header -->
+        <div class="fb-modal-header" style="background: var(--green-main, #1B7A3E); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight:800; font-size:18px; color: white;">Welcome to FarmBridge 🌾</span>
+            <button class="close-btn" onclick="closeWelcomeModal()" style="background: transparent; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        
+        <!-- Body -->
+        <div class="fb-modal-body" style="padding: 24px;">
+            <h3 style="color: var(--green-dark, #14532D); margin-bottom: 8px; font-weight: 800; font-size: 20px;">What would you like to do today?</h3>
+            <p style="font-size: 13px; color: #6B7280; margin-bottom: 24px;">
+                Your dashboard is ready. Jump straight into your most important tasks or go to your overview.
+            </p>
+
+            <!-- Quick Action Cards Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                
+                <a href="/Farmer/Crops" style="text-decoration: none; border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: 0.2s; background: #fff;" 
+                   onmouseover="this.style.borderColor='#1B7A3E'; this.style.boxShadow='0 4px 12px rgba(27,122,62,0.1)'" 
+                   onmouseout="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #EAF5EC; color: #1B7A3E; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        🌱
+                    </div>
+                    <div style="font-weight: 700; color: #111827; font-size: 14px;">List New Crop</div>
+                    <div style="font-size: 11px; color: #6B7280;">Add harvest to catalog</div>
+                </a>
+
+                <a href="/Farmer/QCSlots" style="text-decoration: none; border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: 0.2s; background: #fff;" 
+                   onmouseover="this.style.borderColor='#D97706'; this.style.boxShadow='0 4px 12px rgba(217,119,6,0.1)'" 
+                   onmouseout="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #FFF7ED; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        🔬
+                    </div>
+                    <div style="font-weight: 700; color: #111827; font-size: 14px;">Book QC Slot</div>
+                    <div style="font-size: 11px; color: #6B7280;">Schedule lab testing</div>
+                </a>
+            </div>
+
+            <!-- Dismiss Button -->
+            <button style="background: #F3F4F6; color: #4B5563; padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; font-family: 'Inter', sans-serif;" 
+                    onmouseover="this.style.background='#E5E7EB'" 
+                    onmouseout="this.style.background='#F3F4F6'" 
+                    onclick="closeWelcomeModal()">
+                Just take me to my Dashboard
+            </button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/js/Farmer/dashboard.js" asp-append-version="true"></script>
 }

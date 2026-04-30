@@ -168,7 +168,7 @@
                     document.cookie = `authToken=${result.token}; path=/; max-age=1800; SameSite=Strict`;
                     
                     // 👉 HERE IS THE TRIGGER FOR THE POPUP
-                    localStorage.setItem("ShowWelcomeGuide", "true");
+                    localStorage.setItem("showWelcomeModal", "true");
                     
                     setTimeout(() => { window.location.href = '/Farmer/Dashboard'; }, 1400);
                 } else {
