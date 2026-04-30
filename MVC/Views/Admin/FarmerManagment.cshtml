@@ -162,29 +162,29 @@
         </div>
     </div>
 
-    <div class="stats-grid">
+    <div class="stats-grid" id="stats-container">
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--green-main)"></div>
             <div class="stat-label">Registered Farmers</div>
-            <div class="stat-value" id="stat-total">—</div>
-            <div class="stat-note" style="color:var(--green-main)" id="stat-week">Loading...</div>
+            <div class="stat-value" id="stat-total"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:28px;"></div></div>
+            <div class="stat-note" style="color:var(--green-main)" id="stat-week"><div class="fb-skeleton fb-skeleton-text" style="width:40%; height:12px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--green-main)"></div>
             <div class="stat-label">Active Accounts</div>
-            <div class="stat-value" id="stat-active">—</div>
-            <div class="stat-note" style="color:var(--green-main)" id="stat-rate">Loading...</div>
+            <div class="stat-value" id="stat-active"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:28px;"></div></div>
+            <div class="stat-note" style="color:var(--green-main)" id="stat-rate"><div class="fb-skeleton fb-skeleton-text" style="width:40%; height:12px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--red)"></div>
             <div class="stat-label">Deactivated</div>
-            <div class="stat-value" id="stat-deact">—</div>
-            <div class="stat-note" style="color:var(--red)" id="stat-month">Loading...</div>
+            <div class="stat-value" id="stat-deact"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:28px;"></div></div>
+            <div class="stat-note" style="color:var(--red)" id="stat-month"><div class="fb-skeleton fb-skeleton-text" style="width:40%; height:12px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--amber)"></div>
             <div class="stat-label">Pending Verification</div>
-            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-value" id="stat-pending"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:28px;"></div></div>
             <div class="stat-note" style="color:var(--amber)">Action needed</div>
         </div>
     </div>
@@ -377,31 +377,26 @@
         const container = document.getElementById('f-grid');
         
         // 👉 STEP 1: TRIGGER SKELETON LOADER
-        if (typeof window.showCardSkeleton === 'function') {
-            console.log("SUCCESS: Drawing Card Skeleton!");
-            window.showCardSkeleton('#f-grid', 6); // Show 6 fake cards
+        if (typeof FBSkeleton !== 'undefined') {
+            FBSkeleton.show('#f-grid', 8, 'farmer'); 
         } else {
-            console.error("ERROR: Skeleton function still missing. Check site.js!");
             container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">Loading farmers...</div>';
         }
 
-        // 👉 ARTIFICIAL DELAY (Remove the setTimeout wrapper in production!)
-        setTimeout(async () => {
-            try {
-                const res = await fetch(`${FARMER_API_BASE}/list?searchTerm=${encodeURIComponent(query)}&pageNumber=${currentPage}`);
-                if (res.ok) {
-                    const json = await res.json();
-                    
-                    // 👉 STEP 2: CLEAR SKELETON
-                    container.innerHTML = ''; 
-                    
-                    renderGrid(json.data || []);
-                    document.getElementById('page-indicator').textContent = `Page ${currentPage}`;
-                }
-            } catch (e) {
-                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:red;">Connection Error. Ensure Backend is running on port 5020.</div>';
+        try {
+            const res = await fetch(`${FARMER_API_BASE}/list?searchTerm=${encodeURIComponent(query)}&pageNumber=${currentPage}`);
+            if (res.ok) {
+                const json = await res.json();
+                
+                // 👉 STEP 2: CLEAR SKELETON
+                container.innerHTML = ''; 
+                
+                renderGrid(json.data || []);
+                document.getElementById('page-indicator').textContent = `Page ${currentPage}`;
             }
-        }, 1500); // 1.5s delay to see the animation
+        } catch (e) {
+            container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:red;">Connection Error. Ensure Backend is running on port 5020.</div>';
+        }
     }
 
     function renderGrid(farmers) {

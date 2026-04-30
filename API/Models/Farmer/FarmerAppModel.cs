@@ -91,6 +91,7 @@ namespace API.Models.FarmerApp
         public int PaymentId { get; set; }
         public string CropName { get; set; } = string.Empty;
         public decimal Amount { get; set; }
+        public decimal ContractValue { get; set; }
         public int PaymentNumber { get; set; }
         public string TriggerEvent { get; set; } = string.Empty;
         public string PaymentMode { get; set; } = string.Empty;

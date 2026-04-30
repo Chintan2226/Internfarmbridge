@@ -197,12 +197,12 @@ function renderNotifications() {
                 <p class="notif-desc mb-1" style="font-size:13px; color:#555;">${n.message}</p>
                 <div class="d-flex justify-content-between align-items-center mt-2">
                     <span class="notif-time text-muted" style="font-size:10px;">${timeDisplay}</span>
-                    <div class="notif-actions d-flex align-items-center">
+                    <div class="notif-actions d-flex align-items-center" style="gap: 12px; min-width: 60px; justify-content: flex-end;">
                         ${!n.isRead ? `
-                        <button title="Mark as read" class="btn btn-sm p-0 me-2" onclick="markOneRead(event, '${n.id}')" style="border:none; background:none;">
+                        <button title="Mark as read" class="btn btn-sm p-0 m-0 d-flex align-items-center justify-content-center" onclick="markOneRead(event, '${n.id}')" style="border:none; background:none;">
                             <lord-icon src="https://cdn.lordicon.com/uvofdfal.json" trigger="hover" state="morph-tick" colors="primary:#1a5c2a" style="width:22px;height:22px"></lord-icon>
                         </button>` : ''}
-                        <button title="Delete" class="btn btn-sm p-0" onclick="deleteOne(event, '${n.id}')" style="border:none; background:none;">
+                        <button title="Delete" class="btn btn-sm p-0 m-0 d-flex align-items-center justify-content-center" onclick="deleteOne(event, '${n.id}')" style="border:none; background:none;">
                             <lord-icon src="https://cdn.lordicon.com/oqeixref.json" trigger="hover" colors="primary:#d32f2f" style="width:22px;height:22px"></lord-icon>
                         </button>
                     </div>
@@ -214,6 +214,6 @@ function renderNotifications() {
 }
 
 function markOneRead(e, id) { e.stopPropagation(); $.post(`${API_BASE}/MarkAsRead`, { id }, loadLiveNotifications); }
-function deleteOne(e, id) { e.stopPropagation(); if (confirm("Delete this?")) $.post(`${API_BASE}/DeleteNotification`, { id }, loadLiveNotifications); }
+function deleteOne(e, id) { e.stopPropagation(); Swal.fire({title:"Delete this?", icon:"warning", showCancelButton:true, confirmButtonColor:"#10b981", confirmButtonText:"Yes"}).then(r=>{if(r.isConfirmed) $.post(`${API_BASE}/DeleteNotification`, { id }, loadLiveNotifications);}); }
 function markAllAsRead() { $.post(`${API_BASE}/MarkAllRead`, loadLiveNotifications); }
-function clearAllNotifs() { if (confirm("Clear all?")) $.post(`${API_BASE}/ClearAllNotifications`, loadLiveNotifications); }
+function clearAllNotifs() { Swal.fire({title:"Clear all?", icon:"warning", showCancelButton:true, confirmButtonColor:"#10b981", confirmButtonText:"Yes"}).then(r=>{if(r.isConfirmed) $.post(`${API_BASE}/ClearAllNotifications`, loadLiveNotifications);}); }

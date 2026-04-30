@@ -164,6 +164,26 @@ namespace MVC.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ApplyDiscount(string cropName)
+        {
+            try
+            {
+                var content = new FormUrlEncodedContent(
+                    new[] { new KeyValuePair<string, string>("cropName", cropName) }
+                );
+
+                var response = await _http.PostAsync($"{_apiBase}/api/Admin/ApplyDiscount", content);
+                var json = await response.Content.ReadAsStringAsync();
+                return Content(json, "application/json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error applying discount to {CropName}", cropName);
+                return Json(new { success = false });
+            }
+        }
+
         // Private Helper
         private async Task<IActionResult> ProxyGetRequest(string url)
         {

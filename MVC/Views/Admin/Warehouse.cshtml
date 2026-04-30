@@ -180,8 +180,8 @@
     // â”€â”€ LOAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function loadData() {
         try {
-            if (typeof window.showCardSkeleton === 'function') {
-                window.showCardSkeleton('#wh-grid', 6);
+            if (typeof FBSkeleton !== 'undefined') {
+                FBSkeleton.show('#wh-grid', 6, 'warehouse');
             }
             const [kpiRes, gridRes] = await Promise.all([
                 fetch(`${WAREHOUSE_API_BASE}/admin/kpi`),   // ✅ correct KPI url
@@ -225,6 +225,9 @@ console.log("Warehouse:", w.name, "isActive:", w.isActive, typeof w.isActive);
         utilizationPercentage: util
     };
 });
+          
+                          // 👉 Clear Skeletons
+                document.getElementById('wh-grid').innerHTML = '';
                 renderGrid(allWarehouses);
             } else {
                 renderEmpty('Failed to load warehouses.');

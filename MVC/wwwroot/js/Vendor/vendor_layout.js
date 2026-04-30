@@ -125,7 +125,15 @@ async function markNotificationAsRead(notificationId) {
 }
 
 async function deleteSingleNotif(id) {
-    if (!confirm(fbT('notif_confirm_delete'))) return;
+    const confirmed = await Swal.fire({
+        title: fbT('notif_confirm_delete'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes'
+    }).then(r => r.isConfirmed);
+    if (!confirmed) return;
 
     try {
         const response = await fvAuthFetch(`${NOTIF_API_BASE}/DeleteNotification`, {
@@ -202,7 +210,7 @@ function renderNotifs() {
                         ✓
                     </button>
                 ` : ''}
-                <button onclick="event.stopPropagation(); deleteNotification(${n.id})" 
+                <button onclick="event.stopPropagation(); deleteSingleNotif(${n.id})" 
                         class="fv-notif-btn" title="Delete">
                     ✕
                 </button>
@@ -231,7 +239,15 @@ async function fvMarkAllRead() {
 }
 
 async function fvClearAll() {
-    if (!confirm(fbT('notif_confirm_clear'))) return;
+    const confirmed = await Swal.fire({
+        title: fbT('notif_confirm_clear'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes'
+    }).then(r => r.isConfirmed);
+    if (!confirmed) return;
 
     try {
         const response = await fvAuthFetch(`${NOTIF_API_BASE}/ClearAllNotifications`, {
@@ -521,5 +537,5 @@ window.fvTab = function (tab, btn) {
 window.fvMarkAllRead = fvMarkAllRead;
 window.fvClearAll = fvClearAll;
 window.markNotificationAsRead = markNotificationAsRead;
-window.deleteNotification = deleteNotification;
+window.deleteNotification = deleteSingleNotif;
 window.handleNotifClick = handleNotifClick;

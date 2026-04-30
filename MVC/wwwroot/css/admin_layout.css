@@ -106,8 +106,8 @@ ul {
 
 .adm-sidebar:hover .adm-sidebar-logo {
     gap: 10px;
-    justify-content: flex-start;
-    padding: 16px 14px;
+    justify-content: center;
+    padding: 16px 0;
 }
 
 .adm-sidebar-logo img {
@@ -137,7 +137,7 @@ ul {
 }
 
 .adm-role-badge {
-    margin: 6px 10px 2px;
+    margin: 6px 0 2px;
     padding: 3px 10px;
     border-radius: 20px;
     font-size: 10px;
@@ -149,7 +149,7 @@ ul {
     opacity: 0;
     max-width: 0;
     overflow: hidden;
-    align-self: flex-start;
+    align-self: center;
     transition: opacity 0.25s, max-width 0.25s;
     white-space: nowrap;
 }
@@ -362,23 +362,20 @@ ul {
 }
 
 .adm-avatar {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--adm-lime-dk), #0b3a0a);
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
+    background: var(--adm-lime-dk);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 3px 10px rgba(13, 59, 22, 0.25);
-    transition: transform 0.18s;
-}
-
-.adm-avatar:hover {
-    transform: scale(1.07);
+    font-weight: 700;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    cursor: default;
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.2);
+    user-select: none;
 }
 
 /* Content */
@@ -528,6 +525,49 @@ ul {
 
 .adm-notif-item.unread {
     border-left: 3px solid var(--adm-lime-dk);
+}
+
+.adm-notif-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    border-left: 1px solid var(--adm-border);
+    padding-left: 10px;
+}
+
+.adm-notif-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: var(--adm-muted);
+}
+
+.adm-notif-action-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.adm-notif-action-btn.check:hover {
+    color: var(--adm-lime-dk);
+    background: var(--adm-lime-bg);
+}
+
+.adm-notif-action-btn.cross:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.adm-notif-action-btn i {
+    font-size: 14px;
+    line-height: 1;
 }
 
 /* Toast */
@@ -728,4 +768,81 @@ ul {
         width: auto;
         top: calc(var(--adm-topbar-h) + 6px);
     }
+}
+
+.bell-button {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--adm-border);
+    background: var(--adm-surface);
+    box-shadow: var(--adm-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--adm-muted);
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.bell-button:hover {
+    background: var(--adm-lime-bg);
+    color: var(--adm-lime-dk);
+    transform: translateY(-1px);
+}
+
+.bell-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    display: none;
+    z-index: 2;
+}
+
+.bell-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 10px;
+    height: 10px;
+    background-color: #ef4444;  /* Red color matching notification theme */
+    border-radius: 50%;
+    border: 2px solid white;
+    display: none;  /* Hidden by default */
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* Show dot when there are unread notifications */
+.bell-dot.active {
+    display: block;
+}
+
+/* Optional: subtle pulse animation for attention */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.bell-dot.active {
+    animation: pulse 1.5s ease-in-out infinite;
 }

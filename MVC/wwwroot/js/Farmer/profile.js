@@ -101,8 +101,7 @@ function loadProfileKpis() {
             if (!res.success || !res.data) return;
             var kpis = res.data.kpis;
             if (kpis) {
-                $("#statActiveListings").removeClass("prof-skeleton").text(kpis.totalCropsListed || 0);
-                $("#statQCPassed").removeClass("prof-skeleton").text(kpis.confirmedQcSlots || 0);
+
             }
         }
     });

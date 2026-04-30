@@ -61,18 +61,35 @@
 }
 
 /* Pattern: Global Card Skeleton */
-.fbs-card {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
-    padding: 24px;
+.fbs-card, .fb-skeleton-card {
+    background: #fff;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 12px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     height: 100%;
     pointer-events: none;
-    transition: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.fb-skeleton-line {
+    background: var(--skeleton-bg);
+    height: 12px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.fb-skeleton-line::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: fb-shimmer 1.5s infinite linear;
 }
 
 /* Pattern: List Row Skeleton */
@@ -94,7 +111,7 @@
 /* Common Grid Container */
 .fbs-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--skeleton-min-width, 320px), 1fr));
     gap: 24px;
     width: 100%;
 }

@@ -259,13 +259,18 @@ namespace API.BAL
             {
                 if (_conn.State != ConnectionState.Open) await _conn.OpenAsync();
 
-                string getSql = "SELECT c_farmer_id, c_procurement_request_id, c_amount FROM t_payments_farmer WHERE c_id = @p1id";
+                string getSql = @"
+                    SELECT p.c_farmer_id, p.c_procurement_request_id, p.c_amount, fp.c_user_id 
+                    FROM t_payments_farmer p
+                    JOIN t_farmer_profiles fp ON p.c_farmer_id = fp.c_id
+                    WHERE p.c_id = @p1id";
                 using var getCmd = new NpgsqlCommand(getSql, _conn);
                 getCmd.Parameters.AddWithValue("@p1id", req.PaymentId);
 
                 int farmerId = 0;
                 int procReqId = 0;
                 decimal advancePaid = 0;
+                int userId = 0;
 
                 using (var reader = await getCmd.ExecuteReaderAsync())
                 {
@@ -274,6 +279,7 @@ namespace API.BAL
                         farmerId = reader.GetInt32(0);
                         procReqId = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
                         advancePaid = reader.GetDecimal(2);
+                        userId = reader.GetInt32(3);
                     }
                     else return false;
                 }
@@ -281,7 +287,7 @@ namespace API.BAL
                 decimal pendingAmount = Math.Round(advancePaid / 0.30m, 2) - advancePaid;
 
                 // ✅ Write back so controller can use these values for RabbitMQ
-                req.FarmerId = farmerId;
+                req.FarmerId = userId; // Important: Use User ID for notifications!
                 req.Amount = pendingAmount;
 
                 string insertSql = @"

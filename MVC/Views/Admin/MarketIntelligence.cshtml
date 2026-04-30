@@ -785,6 +785,25 @@
             $("#btnText").text("Loading...");
             $("#spinner").show();
 
+            /* Skeleton loading */
+            $("#tableEmpty").hide();
+            $("#demandEmpty").hide();
+            
+            const existingGrid = $("#predGrid").data("kendoGrid");
+            if (existingGrid) existingGrid.destroy();
+            $("#predGrid").empty().show();
+            $("#demandGrid").empty().show();
+
+            if (typeof window.showGridSkeleton === 'function') {
+                window.showGridSkeleton('#predGrid', 5);
+                
+                if (typeof FBSkeleton !== 'undefined') {
+                    FBSkeleton.show('#demandGrid', 4, 'kpi');
+                } else {
+                    window.showGridSkeleton('#demandGrid', 3);
+                }
+            }
+
             try {
                 const res  = await fetch(apiUrl("/predict/admin"), {
                     method: "POST",
@@ -801,10 +820,10 @@
                     updateKpis(allPredictions);
 
                     /* Table */
-                    $("#tableEmpty").hide();
-                    $("#predGrid").show();
+                    $("#predGrid").empty(); // clear skeleton
+                    initGrid(); // recreate grid
                     const grid = $("#predGrid").data("kendoGrid");
-                    grid.dataSource.data(allPredictions);
+                    grid.dataSource.data(filteredPredictions);
 
                     /* Demand tiles */
                     renderDemand(data.top_demand || []);

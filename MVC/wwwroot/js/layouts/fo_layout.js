@@ -116,7 +116,15 @@ async function foMarkNotificationAsRead(notificationId) {
 }
 
 async function foDeleteNotification(notificationId) {
-    if (!confirm('Delete this notification?')) return;
+    const confirmed = await Swal.fire({
+        title: 'Delete this notification?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes'
+    }).then(r => r.isConfirmed);
+    if (!confirmed) return;
     try {
         const response = await foAuthFetch(`${FO_NOTIF_API_BASE}/DeleteNotification`, {
             method: 'POST',
@@ -154,7 +162,16 @@ async function foMarkAllRead() {
 }
 
 async function foClearAll() {
-    if (!confirm('Clear all notifications? This action cannot be undone.')) return;
+    const confirmed = await Swal.fire({
+        title: 'Clear all notifications?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, clear all'
+    }).then(r => r.isConfirmed);
+    if (!confirmed) return;
     try {
         const response = await foAuthFetch(`${FO_NOTIF_API_BASE}/ClearAllNotifications`, {
             method: 'POST'

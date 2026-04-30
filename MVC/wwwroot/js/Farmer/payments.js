@@ -82,10 +82,12 @@ $(document).ready(function () {
 
             (response.data || []).forEach(function (x) {
                 var amt = x.amount || 0;
-                if (x.status === "success") {
+                var isFullySettled = (x.paymentNumber === 2 || x.status === "settled");
+                
+                if (isFullySettled) {
                     totalEarned += amt;
                 } else {
-                    // advance_paid
+                    // advance_paid (30%)
                     totalEarned += Math.round(amt * 0.3);
                     totalPending += (amt - Math.round(amt * 0.3));
                 }
@@ -112,6 +114,10 @@ $(document).ready(function () {
                     ImageUrl: item.imageUrl || "/images/placeholder.png",
 
                     Amount: item.amount,
+                    
+                    PaymentNumber: item.paymentNumber,
+                    
+                    ContractValue: item.contractValue,
 
                     PayMode: item.paymentMode ? item.paymentMode.split('_').map(function (word) { return word.charAt(0).toUpperCase() + word.slice(1); }).join(' ') : "Bank Transfer",
 
@@ -151,66 +157,59 @@ $(document).ready(function () {
                         width: 180,
                         template:
                             "<div class='crop-name'>" +
-                            "<div class='crop-image-wrapper'><img src='#:ImageUrl#' class='crop-image' onerror=\"this.src='/images/placeholder.png'\" /></div>" +
                             "#:CropType#" +
                             "</div>",
                         attributes: { "data-i18n-header": "crop_request" }
                     },
 
                     {
-                        field: "Amount",
+                        field: "ContractValue",
                         title: "Contract Value",
                         width: 190,
 
                         template:
-                            "<div class='amount-val'>₹#=kendo.toString(Amount, 'n0')#</div>" +
+                            "<div class='amount-val'>₹#=kendo.toString(ContractValue, 'n0')#</div>" +
                             "<div class='amount-sub'><i class='fi fi-rr-bank'></i> #:PayMode#</div>",
                         attributes: { "data-i18n-header": "contract_value" }
                     },
 
                     {
-                        title: "Payment Timeline",
-                        width: 440,
+                        title: "Payment Progress",
+                        width: 400,
                         template: function (d) {
-                            var amt = d.Amount || 0;
-                            var advance = Math.round(amt * 0.3);
-                            var finalPay = amt - advance;
+                            var contractAmt = d.ContractValue > 0 ? d.ContractValue : (d.Amount > 0 ? d.Amount / 0.3 : 0); // Fallback if db is missing contract value
+                            var isFullySettled = (d.PaymentNumber === 2) || (d.Status === "settled");
+                            
+                            var progressPercent = isFullySettled ? 100 : 30;
+                            
+                            var thirtyAmt = Math.round(contractAmt * 0.3);
+                            var seventyAmt = contractAmt - thirtyAmt;
 
-                            var isSuccess = d.Status === "success";
+                            var bracketText = isFullySettled 
+                                ? "[Total: ₹" + kendo.toString(contractAmt, 'n0') + " | 30%: ₹" + kendo.toString(thirtyAmt, 'n0') + " | 70%: ₹" + kendo.toString(seventyAmt, 'n0') + "]"
+                                : "[Total: ₹" + kendo.toString(contractAmt, 'n0') + " | 30%: ₹" + kendo.toString(thirtyAmt, 'n0') + " | 70%: Pending]";
+                            
+                            var barColor = isFullySettled ? "linear-gradient(135deg, #22c55e, #16a34a)" : "linear-gradient(135deg, #fbe69b, #d4af37)";
+                            var textColor = isFullySettled ? "#16a34a" : "#d4af37";
+                            var statusText = isFullySettled ? "100% Fully Settled" : "30% Advance Cleared";
+                            var subText = isFullySettled ? "Completed" : "Pending Admin Approval";
+                            var icon = isFullySettled ? "check-circle" : "time-fast";
 
-                            // Visual classes for steps based on status
-                            var line1Class = "active";
-                            var step2Class = "active";
-                            var line2Class = isSuccess ? "settled" : "";
-                            var step3Class = isSuccess ? "settled" : "";
-
-                            var color1 = "#047857"; // Deep Emerald
-                            var color2 = "#d97706"; // Rich Gold
-                            var color3 = isSuccess ? "#047857" : "#94a3b8";
-
-                            return "<div class='tracker-container'>" +
-                                "<div class='pay-tracker'>" +
-                                "<div class='tracker-step initiated'></div>" +
-                                "<div class='tracker-line " + line1Class + "'></div>" +
-                                "<div class='tracker-step " + step2Class + "'></div>" +
-                                "<div class='tracker-line " + line2Class + "'></div>" +
-                                "<div class='tracker-step " + step3Class + "'></div>" +
-                                "</div>" +
-                                "<div class='tracker-label'>" +
-                                "<div class='t-lbl-col' style='color: " + color1 + ";'>" +
-                                "<span class='t-stage'>Initiated</span>" +
-                                "<span class='t-amt'>₹" + kendo.toString(amt, 'n0') + "</span>" +
-                                "</div>" +
-                                "<div class='t-lbl-col' style='color: " + color2 + ";'>" +
-                                "<span class='t-stage'>30% Advance</span>" +
-                                "<span class='t-amt'>₹" + kendo.toString(advance, 'n0') + "</span>" +
-                                "</div>" +
-                                "<div class='t-lbl-col' style='color: " + color3 + ";'>" +
-                                "<span class='t-stage'>70% Balance</span>" +
-                                "<span class='t-amt'>₹" + kendo.toString(finalPay, 'n0') + "</span>" +
-                                "</div>" +
-                                "</div>" +
-                                "</div>";
+                            return "<div style='display:flex; flex-direction:column; gap:10px; padding-right:15px; padding-top:5px;'>" +
+                                      "<div style='display:flex; justify-content:space-between; align-items:flex-end;'>" +
+                                          "<div style='display:flex; flex-direction:column; line-height:1.2;'>" +
+                                              "<span style='font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;'>Payment Breakdown</span>" +
+                                              "<span style='font-size:13px; font-weight:700; color:#0f172a; margin-top:2px; letter-spacing:0.3px;'>" + bracketText + "</span>" +
+                                          "</div>" +
+                                      "</div>" +
+                                      "<div style='width:100%; background:rgba(22, 163, 74, 0.1); border-radius:10px; height:10px; overflow:hidden; box-shadow:inset 0 1px 3px rgba(0,0,0,0.06);'>" +
+                                          "<div style='width:" + progressPercent + "%; background:" + barColor + "; height:100%; transition:width 1s cubic-bezier(0.4, 0, 0.2, 1); border-radius:10px;'></div>" +
+                                      "</div>" +
+                                      "<div style='display:flex; justify-content:space-between; font-size:12px; font-weight:700;'>" +
+                                          "<span style='color:" + textColor + "; display:flex; align-items:center; gap:6px;'><i class='fi fi-rr-" + icon + "'></i>" + statusText + "</span>" +
+                                          "<span style='color:#64748b;'>" + subText + "</span>" +
+                                      "</div>" +
+                                   "</div>";
                         }
                     }
 

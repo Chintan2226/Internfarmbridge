@@ -39,28 +39,28 @@
             <div class="stat-strip" style="background:var(--green-main)"></div>
             <div class="stat-icon-wrap" style="background:var(--green-light)">👷</div>
             <div class="stat-label">Total Field Officers</div>
-            <div class="stat-value" id="stat-total">—</div>
-            <div class="stat-note green" id="stat-total-note"></div>
+            <div class="stat-value" id="stat-total"><div class="fb-skeleton fb-skeleton-text" style="width:50%; height:28px;"></div></div>
+            <div class="stat-note green" id="stat-total-note"><div class="fb-skeleton fb-skeleton-text" style="width:70%; height:12px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--green-main)"></div>
             <div class="stat-icon-wrap" style="background:var(--green-light)">✅</div>
             <div class="stat-label">Active Officers</div>
-            <div class="stat-value" id="stat-active">—</div>
-            <div class="stat-note green" id="stat-active-note"></div>
+            <div class="stat-value" id="stat-active"><div class="fb-skeleton fb-skeleton-text" style="width:50%; height:28px;"></div></div>
+            <div class="stat-note green" id="stat-active-note"><div class="fb-skeleton fb-skeleton-text" style="width:70%; height:12px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:#3B82F6"></div>
             <div class="stat-icon-wrap" style="background:var(--blue-bg)">🏫</div>
             <div class="stat-label">Warehouses Covered</div>
-            <div class="stat-value" id="stat-warehouses">—</div>
-            <div class="stat-note blue" id="stat-warehouse-note"></div>
+            <div class="stat-value" id="stat-warehouses"><div class="fb-skeleton fb-skeleton-text" style="width:50%; height:28px;"></div></div>
+            <div class="stat-note blue" id="stat-warehouse-note"><div class="fb-skeleton fb-skeleton-text" style="width:70%; height:12px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--amber)"></div>
             <div class="stat-icon-wrap" style="background:var(--amber-bg)">🔍</div>
             <div class="stat-label">Inspections Done</div>
-            <div class="stat-value" id="stat-inspections">—</div>
+            <div class="stat-value" id="stat-inspections"><div class="fb-skeleton fb-skeleton-text" style="width:50%; height:28px;"></div></div>
             <div class="stat-note amber">This month</div>
         </div>
     </div>
@@ -282,11 +282,11 @@
     document.addEventListener('DOMContentLoaded', function () { loadOfficers(); });
 
     async function loadOfficers() {
-        if (typeof window.showCardSkeleton === 'function') {
-            window.showCardSkeleton('#fo-cards-container', 9);
+        if (typeof FBSkeleton !== 'undefined') {
+            FBSkeleton.show('#fo-cards-container', 9, 'farmer');
         }
         if (typeof window.showGridSkeleton === 'function') {
-            window.showGridSkeleton('#fo-tbody', 5);
+            window.showGridSkeleton('#fo-tbody', 10);
         }
         setBanner('loading', '⏳ Connecting to API...');
         try {

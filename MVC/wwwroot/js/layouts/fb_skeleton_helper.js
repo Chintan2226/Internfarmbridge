@@ -90,6 +90,94 @@ const FarmBridgeSkeleton = {
                             </div>
                         </div>`;
                     break;
+                case 'farmer':
+                    itemsHtml += `
+                        <div class="fbs-card" style="padding: 20px; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="fb-skeleton fb-skeleton-circle" style="width: 46px; height: 46px;"></div>
+                                <div style="flex: 1">
+                                    <div class="fb-skeleton fb-skeleton-title" style="width: 60%; height: 14px; margin-bottom: 6px;"></div>
+                                    <div class="fb-skeleton fb-skeleton-text" style="width: 30%; height: 10px; margin: 0;"></div>
+                                </div>
+                                <div class="fb-skeleton fb-skeleton-pill" style="width: 70px; height: 22px;"></div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 12px 0;">
+                                <div>
+                                    <div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 8px;"></div>
+                                    <div class="fb-skeleton fb-skeleton-text" style="width: 80%; height: 12px; margin: 0;"></div>
+                                </div>
+                                <div>
+                                    <div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 8px;"></div>
+                                    <div class="fb-skeleton fb-skeleton-text" style="width: 80%; height: 12px; margin: 0;"></div>
+                                </div>
+                            </div>
+                            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+                                <div class="fb-skeleton fb-skeleton-text" style="width: 50%; height: 10px;"></div>
+                                <div style="display: flex; gap: 8px;">
+                                    <div class="fb-skeleton fb-skeleton-btn" style="flex: 1; height: 32px; border-radius: 6px;"></div>
+                                    <div class="fb-skeleton fb-skeleton-btn" style="flex: 1; height: 32px; border-radius: 6px;"></div>
+                                    <div class="fb-skeleton fb-skeleton-btn" style="flex: 1; height: 32px; border-radius: 6px;"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                    break;
+                case 'warehouse':
+                    itemsHtml += `
+                        <div class="fbs-card" style="padding: 20px; gap: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1">
+                                    <div class="fb-skeleton fb-skeleton-title" style="width: 70%; height: 16px; margin-bottom: 6px;"></div>
+                                    <div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 10px; margin: 0;"></div>
+                                </div>
+                                <div class="fb-skeleton fb-skeleton-pill" style="width: 80px; height: 22px;"></div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0;">
+                                <div><div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 8px;"></div><div class="fb-skeleton fb-skeleton-text" style="width: 80%; height: 12px;"></div></div>
+                                <div><div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 8px;"></div><div class="fb-skeleton fb-skeleton-text" style="width: 80%; height: 12px;"></div></div>
+                                <div><div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 8px;"></div><div class="fb-skeleton fb-skeleton-text" style="width: 80%; height: 12px;"></div></div>
+                                <div><div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 8px;"></div><div class="fb-skeleton fb-skeleton-text" style="width: 80%; height: 12px;"></div></div>
+                            </div>
+                            <div style="margin-top: 4px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 10px;"></div>
+                                    <div class="fb-skeleton fb-skeleton-text" style="width: 20%; height: 10px;"></div>
+                                </div>
+                                <div class="fb-skeleton" style="width: 100%; height: 8px; border-radius: 4px;"></div>
+                            </div>
+                            <div style="margin-top: auto; display: flex; gap: 10px; padding-top: 12px;">
+                                <div class="fb-skeleton" style="width: 40px; height: 36px; border-radius: 8px;"></div>
+                                <div class="fb-skeleton" style="flex: 1; height: 36px; border-radius: 8px;"></div>
+                            </div>
+                        </div>`;
+                    break;
+                case 'crop':
+                    itemsHtml += `
+                        <div class="fbs-card" style="padding: 0; overflow: hidden; gap: 0; border-radius: 16px; border: 1px solid rgba(22, 163, 74, 0.15);">
+                            <div class="fb-skeleton" style="width: 100%; height: 160px; border-radius: 0; background: #f0fdf4;"></div>
+                            <div style="padding: 18px; display: flex; flex-direction: column; gap: 0; flex: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                                    <div class="fb-skeleton fb-skeleton-title" style="width: 60%; height: 16px; margin: 0;"></div>
+                                    <div class="fb-skeleton fb-skeleton-pill" style="width: 70px; height: 18px; border-radius: 20px;"></div>
+                                </div>
+                                <div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 12px; margin-bottom: 14px;"></div>
+                                <div style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div class="fb-skeleton fb-skeleton-text" style="width: 30%; height: 10px; margin: 0;"></div>
+                                        <div class="fb-skeleton fb-skeleton-text" style="width: 20%; height: 10px; margin: 0;"></div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div class="fb-skeleton fb-skeleton-text" style="width: 40%; height: 10px; margin: 0;"></div>
+                                        <div class="fb-skeleton fb-skeleton-text" style="width: 30%; height: 10px; margin: 0;"></div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 4px;">
+                                    <div class="fb-skeleton" style="flex: 1; height: 28px; border-radius: 6px;"></div>
+                                    <div class="fb-skeleton" style="flex: 1; height: 28px; border-radius: 6px;"></div>
+                                    <div class="fb-skeleton" style="flex: 1; height: 28px; border-radius: 6px;"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                    break;
             }
         }
 

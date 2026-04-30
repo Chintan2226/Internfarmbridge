@@ -127,7 +127,7 @@
                     const media = img ? `<img src="${img}" alt="${escapeHtml(cleanName)}">` : `
                         <div class="no-image-placeholder">
                             <div class="placeholder-icon-wrapper">
-                                <i class="fi fi-rr-sprout"></i>
+                                <i class="fi fi-rr-leaf"></i>
                                 <div class="placeholder-text">FarmBridge</div>
                             </div>
                         </div>`;
@@ -192,7 +192,15 @@
         }
 
         async function clearAllWishlist() {
-            if (!confirm(fbT('wish_confirm_clear'))) return;
+            const confirmed = await Swal.fire({
+                title: fbT('wish_confirm_clear'),
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes'
+            }).then(r => r.isConfirmed);
+            if (!confirmed) return;
             showToast(fbT('wish_clearing'), 'info');
             try {
                 for (const item of wishlistItems) {

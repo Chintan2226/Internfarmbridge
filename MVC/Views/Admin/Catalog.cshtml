@@ -4,6 +4,9 @@
 }
 
 <link rel="stylesheet" href="~/css/pages/admin/catalog.css" asp-append-version="true" />
+<style>
+    #catalogListView { --skeleton-min-width: 260px; }
+</style>
 
 <!-- PAGE HEADER -->
 <div class="pg-header">
@@ -207,10 +210,39 @@
     let editMode = false;
 
     $(function () {
-
         dataSource = new kendo.data.DataSource({
             transport: {
-                read: { url: "/Admin/GetAll", dataType: "json" }
+                read: function(options) {
+                    // 👉 Show Skeleton
+                    $("#catalogListView").hide();
+                    if ($("#catalogSkeleton").length === 0) {
+                        $("<div id='catalogSkeleton' class='k-listview-content'></div>").insertBefore("#catalogListView");
+                    }
+                    if (typeof FBSkeleton !== 'undefined') {
+                        FBSkeleton.show('#catalogSkeleton', 8, 'crop');
+                    } else {
+                        $("#catalogSkeleton").html("<div style='text-align:center;padding:20px;'>Loading crops...</div>");
+                    }
+                    $("#catalogSkeleton").show();
+
+                    $.ajax({
+                        url: "/Admin/GetAll",
+                        dataType: "json",
+                        success: function(result) {
+                            $("#catalogSkeleton").remove();
+                            $("#catalogListView").show();
+                            
+                            // Ensure Kendo can read both raw array or wrapped data object
+                            const actualData = Array.isArray(result) ? result : (result.data || []);
+                            options.success(actualData);
+                        },
+                        error: function(err) {
+                            $("#catalogSkeleton").remove();
+                            $("#catalogListView").show();
+                            options.error(err);
+                        }
+                    });
+                }
             },
             schema: {
                 model: {
@@ -299,7 +331,7 @@
 
     function previewImage(input) {
         if (!input.files?.[0]) return;
-        if (input.files[0].size > 5 * 1024 * 1024) { alert("Image must be under 5 MB."); input.value = ""; return; }
+        if (input.files[0].size > 5 * 1024 * 1024) { Swal.fire({title:"Image must be under 5 MB.",icon:"warning"}); input.value = ""; return; }
         const r = new FileReader();
         r.onload = e => { $("#imgPreview").attr("src", e.target.result).show(); $("#imgPlaceholder").hide(); $("#imgRemoveBtn").show(); };
         r.readAsDataURL(input.files[0]);
@@ -389,8 +421,8 @@
     function saveProduct() {
         const name = $("#fName").val().trim();
         const unit = $("#fUnit").val().trim();
-        if (!name) { alert("Product name is required."); return; }
-        if (!unit) { alert("Unit of measure is required."); return; }
+        if (!name) { Swal.fire({title:"Product name is required.",icon:"warning"}); return; }
+        if (!unit) { Swal.fire({title:"Unit of measure is required.",icon:"warning"}); return; }
 
         let qpObj = {
             grade: $("#qpGrade").val(), size: $("#qpSize").val(),
@@ -418,12 +450,12 @@
                 if (res.success) {
                     $("#productDialog").data("kendoDialog")?.close();
                     dataSource.read();
-                    alert(res.message);
+                    Swal.fire({title:res.message,icon:"success"});
                 } else {
-                    alert(res.message || "Operation failed.");
+                    Swal.fire({title:res.message || "Operation failed.",icon:"error"});
                 }
             },
-            error(xhr) { alert("Server error."); }
+            error(xhr) { Swal.fire({title:"Server error.",icon:"error"}); }
         });
     }
 
@@ -449,10 +481,10 @@
         $.ajax({
             url: `/Admin/Delete/${id}`, type: "POST",
             success(res) {
-                if (res.success) { dataSource.read(); alert(res.message); }
-                else              { alert(res.message); }
+                if (res.success) { dataSource.read(); Swal.fire({title:res.message,icon:"success"}); }
+                else              { Swal.fire({title:res.message,icon:"error"}); }
             },
-            error(xhr) { alert("Delete failed."); }
+            error(xhr) { Swal.fire({title:"Delete failed.",icon:"error"}); }
         });
     }
 
