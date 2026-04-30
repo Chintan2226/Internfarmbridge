@@ -381,13 +381,13 @@ namespace API.Controllers
         [HttpGet("dropdowns/warehouses")]
         public async Task<IActionResult> GetWarehousesDropdown()
         {
-            string cacheKey = "dropdown:warehouses";
-            var cachedData = await _redisService.GetAsync<List<vm_DropdownItem>>(cacheKey);
-            if (cachedData != null)
-                return Ok(new Dictionary<string, object> { { "success", true }, { "data", cachedData }, { "source", "cache" } });
+            // string cacheKey = "dropdown:warehouses";
+            // var cachedData = await _redisService.GetAsync<List<vm_DropdownItem>>(cacheKey);
+            // if (cachedData != null)
+            //     return Ok(new Dictionary<string, object> { { "success", true }, { "data", cachedData }, { "source", "cache" } });
 
             var data = await _helper.GetWarehousesDropdownAsync();
-            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
+            // await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
             return Ok(new Dictionary<string, object> { { "success", true }, { "data", data }, { "source", "db" } });
         }
 

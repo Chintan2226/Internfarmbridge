@@ -290,11 +290,6 @@ namespace API.BAL
                     await cmdPr.ExecuteNonQueryAsync();
                 }
 
-                string logAct = "INSERT INTO t_farmer_activities (c_farmer_id, c_action_type, c_details) VALUES (@fid, 'QC_BOOKED', 'Requested a QC slot. Awaiting Field Officer approval.')";
-                using var cmd3 = new NpgsqlCommand(logAct, _conn, tx);
-                cmd3.Parameters.AddWithValue("@fid", req.FarmerId);
-                await cmd3.ExecuteNonQueryAsync();
-
                 await tx.CommitAsync();
                 return true;
             }
