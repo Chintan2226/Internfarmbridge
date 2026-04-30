@@ -151,7 +151,7 @@
         }
 
         const API_URL = 'http://localhost:5020/api/Vendor';
-        let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
+        let cart = []; // Loaded from API — NOT localStorage (cart is DB-backed)
         let currentStep = 1;
         let addresses = [];
         let selectedAddress = null;
@@ -430,21 +430,24 @@
 
         function updateQuantity(idx, change) {
             let newQty = cart[idx].quantity + change;
-            if (newQty < MIN_QTY) {
-                showToast(`Minimum quantity is ${MIN_QTY}`, 'warning');
+            let effectiveMin = Math.min(MIN_QTY, cart[idx].availableStock || MIN_QTY);
+            if (newQty < effectiveMin) {
+                showToast(`Minimum quantity is ${effectiveMin}kg`, 'warning');
                 return;
             }
             cart[idx].quantity = newQty;
-            localStorage.setItem('vendor_cart', JSON.stringify(cart));
             renderCart();
             updateCartCount();
             updateTotals();
             updateReviewOrder();
         }
 
-        function removeItem(idx) {
+        async function removeItem(idx) {
+            const cartId = cart[idx].cartId;
+            try {
+                await authorizedFetch(`${API_URL}/cart/remove/${cartId}`, { method: 'DELETE' });
+            } catch (e) { console.error('Remove error:', e); }
             cart.splice(idx, 1);
-            localStorage.setItem('vendor_cart', JSON.stringify(cart));
             renderCart();
             updateCartCount();
             updateTotals();
@@ -452,8 +455,12 @@
         }
 
         function updateCartCount() {
-            let count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            // Show number of distinct cart items (not total kg)
+            const count = cart.length;
             document.querySelectorAll('.cart-count').forEach(el => el.textContent = count);
+            // Also update the topbar cart badge used by vendor_layout
+            const headerBadge = document.getElementById('headerCartCount');
+            if (headerBadge) headerBadge.innerText = count;
         }
 
         function updateTotals() {
@@ -547,7 +554,7 @@
                     name: 'FarmBridge',
                     description: `Order #${data.orderId}`,
                     order_id: data.razorpayOrderId,
-                    handler: function (response) { verifyPayment(orderId, response); },
+                    handler: function (response) { verifyPayment(orderId, response, amount); },
                     prefill: { name: 'Vendor', email: 'vendor@farmbridge.com', contact: '9999999999' },
                     theme: { color: '#2d8a45' },
                     modal: {
@@ -568,7 +575,7 @@
             }
         }
 
-        async function verifyPayment(orderId, razorpayResponse) {
+        async function verifyPayment(orderId, razorpayResponse, amount) {
             try {
                 showToast('Verifying payment...', 'info');
                 const response = await fetch(`${API_URL}/payment/verify`, {
@@ -581,13 +588,13 @@
                         orderId: orderId,
                         razorpayOrderId: razorpayResponse.razorpay_order_id,
                         razorpayPaymentId: razorpayResponse.razorpay_payment_id,
-                        razorpaySignature: razorpayResponse.razorpay_signature
+                        razorpaySignature: razorpayResponse.razorpay_signature,
+                        amount: amount
                     })
                 });
                 const result = await response.json();
                 if (result.success) {
                     cart = [];
-                    localStorage.setItem('vendor_cart', JSON.stringify(cart));
                     updateCartCount();
                     showToast(result.message, 'success');
                     setTimeout(() => { window.location.href = '/Vendor/Orders'; }, 2000);
@@ -639,7 +646,8 @@
                     productId: item.id,
                     productName: item.name,
                     price: item.price,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    grade: item.grade || ''
                 }))
             };
 
@@ -708,8 +716,35 @@
             }, 3000);
         }
 
+        // Load cart from API (cart is DB-backed, not localStorage)
+        async function loadCartFromAPI() {
+            try {
+                const response = await authorizedFetch(`${API_URL}/cart`);
+                if (!response) return;
+                const result = await response.json();
+                if (result.success && result.data && result.data.items) {
+                    cart = result.data.items.map(item => ({
+                        cartId: item.cartId,
+                        id: item.cropId,
+                        name: item.cropName,
+                        price: parseFloat(item.unitPrice) || 0,
+                        quantity: parseFloat(item.quantity) || 0,
+                        availableStock: parseFloat(item.availableStock) || 0,
+                        unit: item.unit || 'kg',
+                        grade: item.grade || ''
+                    }));
+                } else {
+                    cart = [];
+                }
+            } catch (e) {
+                console.error('Failed to load cart from API:', e);
+                cart = [];
+            }
+        }
+
         // Initialize
         async function initCheckout() {
+            await loadCartFromAPI();
             renderCart();
             updateCartCount();
             await loadAddressesFromAPI();

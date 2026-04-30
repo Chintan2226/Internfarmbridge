@@ -281,7 +281,7 @@
         });
 
         $("#filterCategory").kendoDropDownList({
-            dataSource: ["", "Grains", "Vegetables", "Fruits", "Pulses", "Spices", "Oilseeds"],
+            dataSource: ["", "Grain", "Vegetables", "Fruits", "Pulses", "Spices", "Oilseeds"],
             optionLabel: "All Categories",
             change: applyFilters
         });
@@ -487,6 +487,70 @@
             error(xhr) { Swal.fire({title:"Delete failed.",icon:"error"}); }
         });
     }
+
+    function toggleStatus(id, makeActive) {
+    const item    = dataSource.data().find(d => d.id === id);
+    const name    = item ? item.name : "this crop";
+    const action  = makeActive ? "Activate" : "Deactivate";
+    const emoji   = makeActive ? "▶" : "⏸";
+ 
+    // Confirm before toggling
+    $("<div>")
+        .html(`<p>${emoji} <strong>${action}</strong> <strong>${kendo.htmlEncode(name)}</strong>?</p>`)
+        .kendoDialog({
+            title:    `${action} Crop`,
+            modal:    true,
+            width:    "360px",
+            closable: true,
+            actions: [
+                { text: "Cancel" },
+                {
+                    text:    `${emoji} ${action}`,
+                    primary: true,
+                    action: function () {
+                        $.ajax({
+                            url:         "http://localhost:5020/api/Admin/ToggleStatus",
+                            type:        "PUT",
+                            contentType: "application/json",
+                            data:        JSON.stringify({ id: id, isActive: makeActive }),
+                            success: function (res) {
+                                if (res.success) {
+                                    dataSource.read();
+                                    showToast(res.message, "success");
+                                } else {
+                                    showToast(res.message || "Status update failed.", "error");
+                                }
+                            },
+                            error: function (xhr) {
+                                const msg = xhr.responseJSON?.message || "Server error. Please try again.";
+                                showToast(msg, "error");
+                            }
+                        });
+                        return true;   // close dialog
+                    }
+                }
+            ]
+        }).data("kendoDialog").open();
+}
+ 
+// ── Lightweight toast helper (uses Kendo notification if available, else alert) ──
+function showToast(message, type) {
+    // Try Kendo notification first
+    if ($.fn.kendoNotification) {
+        const el = $("<span>").appendTo("body");
+        el.kendoNotification({
+            position:   { pinned: true, top: 20, right: 20 },
+            autoHideAfter: 3000,
+            stacking:   "down",
+            templates:  [
+                { type: "success", template: "<div class='k-notification-wrap'><span class='k-icon k-i-check'></span>#= message #</div>" },
+                { type: "error",   template: "<div class='k-notification-wrap'><span class='k-icon k-i-warning'></span>#= message #</div>" }
+            ]
+        }).data("kendoNotification").show({ message }, type);
+    } else {
+        alert(message);
+    }
+}
 
 </script>
 }

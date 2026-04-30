@@ -15,10 +15,10 @@
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card"><div class="stat-strip" style="background:var(--green-main)"></div><div class="stat-label">Total Warehouses</div><div class="stat-value" style="color:var(--green-main)" id="kpi-total"><div class="fb-skeleton fb-skeleton-text" style="width:40%; height:24px;"></div></div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--blue)"></div><div class="stat-label">Total Capacity</div><div class="stat-value" style="color:var(--blue)" id="kpi-cap"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:24px;"></div></div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--amber)"></div><div class="stat-label">Avg. Utilization</div><div class="stat-value" style="color:var(--amber)" id="kpi-util"><div class="fb-skeleton fb-skeleton-text" style="width:40%; height:24px;"></div></div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--red)"></div><div class="stat-label">Near Capacity (&gt;85%)</div><div class="stat-value" style="color:var(--red)" id="kpi-near"><div class="fb-skeleton fb-skeleton-text" style="width:30%; height:24px;"></div></div></div>
+                <div class="stat-card"><div class="stat-strip" style="background:var(--green-main)"></div><div class="stat-label">Total Active Warehouses</div><div class="stat-value" style="color:var(--green-main)" id="kpi-total">—</div></div>
+                <div class="stat-card"><div class="stat-strip" style="background:var(--blue)"></div><div class="stat-label">Total Capacity</div><div class="stat-value" style="color:var(--blue)" id="kpi-cap">—</div></div>
+                <div class="stat-card"><div class="stat-strip" style="background:var(--amber)"></div><div class="stat-label">Avg. Utilization</div><div class="stat-value" style="color:var(--amber)" id="kpi-util">—</div></div>
+                <div class="stat-card"><div class="stat-strip" style="background:var(--red)"></div><div class="stat-label">Near Capacity (&gt;85%)</div><div class="stat-value" style="color:var(--red)" id="kpi-near">—</div></div>
             </div>
 
             <div class="toolbar">
@@ -100,14 +100,6 @@
                         <label class="form-label">Full Address</label>
                         <input type="text" class="form-input" name="LocationAddress" placeholder="Street, City, PIN" />
                     </div>
-                    <div>
-                        <label class="form-label">Temperature Range</label>
-                        <input type="text" class="form-input" name="TemperatureRange" placeholder="e.g. 2°C – 8°C" />
-                    </div>
-                    <div>
-                        <label class="form-label">Certification</label>
-                        <input type="text" class="form-input" name="Certification" placeholder="e.g. FSSAI, ISO 9001" />
-                    </div>
                 </div>
             </div>
             <div class="fb-modal-footer">
@@ -158,17 +150,13 @@
                         <label class="form-label">Manager Name</label>
                         <input type="text" class="form-input" name="ManagerName" id="eMgr" />
                     </div>
-                    <div>
+                    @* <div>
                         <label class="form-label">Temperature Range</label>
                         <input type="text" class="form-input" name="TemperatureRange" id="eTemp" />
-                    </div>
+                    </div> *@
                     <div class="form-col-full">
                         <label class="form-label">Full Address</label>
                         <input type="text" class="form-input" name="LocationAddress" id="eLoc" />
-                    </div>
-                    <div class="form-col-full">
-                        <label class="form-label">Certification</label>
-                        <input type="text" class="form-input" name="Certification" id="eCert" />
                     </div>
                 </div>
             </div>
@@ -212,26 +200,33 @@
                 const response = await gridRes.json();
 
                 allWarehouses = (response.data || []).map(w => {
-                    const cap = Number(w.capacityMt ?? w.CapacityMt ?? w.totalCapacity ?? w.TotalCapacity ?? 0);
-                    const used = Number(w.usedMt ?? w.UsedMt ?? w.used ?? w.Used ?? 0);
-                    const avail = Number(w.availableMt ?? w.AvailableMt ?? w.available ?? w.Available ?? 0);
-                    const util = Number(w.utilizationPercentage ?? w.UtilizationPercentage ?? w.utilization ?? w.Utilization ?? 0);
+    const cap = Number(w.capacityMt ?? w.CapacityMt ?? w.totalCapacity ?? w.TotalCapacity ?? 0);
+    const used = Number(w.usedMt ?? w.UsedMt ?? w.used ?? w.Used ?? 0);
+    const avail = Number(w.availableMt ?? w.AvailableMt ?? w.available ?? w.Available ?? 0);
+    const util = Number(w.utilizationPercentage ?? w.UtilizationPercentage ?? w.utilization ?? w.Utilization ?? 0);
 
-                    return {
-                        ...w,
-                        id: w.id || w.warehouseId || w.Id,
-                        name: w.name || w.Name || 'Unknown Warehouse',
-                        region: w.region || w.Region || w.state || w.State || '',
-                        type: w.type || w.Type || w.district || w.District || '',
-                        status: (w.status || w.Status || '').toLowerCase(),
-                        capacityMt: cap,
-                        usedMt: used,
-                        availableMt: avail,
-                        utilizationPercentage: util
-                    };
-                });
+   const isActiveRaw = w.isActive ?? w.IsActive ?? true;
 
-                // 👉 Clear Skeletons
+// force boolean conversion
+const isActive = (isActiveRaw === true || isActiveRaw === "true");
+console.log("Warehouse:", w.name, "isActive:", w.isActive, typeof w.isActive);
+
+    return {
+        ...w,
+        id: w.id || w.warehouseId || w.Id,
+        name: w.name || w.Name || 'Unknown Warehouse',
+        region: w.region || w.Region || w.state || w.State || '',
+        type: w.type || w.Type || w.district || w.District || '',
+        status: (w.status || w.Status || '').toLowerCase(),
+        isActive: isActive, // ✅ STORE IT
+        capacityMt: cap,
+        usedMt: used,
+        availableMt: avail,
+        utilizationPercentage: util
+    };
+});
+          
+                          // 👉 Clear Skeletons
                 document.getElementById('wh-grid').innerHTML = '';
                 renderGrid(allWarehouses);
             } else {
@@ -256,12 +251,27 @@
         }
 
         container.innerHTML = data.map(w => {
-            const isInactive = (w.status === 'inactive' || w.status === 'deactivated');
-            let statusClass = 'operational', statusText = 'Operational', barColor = 'var(--green-main)';
-            if (isInactive)                       { statusClass = 'stopped';       statusText = 'Stopped';       barColor = 'var(--text-muted)'; }
-            else if (w.utilizationPercentage > 85){ statusClass = 'near-capacity'; statusText = 'Near Capacity'; barColor = 'var(--red)'; }
-            else if (w.utilizationPercentage > 70){ statusClass = 'high-load';     statusText = 'High Load';     barColor = 'var(--amber)'; }
+const isInactive = (w.isActive === false);
 
+let statusClass = 'operational';
+let statusText = 'Operational';
+let barColor = 'var(--green-main)';
+
+if (isInactive) {
+    statusClass = 'stopped';
+    statusText = 'Stopped Temporarily';
+    barColor = 'var(--text-muted)';
+} 
+else if (w.utilizationPercentage > 85) {
+    statusClass = 'near-capacity';
+    statusText = 'Near Capacity';
+    barColor = 'var(--red)';
+} 
+else if (w.utilizationPercentage > 70) {
+    statusClass = 'high-load';
+    statusText = 'High Load';
+    barColor = 'var(--amber)';
+}
             const util = Math.min(Number(w.utilizationPercentage) || 0, 100);
 
             return `
@@ -423,11 +433,9 @@
         document.getElementById('eRegion').value = w.region     || '';
         document.getElementById('eType').value   = w.type       || '';
         document.getElementById('eCap').value    = w.capacityMt || '';
-        document.getElementById('eStatus').value = (w.status === 'inactive') ? 'Deactivated' : 'Operational';
+        document.getElementById('eStatus').value = (w.isActive === false) ? 'Deactivated' : 'Operational';
         document.getElementById('eLoc').value    = w.location;
         document.getElementById('eMgr').value    = w.managerName;
-        document.getElementById('eTemp').value   = w.temperature;
-        document.getElementById('eCert').value   = w.certification;
 
         document.getElementById('editWhModalOverlay').classList.add('open');
 

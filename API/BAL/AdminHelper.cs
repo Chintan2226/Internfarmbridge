@@ -2231,6 +2231,7 @@ namespace API.BAL
             w.c_name, 
             w.c_state, 
             w.c_district, 
+            w.c_is_active,
             COALESCE(w.c_daily_capacity, 0) AS TotalCapacity,
             COALESCE((
                 SELECT SUM(
@@ -2266,6 +2267,7 @@ namespace API.BAL
                     District = r["c_district"] == DBNull.Value ? "" : r["c_district"].ToString(),
                     TotalCapacity = totalCap,
                     Used = usedCap,
+                    IsActive = r["c_is_active"],
                     Available = availableCap,
                     Utilization = utilPct,
                     Status = "operational"
@@ -2278,8 +2280,13 @@ namespace API.BAL
         {
             await EnsureOpenConnection();
             var sql = @"
-        SELECT c_id, c_name, c_address, c_state, c_district, c_is_active
-        FROM t_warehouses WHERE c_id = @id";
+                    SELECT w.c_id, w.c_name, w.c_address, w.c_state, w.c_district, w.c_is_active,
+                fo.c_full_name  AS manager_name,
+                fo.c_phone      AS manager_phone
+            FROM t_warehouses w
+            LEFT JOIN t_field_officer_profiles fo ON fo.c_warehouse_id = w.c_id
+            WHERE w.c_id = @id
+            LIMIT 1";
 
             await using var cmd = new NpgsqlCommand(sql, _conn);
             cmd.Parameters.AddWithValue("@id", id);
@@ -2296,7 +2303,7 @@ namespace API.BAL
                 District = reader.IsDBNull(4) ? null : reader.GetString(4),
                 IsActive = reader.GetBoolean(5),
                 // No manager/temp/cert columns in schema — return null
-                ManagerName = null,
+                ManagerName = (string)reader["manager_name"],
                 Temperature = null,
                 Certification = null
             };

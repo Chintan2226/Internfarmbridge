@@ -1250,10 +1250,12 @@ ul {
 
 .k-window-titlebar .k-window-action {
     color: white !important;
+    background: transparent !important;
 }
 
 .k-window-titlebar .k-icon {
     color: white !important;
+    background: transparent !important;
 }
 
 /* Kendo Pickers */

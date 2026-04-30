@@ -30,6 +30,10 @@
     <link rel="stylesheet" href="~/css/layouts/fb_kendo_premium.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layouts/fb_skeleton.css" asp-append-version="true" />
 
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
     @RenderSection("Styles", required: false)
 
     <script>
@@ -72,7 +76,7 @@
             <div class="fo-topbar-right">
                 <button class="fo-action-btn" id="foBellBtn" aria-label="Notifications">
                     <i class="fi fi-rr-bell"></i>
-                    <span class="fo-dot" id="foBellDot" hidden></span>
+                    <span id="foBellBadge" style="position: absolute; top: -4px; right: -4px; background: var(--fo-blue); color: white; border-radius: 10px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 18px; height: 18px; display: none; align-items: center; justify-content: center; border: 2px solid var(--fo-surface);">0</span>
                 </button>
                 <div class="fo-avatar" id="foAvatar" onclick="location.href='/FieldOfficer/Profile'" title="My Profile"
                      style="overflow:hidden; position:relative;">
@@ -188,23 +192,23 @@
 
         window.foSuccess = function(title, msg) {
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'success', title: title, text: msg, timer: 2500, showConfirmButton: false });
+                Swal.fire({ icon: 'success', title: title, html: msg, timer: 2500, showConfirmButton: false });
             } else { alert(title + ': ' + msg); }
         };
         window.foError = function(title, msg) {
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: title, text: msg });
+                Swal.fire({ icon: 'error', title: title, html: msg });
             } else { alert('Error: ' + msg); }
         };
         window.foWarning = function(title, msg) {
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'warning', title: title, text: msg });
+                Swal.fire({ icon: 'warning', title: title, html: msg });
             } else { alert(msg); }
         };
         window.foConfirm = function(title, msg, confirmText) {
             if (typeof Swal !== 'undefined') {
                 return Swal.fire({
-                    icon: 'question', title: title, text: msg,
+                    icon: 'question', title: title, html: msg,
                     showCancelButton: true,
                     confirmButtonText: confirmText || 'Confirm',
                     confirmButtonColor: '#3b82f6'

@@ -283,10 +283,80 @@
                     legend: { visible: false },
                     transitions: true
                 });
-            }
-        });
-    }
+    return $.getJSON(`${API_URLS.revenue}?period=${dashboardState.revPeriod}&_=${ts}`, res => {
+        if (!res.success) return;
 
+        let data = res.data || [];
+
+        // ── FIX 1: Pad single-point data so Kendo can draw a line ──
+        // An area chart needs at least 2 points. If only 1 comes back,
+        // duplicate it with a zero-value placeholder before it.
+        if (data.length === 1) {
+            data = [{ label: '—', value: 0 }, ...data];
+        }
+
+        if (dashboardState.revChartInit) {
+            // ── FIX 2: Destroy and re-init instead of setDataSource ──
+            // setDataSource does not re-render reliably when point count
+            // changes or was previously sparse.
+            const chart = $("#revenueChart").data("kendoChart");
+            if (chart) {
+                chart.destroy();
+                $("#revenueChart").empty();
+                dashboardState.revChartInit = false;
+            }
+        }
+
+        dashboardState.revChartInit = true;
+        $("#revenueChart").kendoChart({
+            dataSource: { data: data },
+            series: [{
+                type: "area",
+                field: "value",
+                categoryField: "label",
+                color: "#d4af37",
+                opacity: 0.25,
+                line: { color: "#d4af37", width: 3.5 },
+                markers: {
+                    visible: true,
+                    size: 7,
+                    background: "#d4af37",
+                    border: { color: "#fff", width: 2.5 }
+                }
+            }],
+            categoryAxis: {
+                labels: { font: "11px Inter, monospace", color: "#64748b" },
+                majorGridLines: { visible: false },
+                line: { visible: false }
+            },
+            valueAxis: {
+                labels: {
+                    format: "₹{0}",
+                    font: "11px Inter, monospace",
+                    color: "#64748b"
+                },
+                majorGridLines: {
+                    color: "rgba(212,175,55,.15)",
+                    dashType: "dash"
+                },
+                line: { visible: false }
+            },
+            tooltip: {
+                visible: true,
+                background: "#060a07",
+                color: "#ffffff",
+                font: "12.5px Inter, monospace",
+                template: "₹ #= kendo.toString(value,'n0') #",
+                border: { width: 0 },
+                padding: { top: 8, bottom: 8, left: 14, right: 14 }
+            },
+            chartArea: { height: 260, background: "transparent" },
+            plotArea: { margin: { top: 15, bottom: 0, left: 0, right: 0 } },
+            legend: { visible: false },
+            transitions: true
+        });
+    });
+}
     function loadOrderChart(ts) {
         if (!dashboardState.orderChartInit) {
             FBSkeleton.show('#orderVolumeChart', 1, 'chart');
@@ -337,13 +407,13 @@
     }
 
     function changeRevPeriod(p, btn) {
-        dashboardState.revPeriod = p;
-        dashboardState.revChartInit = false;
-        $("#revSwitcher .btn-pd").removeClass("active");
-        $(btn).addClass("active");
-        $("#revenueChart").empty();
-        loadRevenueChart(Date.now());
-    }
+    dashboardState.revPeriod = p;
+    dashboardState.revChartInit = false;   // ← already there, keep it
+    $("#revSwitcher .btn-pd").removeClass("active");
+    $(btn).addClass("active");
+    $("#revenueChart").empty();
+    loadRevenueChart(Date.now());
+}
 
     function changeOrderPeriod(p, btn) {
         dashboardState.orderPeriod = p;

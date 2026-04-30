@@ -110,13 +110,13 @@ DATA_GOV_API_KEY = os.getenv(
     "579b464db66ec23bdd000001aac5b9cfd342444773dadcfdaba7266b",
 )
 DATA_GOV_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
-API_LIMIT = "1000"  # max rows pulled when we truly need wide state-level scans
-API_LIMIT_DROPDOWNS = "2000"  # dropdowns don't need huge payloads
-API_LIMIT_ADMIN = "2000"  # admin insights: enough variety, less latency
-ENDPOINT_CACHE_TTL_SECONDS = 180
+API_LIMIT = "500"  # max rows pulled when we truly need wide state-level scans
+API_LIMIT_DROPDOWNS = "200"  # dropdowns don't need huge payloads
+API_LIMIT_ADMIN = "500"  # admin insights: enough variety, less latency
+ENDPOINT_CACHE_TTL_SECONDS = 600
 _endpoint_cache = {}
-GOV_CACHE_TTL_SECONDS = 900
-GOV_BACKOFF_SECONDS = 90
+GOV_CACHE_TTL_SECONDS = 3600
+GOV_BACKOFF_SECONDS = 300
 _gov_cache = {}
 _gov_backoff_until = 0.0
 
@@ -226,6 +226,36 @@ def _predict_demand_growth(
     except Exception:
         return None
 
+def _fallback_to_df(state: str, commodity: str, market: str, limit: str):
+    if _df.empty:
+        return ()
+    temp_df = _df
+    if state:
+        temp_df = temp_df[temp_df["STATE"].astype(str).str.lower() == state.lower()]
+    if commodity:
+        temp_df = temp_df[temp_df["Commodity"].astype(str).str.lower() == commodity.lower()]
+    if market:
+        temp_df = temp_df[temp_df["Market_Name"].astype(str).str.lower() == market.lower()]
+        
+    try:
+        limit_val = int(limit)
+    except ValueError:
+        limit_val = 1000
+        
+    temp_df = temp_df.head(limit_val)
+    records = []
+    for _, row in temp_df.iterrows():
+        records.append({
+            "state": str(row.get("STATE", "")),
+            "commodity": str(row.get("Commodity", "")),
+            "market": str(row.get("Market_Name", "")),
+            "min_price": float(row.get("Min_Price", 0) or 0),
+            "max_price": float(row.get("Max_Price", 0) or 0),
+            "modal_price": float(row.get("Modal_Price", 0) or 0),
+            "variety": str(row.get("Variety", "")),
+            "arrival_date": f"{int(row.get('day', 1)):02d}/{int(row.get('month', 1)):02d}/{int(row.get('year', 2024))}"
+        })
+    return tuple(records)
 
 def _fetch_records_cached(
     state: str = "",
@@ -245,7 +275,11 @@ def _fetch_records_cached(
     if now < _gov_backoff_until:
         # During backoff (rate limit / transient failure), prefer returning the last cached
         # payload even if it's stale, so dropdowns don't randomly go empty.
-        return cached[1] if cached else ()
+        if cached:
+            return cached[1]
+        return _fallback_to_df(state, commodity, market, limit)
+
+
 
     params = {
         "api-key": DATA_GOV_API_KEY,
@@ -260,7 +294,7 @@ def _fetch_records_cached(
         params["filters[market]"] = market
 
     try:
-        res = req_lib.get(DATA_GOV_URL, params=params, timeout=15)
+        res = req_lib.get(DATA_GOV_URL, params=params, timeout=30)
         res.raise_for_status()
         records = tuple(res.json().get("records", []))
         _gov_cache[cache_key] = (now + GOV_CACHE_TTL_SECONDS, records)
@@ -268,14 +302,15 @@ def _fetch_records_cached(
     except Exception as e:
         print(f"Gov API Rate Limit/Error: {e}")
         _gov_backoff_until = now + GOV_BACKOFF_SECONDS
-        return ()
+        print("Falling back to local CSV data...")
+        return _fallback_to_df(state, commodity, market, limit)
 
 
 @app.get("/dropdowns/states")
 def get_states():
     records = _fetch_records_cached(limit=API_LIMIT_DROPDOWNS)
     states = {r.get("state", "").strip() for r in records if r.get("state")}
-    if not _df.empty and "STATE" in _df.columns:
+    if len(states) <= 1 and not _df.empty and "STATE" in _df.columns:
         states.update(_df["STATE"].dropna().unique())
     return {"data": sorted(states)}
 
@@ -300,7 +335,7 @@ def get_commodities(state: str = "", market: str = ""):
         if r.get("commodity")
     }
     
-    if not _df.empty and "Commodity" in _df.columns:
+    if len(commodities) <= 1 and not _df.empty and "Commodity" in _df.columns:
         temp_df = _df
         if state:
             temp_df = temp_df[temp_df["STATE"].str.strip().str.lower() == state.strip().lower()]
@@ -319,12 +354,16 @@ def get_markets(state: str = ""):
         if state
         else _fetch_records_cached(limit=API_LIMIT_DROPDOWNS)
     )
-    markets = {r.get("market", "").strip() for r in records if r.get("market")}
+    markets = {
+        r.get("market", "").strip()
+        for r in records
+        if r.get("market") and r.get("market").lower() != "unknown"
+    }
     
-    if not _df.empty and "Market_Name" in _df.columns:
+    if len(markets) <= 1 and not _df.empty and "Market_Name" in _df.columns:
         temp_df = _df
         if state:
-            temp_df = temp_df[temp_df["STATE"] == state]
+            temp_df = temp_df[temp_df["STATE"].str.strip().str.lower() == state.strip().lower()]
         markets.update(temp_df["Market_Name"].dropna().unique())
         
     return {"data": sorted(markets)}

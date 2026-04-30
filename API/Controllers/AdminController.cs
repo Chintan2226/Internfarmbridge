@@ -200,32 +200,32 @@ namespace API.Controllers
         [HttpGet("GetRevenueChart")]
         public async Task<IActionResult> GetRevenueChart([FromQuery] string period = "monthly")
         {
-            string cacheKey = $"dashboard:revenue:{period}";
-            var cachedData = await _redisService.GetAsync<List<vm_ChartPoint>>(cacheKey);
+            // string cacheKey = $"dashboard:revenue:{period}";
+            // var cachedData = await _redisService.GetAsync<List<vm_ChartPoint>>(cacheKey);
 
-            if (cachedData != null)
-            {
-                return Ok(new { success = true, data = cachedData, source = "cache" });
-            }
+            // if (cachedData != null)
+            // {
+            //     return Ok(new { success = true, data = cachedData, source = "cache" });
+            // }
 
             var data = await _adminRepo.GetRevenueChart(period);
-            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
+            // await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
             return Ok(new { success = true, data, source = "db" });
         }
 
         [HttpGet("GetOrderVolumeChart")]
         public async Task<IActionResult> GetOrderVolumeChart([FromQuery] string period = "monthly")
         {
-            string cacheKey = $"dashboard:orders:{period}";
-            var cachedData = await _redisService.GetAsync<List<vm_ChartPoint>>(cacheKey);
+            // string cacheKey = $"dashboard:orders:{period}";
+            // var cachedData = await _redisService.GetAsync<List<vm_ChartPoint>>(cacheKey);
 
-            if (cachedData != null && cachedData.Any(x => !string.IsNullOrEmpty(x.Label)))
-            {
-                return Ok(new { success = true, data = cachedData, source = "cache" });
-            }
+            // if (cachedData != null && cachedData.Any(x => !string.IsNullOrEmpty(x.Label)))
+            // {
+            //     return Ok(new { success = true, data = cachedData, source = "cache" });
+            // }
 
-            var data = await _adminRepo.GetRevenueChart(period);
-            await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
+            var data = await _adminRepo.GetOrderVolumeChart(period);
+            // await _redisService.SetAsync(cacheKey, data, TimeSpan.FromMinutes(60));
             return Ok(new { success = true, data = data, source = "db" });
         }
 
@@ -374,12 +374,6 @@ namespace API.Controllers
 
             if (newId > 0)
             {
-                // ✅ NOTIFICATION: New product added to catalog
-                await _rabbitMqService.PublishToRoleAsync("admin",
-                    "New Product Added",
-                    $"New product '{form.Name}' has been added to the catalog.",
-                    "catalog");
-
                 return Ok(new { success = true, message = "Catalog product added successfully.", id = newId, imageUrl });
             }
 
@@ -420,11 +414,6 @@ namespace API.Controllers
 
             if (rows > 0)
             {
-                // ✅ NOTIFICATION: Product updated
-                await _rabbitMqService.PublishToRoleAsync("admin",
-                    "Product Updated",
-                    $"Product '{form.Name}' has been updated in the catalog.",
-                    "catalog");
 
                 return Ok(new { success = true, message = "Catalog product updated.", warning = dep.WarningMessage, imageUrl });
             }
@@ -461,12 +450,7 @@ namespace API.Controllers
             int rows = await _adminRepo.ToggleCatalogProductStatus(model.Id, model.IsActive, 1);
             if (rows > 0)
             {
-                // ✅ NOTIFICATION: Product status toggled
-                await _rabbitMqService.PublishToRoleAsync("admin",
-                    $"Product {(model.IsActive ? "Activated" : "Deactivated")}",
-                    $"A catalog product has been {(model.IsActive ? "activated" : "deactivated")}.",
-                    "catalog");
-
+               
                 return Ok(new { success = true, message = $"Product {(model.IsActive ? "activated" : "deactivated")} successfully." });
             }
             return StatusCode(500, new { success = false, message = "Failed to update status." });

@@ -677,7 +677,7 @@ namespace API.Services
                 .Replace("{{USERNAME}}", safeName)
                 .Replace("{{INITIAL}}", initial)
                 .Replace("{{PASSWORD}}", password)
-                .Replace("{{LOGIN_URL}}", $"{FarmerPortalUrl}/login");
+                .Replace("{{LOGIN_URL}}", $"{FarmerPortalUrl}/StaffAuth/Login");
             await SendAsync(toEmail, "Welcome to FarmBridge – Your Credentials", html);
         }
 
