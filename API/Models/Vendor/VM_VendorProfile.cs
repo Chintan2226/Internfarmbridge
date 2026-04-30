@@ -21,5 +21,6 @@ namespace API.Models.Vendor
         public string BusinessName { get; set; } = "";
         public string ContactPerson { get; set; } = "";
         public string Phone { get; set; } = "";
+        public string Gstin { get; set; } = "";
     }
 }

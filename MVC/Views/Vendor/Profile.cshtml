@@ -114,10 +114,7 @@
                     <label class="form-label" data-i18n="prof_gstin">GSTIN / Tax ID</label>
                     <div class="input-wrapper">
                         <i class="fi fi-rr-document input-icon"></i>
-                        <input type="text" class="form-control readonly" id="gstin" readonly>
-                    </div>
-                    <div class="warning-hint">
-                        <i class="fi fi-rr-info" style="font-size:14px"></i> <span data-i18n="prof_gst_hint">Tax details locked. Contact support to update.</span>
+                        <input type="text" class="form-control" id="gstin" data-i18n-placeholder="prof_gstin_ph" placeholder="Enter GSTIN number">
                     </div>
                 </div>
                 <div class="form-group">
@@ -242,7 +239,8 @@
                         '₹' + (stats?.totalSpent || stats?.TotalSpent || 0).toLocaleString('en-IN');
 
                     document.getElementById('businessName').value = profile.businessName || profile.BusinessName || '';
-                    document.getElementById('gstin').value = profile.gstin || profile.Gstin || 'NOT PROVIDED';
+                    const gstinVal = (profile.gstin ?? profile.Gstin ?? '').toString().trim();
+                    document.getElementById('gstin').value = gstinVal.length > 0 ? gstinVal : 'NOT PROVIDED';
                     document.getElementById('contactPerson').value = profile.contactPerson || profile.ContactPerson || '';
                     document.getElementById('phone').value = profile.phone || profile.Phone || '';
                     document.getElementById('email').value = profile.email || profile.Email || '';
@@ -502,7 +500,8 @@
                 vendorId: vendorId,
                 businessName: document.getElementById('businessName').value,
                 contactPerson: document.getElementById('contactPerson').value,
-                phone: document.getElementById('phone').value
+                phone: document.getElementById('phone').value,
+                gstin: document.getElementById('gstin').value.trim()
             };
 
             if (!profileData.businessName || !profileData.phone) {

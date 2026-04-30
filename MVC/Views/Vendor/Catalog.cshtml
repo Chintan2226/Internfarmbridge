@@ -161,11 +161,19 @@
             return response;
         }
 
-        function updateHeaderCartCount() {
-            let cart = JSON.parse(localStorage.getItem('vendor_cart') || '[]');
-            const headerCartSpan = document.getElementById('headerCartCount');
-            if (headerCartSpan) headerCartSpan.innerText = cart.length;
-            if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
+        async function updateHeaderCartCount() {
+            try {
+                const response = await authorizedFetch(`${API_URL}/cart`);
+                if (!response) return;
+                const result = await response.json();
+                const count = (result.success && result.data && result.data.items) ? result.data.items.length : 0;
+                const headerCartSpan = document.getElementById('headerCartCount');
+                if (headerCartSpan) headerCartSpan.innerText = count;
+                // Do NOT call syncGlobalBadges() here — it reads localStorage
+                // which is always empty since cart is DB-backed, and would reset the count to 0.
+            } catch (e) {
+                console.error('Cart count error:', e);
+            }
         }
 
         function updateWishlistCount() {
@@ -401,7 +409,16 @@
                 ? `<img src="${img}" style="width: 80px; height: 80px; border-radius: 16px; object-fit: cover; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">`
                 : `<div style="font-size: 40px;">🌾</div>`;
 
-            document.getElementById('popupQuantity').value = Math.min(20, currentProduct.max);
+            // Low-stock (< 20kg): step=1, start at full available stock.
+            // Normal stock (≥ 20kg): step=5, start at 20kg minimum.
+            const effectiveStep = currentProduct.max < 20 ? 1 : 5;
+            const effectiveMin  = currentProduct.max < 20 ? 1 : 20;
+            const popupInput = document.getElementById('popupQuantity');
+            popupInput.step  = effectiveStep;
+            popupInput.min   = effectiveMin;
+            // Low-stock: start at max so user sees max available.
+            // Normal stock: start at 20 (minimum buy) — user increments in steps of 5.
+            popupInput.value = currentProduct.max < 20 ? currentProduct.max : effectiveMin;
             updateTotalPrice();
             openQuantityWindow();
         }
@@ -435,7 +452,7 @@
             try {
                 const response = await authorizedFetch(`${API_URL}/cart/add`, {
                     method: 'POST',
-                    body: JSON.stringify({ cropId: currentProduct.id, quantity: qty })
+                    body: JSON.stringify({ cropId: currentProduct.id, quantity: qty, grade: currentProduct.grade || '' })
                 });
                 if (response?.ok) {
                     if (window.fbNotify) {
@@ -474,32 +491,30 @@
 
             $('#qtyPlus').on('click', () => { 
                 const input = document.getElementById('popupQuantity'); 
-                let val = parseFloat(input.value) || 0;
-                let step = 5;
-                if (val + step <= currentProduct.max) {
-                    input.value = val + step;
-                } else {
-                    input.value = currentProduct.max;
+                let val  = parseFloat(input.value) || 0;
+                let step = currentProduct.max < 20 ? 1 : 5;
+                if (val >= currentProduct.max) {
+                    if (window.fbNotify) fbNotify({ message: `Maximum available: ${currentProduct.max} kg`, icon: 'warning', type: 'toast' });
+                    return;
                 }
+                let next = val + step;
+                input.value = next <= currentProduct.max ? next : currentProduct.max;
                 updateTotalPrice();
             });
             $('#qtyMinus').on('click', () => { 
                 const input = document.getElementById('popupQuantity'); 
-                let val = parseFloat(input.value) || 0;
-                let step = 5;
-                let min = Math.min(20, currentProduct.max);
-                if (val - step >= min) {
-                    input.value = val - step;
-                } else {
-                    input.value = min;
-                }
+                let val  = parseFloat(input.value) || 0;
+                let step = currentProduct.max < 20 ? 1 : 5;
+                let min  = currentProduct.max < 20 ? 1 : 20;
+                let prev = val - step;
+                input.value = prev >= min ? prev : min;
                 updateTotalPrice();
             });
             $('#popupQuantity').on('input', function() {
-                let val = parseFloat(this.value);
-                let min = Math.min(20, currentProduct.max);
+                let val  = parseFloat(this.value);
+                let min  = currentProduct.max < 20 ? 1 : 20;
                 if (val > currentProduct.max) this.value = currentProduct.max;
-                if (val < min && val !== 0) this.value = min;
+                if (val < min && val !== 0)   this.value = min;
                 updateTotalPrice();
             });
             $('#cancelQtyBtn').on('click', () => $("#quantityWindow").data("kendoWindow").close());
