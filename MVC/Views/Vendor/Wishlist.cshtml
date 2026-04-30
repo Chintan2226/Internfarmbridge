@@ -3,287 +3,351 @@
     ViewData["Title"] = "Wishlist";
 }
 
-<link rel="stylesheet" href="~/css/pages/vendor/wishlist.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/pages/vendor/catalog.css" asp-append-version="true" />
 
-<div class="wishlist-header-area">
-    <h1 class="wishlist-title">
-        <i class="fi fi-rr-heart"></i>
-        <span data-i18n="wish_title">My Wishlist</span>
-    </h1>
-    <button class="btn-clear-all" id="btnClearAll" onclick="clearAllWishlist()" style="display: none;">
-        <i class="fi fi-rr-trash"></i> <span data-i18n="wish_clear">Clear All</span>
-    </button>
+<!-- Page Header (same as catalog) -->
+<div class="catalog-page-header">
+    <div>
+        <h1 class="catalog-page-title">
+            <i class="fi fi-sr-heart" style="color:#ef4444;"></i>
+            <span data-i18n="wish_title">My Wishlist</span>
+        </h1>
+        <p class="catalog-page-subtitle" data-i18n="wish_subtitle">Your saved crops — ready to add to cart</p>
+    </div>
+    <div class="header-buttons">
+        <button class="btn-clear-all" id="btnClearAll" onclick="clearAllWishlist()" style="display:none;background:white;border:1px solid rgba(0,0,0,.08);color:#dc2626;padding:10px 20px;border-radius:50px;font-weight:700;font-size:13px;cursor:pointer;display:none;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.05);">
+            <i class="fi fi-rr-trash"></i> <span data-i18n="wish_clear">Clear All</span>
+        </button>
+        <button class="cart-redirect-btn" onclick="location.href='/Vendor/Catalog'">
+            <i class="fi fi-rr-seedling"></i>
+            <span data-i18n="wish_browse">Browse Catalog</span>
+        </button>
+        <button class="cart-redirect-btn" onclick="location.href='/Vendor/Checkout'" style="background:#10b981;">
+            <i class="fi fi-rr-shopping-cart"></i>
+            <span>Cart</span>
+            <span class="cart-badge" id="headerCartCount">0</span>
+        </button>
+    </div>
 </div>
 
-<div id="wishlistGrid">
-</div>
+<!-- Grid -->
+<div id="wishlistGrid"></div>
 
-<div id="wishlistQuantityModal" style="display: none; padding: 0;">
+<!-- Quantity Modal (same premium modal as catalog) -->
+<div id="wishlistQuantityModal" style="display:none; padding:0;">
     <div class="premium-modal-card">
-        <div id="wishlistModalIcon" style="margin-bottom: 24px;"></div>
-        <h3 id="wishlistModalProductName" style="font-family: var(--font-display); color: var(--green-900); margin-bottom: 8px; font-weight: 800; font-size: 22px;">Product Name</h3>
-        <div id="wishlistModalStock" style="font-family: var(--font-body); color: #64748b; font-size: 14px; font-weight: 600; background: #f1f5f9; display: inline-block; padding: 4px 12px; border-radius: 20px;">
-            <span data-i18n="wish_qty_avail">Available</span>: 0 kg
-        </div>
-        
-        <div class="quantity-stepper">
-            <button id="wishlistQtyMinus" class="step-btn"><i class="fi fi-rr-minus-small"></i></button>
-            <input type="number" id="wishlistPopupQuantity" value="20" min="20" step="5" 
-                   style="width: 100px; text-align: center; font-size: 24px; font-weight: 800; border: 2px solid #e2e8f0; border-radius: 14px; padding: 10px; color: var(--green-900);">
-            <button id="wishlistQtyPlus" class="step-btn"><i class="fi fi-rr-plus-small"></i></button>
+        <div class="modal-product-info">
+            <div id="wishlistModalIcon" class="modal-icon-wrap"></div>
+            <div class="modal-text-wrap">
+                <h3 id="wishlistModalProductName">Product Name</h3>
+                <div id="wishlistModalStock" class="stock-badge">
+                    <span data-i18n="wish_qty_avail">Available</span>: 0 kg
+                </div>
+            </div>
         </div>
 
-        <div class="price-display">
-            <div style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.5px;" data-i18n="wish_qty_total">Estimated Investment</div>
-            <span id="wishlistModalTotalPrice">₹0</span>
+        <div class="quantity-control-section">
+            <label class="qty-label" data-i18n="cat_qty_title">Order Quantity</label>
+            <div class="modern-stepper-pill">
+                <button id="wishlistQtyMinus" class="pill-step-btn" onclick="wishlistStepQty(-1)"><i class="fi fi-rr-minus-small"></i></button>
+                <div class="pill-input-area">
+                    <input type="number" id="wishlistPopupQuantity" value="20" min="20" step="5" oninput="clampWishlistInput()">
+                    <span class="pill-unit">kg</span>
+                </div>
+                <button id="wishlistQtyPlus" class="pill-step-btn" onclick="wishlistStepQty(1)"><i class="fi fi-rr-plus-small"></i></button>
+            </div>
         </div>
 
-        <div class="popup-actions" style="display: flex; gap: 16px; justify-content: center; margin-top: 10px;">
-            <button id="cancelWishlistQtyBtn" class="premium-modal-btn btn-cancel" data-i18n="wish_qty_cancel">Cancel</button>
-            <button id="confirmWishlistQtyBtn" class="premium-modal-btn btn-confirm">
-                <i class="fi fi-rr-shopping-cart-add"></i>
-                <span data-i18n="wish_qty_add">Add to Cart</span>
+        <div class="price-display-card">
+            <div class="price-label" data-i18n="wish_qty_total">Estimated Investment</div>
+            <div id="wishlistModalTotalPrice" class="total-price-value">₹0</div>
+        </div>
+
+        <div class="modal-footer-actions">
+            <button id="cancelWishlistQtyBtn" class="btn-modal-cancel" onclick="closeWishlistModal()">
+                <i class="fi fi-rr-cross-small"></i> <span data-i18n="wish_qty_cancel">Cancel</span>
+            </button>
+            <button id="confirmWishlistQtyBtn" class="btn-modal-confirm" onclick="confirmAddToCart()">
+                <i class="fi fi-rr-shopping-cart-add"></i> <span data-i18n="wish_qty_add">Add to Cart</span>
             </button>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        const API_URL = 'http://localhost:5020/api/Vendor';
-        let wishlistItems = [];
-        let currentWishlistProduct = null;
+<script>
+    const API_URL = 'http://localhost:5020/api/Vendor';
+    let wishlistItems = [];
+    let currentWishlistProduct = null;
 
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return null;
+    function getCookie(name) {
+        const v = `; ${document.cookie}`;
+        const parts = v.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    async function authorizedFetch(url, options = {}) {
+        const token = getCookie("authToken");
+        options.headers = { ...options.headers, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+        const response = await fetch(url, options);
+        if (response.status === 401) { window.location.href = "/Vendor/Login"; return null; }
+        return response;
+    }
+
+    async function updateCartCount() {
+        try {
+            const res = await authorizedFetch(`${API_URL}/cart`);
+            if (!res) return;
+            const result = await res.json();
+            const count = result.success && result.data && result.data.items ? result.data.items.length : 0;
+            const el = document.getElementById('headerCartCount');
+            if (el) el.innerText = count;
+        } catch(e) {}
+    }
+
+    function escapeHtml(t) {
+        return t ? t.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m])) : '';
+    }
+
+    /* ── Render ── */
+    function renderWishlist() {
+        const grid = document.getElementById('wishlistGrid');
+        const clearBtn = document.getElementById('btnClearAll');
+
+        if (!wishlistItems.length) {
+            if (clearBtn) clearBtn.style.display = 'none';
+            grid.innerHTML = `
+                <div style="text-align:center;padding:80px 40px;background:rgba(255,255,255,.7);backdrop-filter:blur(16px);border-radius:24px;border:1px solid rgba(255,255,255,.5);box-shadow:0 10px 30px rgba(21,66,18,.06);">
+                    <i class="fi fi-rr-heart" style="font-size:56px;color:#cbd5e1;display:block;margin-bottom:16px;"></i>
+                    <h4 style="color:#14532d;font-size:22px;font-weight:700;margin-bottom:8px;" data-i18n="wish_empty">Your wishlist is empty</h4>
+                    <p style="color:#4b5563;margin-bottom:24px;" data-i18n="wish_empty_desc">Save your favourite crops here and order them anytime</p>
+                    <a href="/Vendor/Catalog" style="background:linear-gradient(135deg,#15803d,#166534);color:white;padding:12px 28px;border-radius:50px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px;transition:all .3s;text-decoration:none;">
+                        <i class="fi fi-rr-seedling"></i> Browse Catalog
+                    </a>
+                </div>`;
+            if (window.fbInit) fbInit();
+            return;
         }
 
-        async function authorizedFetch(url, options = {}) {
-            const token = getCookie("authToken");
-            options.headers = {
-                ...options.headers,
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
+        if (clearBtn) { clearBtn.style.display = 'flex'; }
 
-            const response = await fetch(url, options);
-            if (response.status === 401) {
-                window.location.href = "/Vendor/Login";
-                return null;
-            }
-            return response;
-        }
+        let html = '<div class="products-container">';
+        wishlistItems.forEach(item => {
+            const img = item.imageUrl || null;
+            const grade = item.grade || '';
+            const name = item.productName || '';
+            const displayName = grade ? `${name} (Grade ${grade})` : name;
+            const price = item.avgPrice || 0;
+            const stock = item.quantityAvailable || 0;
+            const unit = item.unit || 'kg';
 
-        async function loadWishlist() {
-            try {
-                if (typeof window.FBSkeleton === 'object') {
-                    FBSkeleton.show('#wishlistGrid', 4, 'product');
-                }
-                const response = await authorizedFetch(`${API_URL}/wishlist`);
-                if (!response) return;
+            const media = img
+                ? `<img src="${img}" alt="${escapeHtml(displayName)}">`
+                : `<div class="no-image-placeholder">
+                       <div class="placeholder-icon-wrapper">
+                           <i class="fi fi-rr-leaf"></i>
+                           <div class="placeholder-text">FarmBridge</div>
+                       </div>
+                   </div>`;
 
-                const result = await response.json();
-                if (result.success && result.data) {
-                    wishlistItems = result.data;
-                    renderWishlist();
-                    document.getElementById('btnClearAll').style.display = wishlistItems.length > 0 ? 'block' : 'none';
-                } else {
-                    renderEmptyState('Failed to load wishlist items');
-                }
-            } catch (error) {
-                console.error('Wishlist load error:', error);
-                renderEmptyState('Error loading wishlist');
-            }
-        }
-
-        function renderWishlist() {
-            const container = document.getElementById('wishlistGrid');
-            if (!wishlistItems.length) {
-                renderEmptyState();
-                return;
-            }
-
-            const groupedByCategory = {};
-            wishlistItems.forEach(item => {
-                const category = item.category || 'Other';
-                if (!groupedByCategory[category]) groupedByCategory[category] = [];
-                groupedByCategory[category].push(item);
-            });
-
-            let html = '';
-            Object.keys(groupedByCategory).sort().forEach(category => {
-                html += `
-                <div class="wishlist-category-section">
-                    
-                    <div class="wishlist-grid">`;
-
-                groupedByCategory[category].forEach(item => {
-                    const img = item.imageUrl || null;
-                    const grade = item.grade || '';
-                    const cleanName = item.productName;
-                    const media = img ? `<img src="${img}" alt="${escapeHtml(cleanName)}">` : `
-                        <div class="no-image-placeholder">
-                            <div class="placeholder-icon-wrapper">
-                                <i class="fi fi-rr-leaf"></i>
-                                <div class="placeholder-text">FarmBridge</div>
-                            </div>
-                        </div>`;
-
-                    html += `
-                    <div class="wishlist-card">
-                        <button class="wishlist-card-remove" onclick="removeFromWishlist(${item.productId}, '${grade}')" title="${fbT('wish_remove')}">
-                            <i class="fi fi-rr-cross-small"></i>
-                        </button>
-                        <div class="wishlist-card-img">
-                            ${media}
-                            ${grade ? `<div class="wishlist-grade-badge">${fbT('wish_grade')} ${grade}</div>` : ''}
-                        </div>
-                        <div class="wishlist-card-body">
-                            <div class="wishlist-card-name">${escapeHtml(cleanName)}</div>
-                            
-                            <div class="wishlist-card-price">
-                                ₹${(item.avgPrice || 0).toLocaleString('en-IN')}<small>/${item.unit || 'kg'}</small>
-                            </div>
-                            <div class="wishlist-card-stock">
-                                <i class="fi fi-rr-box"></i> ${(item.quantityAvailable || 0).toLocaleString()} ${item.unit || 'kg'} ${fbT('wish_in_stock')}
-                            </div>
-                            <button class="btn-wishlist-add-cart" onclick="openWishlistQuantityModal(${item.productId}, '${escapeHtml(cleanName)}', ${item.avgPrice || 0}, ${item.quantityAvailable || 0}, '${grade}', '${img || ''}')">
-                                <i class="fi fi-rr-shopping-cart-add"></i> ${fbT('wish_add_cart')}
-                            </button>
-                        </div>
-                    </div>`;
-                });
-                html += `</div></div>`;
-            });
-
-            container.innerHTML = html;
-            if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
-        }
-
-        function renderEmptyState(message = "") {
-            const emptyMsg = message || fbT('wish_empty');
-            document.getElementById('btnClearAll').style.display = 'none';
-            const container = document.getElementById('wishlistGrid');
-            container.innerHTML = `
-            <div class="wishlist-empty">
-                <i class="fi fi-rr-heart"></i>
-                <h4>${fbT('wish_empty')}</h4>
-                <p>${emptyMsg}</p>
-                <a href="/Vendor/Catalog" class="btn-browse-catalog">
-                    <i class="fi fi-rr-shop"></i> ${fbT('wish_browse')}
-                </a>
+            html += `
+            <div class="catalog-product-card">
+                <div class="catalog-product-img">
+                    ${grade ? `<div class="catalog-product-badge">Grade ${grade}</div>` : ''}
+                    <!-- Remove button instead of wishlist heart -->
+                    <button class="wishlist-heart-float active" onclick="removeFromWishlist(${item.productId}, '${grade}')" title="Remove from Wishlist">
+                        <i class="fi fi-sr-heart"></i>
+                    </button>
+                    ${media}
+                </div>
+                <div class="catalog-product-body">
+                    <div class="catalog-product-name">${escapeHtml(displayName)}</div>
+                    <div class="catalog-product-price">
+                        ₹${price.toLocaleString('en-IN')}<small>/${unit}</small>
+                    </div>
+                    <div class="catalog-product-stock">
+                        <i class="fi fi-rr-box"></i> ${stock.toLocaleString()} ${unit} in stock
+                    </div>
+                    <button class="btn-catalog-add-cart" onclick="openAddToCartModal(${item.productId}, '${escapeHtml(name)}', ${price}, ${stock}, '${img || ''}', '${grade}')">
+                        <i class="fi fi-rr-shopping-cart-add"></i> Add to Cart
+                    </button>
+                </div>
             </div>`;
-            if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
-        }
-
-        async function removeFromWishlist(productId, grade) {
-            try {
-                const gradeParam = grade ? `?grade=${encodeURIComponent(grade)}` : '';
-                const response = await authorizedFetch(`${API_URL}/wishlist/remove/${productId}${gradeParam}`, { method: 'DELETE' });
-                if (response?.ok) {
-                    wishlistItems = wishlistItems.filter(item => !(item.productId === productId && (item.grade || '') === (grade || '')));
-                    renderWishlist();
-                    showToast(fbT('wish_removed'), 'success');
-                }
-            } catch (error) { showToast(fbT('wish_remove_fail'), 'error'); }
-        }
-
-        async function clearAllWishlist() {
-            const confirmed = await Swal.fire({
-                title: fbT('wish_confirm_clear'),
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes'
-            }).then(r => r.isConfirmed);
-            if (!confirmed) return;
-            showToast(fbT('wish_clearing'), 'info');
-            try {
-                for (const item of wishlistItems) {
-                    const gradeParam = item.grade ? `?grade=${encodeURIComponent(item.grade)}` : '';
-                    await authorizedFetch(`${API_URL}/wishlist/remove/${item.productId}${gradeParam}`, { method: 'DELETE' });
-                }
-                wishlistItems = [];
-                renderWishlist();
-                showToast('Wishlist cleared', 'success');
-            } catch (error) { showToast('Error clearing wishlist', 'error'); }
-        }
-
-        function openWishlistQuantityModal(productId, productName, price, maxQuantity, grade, img) {
-            currentWishlistProduct = { id: productId, name: productName, price: price, max: maxQuantity, grade: grade };
-            document.getElementById('wishlistModalProductName').innerText = grade ? `${productName} (Grade ${grade})` : productName;
-            document.getElementById('wishlistModalStock').innerText = `Available: ${maxQuantity} kg`;
-
-            const iconDiv = document.getElementById('wishlistModalIcon');
-            iconDiv.innerHTML = img && img !== 'null'
-                ? `<img src="${img}" style="width: 80px; height: 80px; border-radius: 16px; object-fit: cover; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">`
-                : `<div style="font-size: 40px;">🌾</div>`;
-
-            document.getElementById('wishlistPopupQuantity').value = 20;
-            updateWishlistModalPrice();
-            
-            if (!$("#wishlistQuantityModal").data("kendoWindow")) {
-                $("#wishlistQuantityModal").kendoWindow({ title: "Select Quantity", modal: true, visible: false, width: 420 });
-            }
-            $("#wishlistQuantityModal").data("kendoWindow").center().open();
-        }
-
-        function updateWishlistModalPrice() {
-            const qty = parseFloat(document.getElementById('wishlistPopupQuantity').value) || 0;
-            const total = Math.round(qty * (currentWishlistProduct?.price || 0));
-            document.getElementById('wishlistModalTotalPrice').innerText = `₹${total.toLocaleString('en-IN')}`;
-        }
-
-        async function confirmAddToCart() {
-            const qty = parseInt($('#wishlistPopupQuantity').val());
-            try {
-                const response = await authorizedFetch(`${API_URL}/cart/add`, {
-                    method: 'POST',
-                    body: JSON.stringify({ cropId: currentWishlistProduct.id, quantity: qty })
-                });
-                if (response?.ok) {
-                    showToast('Added to cart successfully!', 'success');
-                    $("#wishlistQuantityModal").data("kendoWindow").close();
-                    if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
-                }
-            } catch (e) { showToast('Error adding to cart', 'error'); }
-        }
-
-        function escapeHtml(text) {
-            return text ? text.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])) : '';
-        }
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            toast.className = `toast-message toast-${type}`;
-            const icon = type === 'success' ? 'fi-rr-check' : type === 'error' ? 'fi-rr-exclamation' : 'fi-rr-info';
-            toast.innerHTML = `<i class="fi ${icon}"></i> ${message}`;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3000);
-        }
-
-        $(document).ready(() => {
-            loadWishlist();
-            
-            $(document).on('click', '#wishlistQtyPlus', () => {
-                const input = $('#wishlistPopupQuantity');
-                input.val(Math.min(currentWishlistProduct.max, parseInt(input.val()) + 5));
-                updateWishlistModalPrice();
-            });
-            
-            $(document).on('click', '#wishlistQtyMinus', () => {
-                const input = $('#wishlistPopupQuantity');
-                input.val(Math.max(20, parseInt(input.val()) - 5));
-                updateWishlistModalPrice();
-            });
-            
-            $(document).on('input', '#wishlistPopupQuantity', updateWishlistModalPrice);
-            $(document).on('click', '#cancelWishlistQtyBtn', () => $("#wishlistQuantityModal").data("kendoWindow").close());
-            $(document).on('click', '#confirmWishlistQtyBtn', confirmAddToCart);
         });
-    </script>
+        html += '</div>';
+        grid.innerHTML = html;
+        if (window.fbInit) fbInit();
+    }
+
+    /* ── Actions ── */
+    async function loadWishlist() {
+        if (typeof window.FBSkeleton === 'object') FBSkeleton.show('#wishlistGrid', 6, 'product');
+        try {
+            const res = await authorizedFetch(`${API_URL}/wishlist`);
+            if (!res) return;
+            const result = await res.json();
+            wishlistItems = (result.success && result.data) ? result.data : [];
+        } catch(e) { wishlistItems = []; }
+        renderWishlist();
+    }
+
+    async function removeFromWishlist(productId, grade) {
+        try {
+            const gradeParam = grade ? `?grade=${encodeURIComponent(grade)}` : '';
+            const res = await authorizedFetch(`${API_URL}/wishlist/remove/${productId}${gradeParam}`, { method: 'DELETE' });
+            if (res?.ok) {
+                wishlistItems = wishlistItems.filter(i => !(i.productId === productId && (i.grade || '') === (grade || '')));
+                renderWishlist();
+            }
+        } catch(e) {}
+    }
+
+    async function clearAllWishlist() {
+        const confirmed = await Swal.fire({
+            title: 'Clear all wishlist items?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Clear'
+        }).then(r => r.isConfirmed);
+        if (!confirmed) return;
+        for (const item of wishlistItems) {
+            const gradeParam = item.grade ? `?grade=${encodeURIComponent(item.grade)}` : '';
+            await authorizedFetch(`${API_URL}/wishlist/remove/${item.productId}${gradeParam}`, { method: 'DELETE' });
+        }
+        wishlistItems = [];
+        renderWishlist();
+    }
+
+    function openAddToCartModal(productId, productName, price, maxQty, img, grade) {
+        currentWishlistProduct = { id: productId, name: productName, price, max: maxQty, grade };
+        document.getElementById('wishlistModalProductName').innerText = grade ? `${productName} (Grade ${grade})` : productName;
+        document.getElementById('wishlistModalStock').innerHTML = `<span>Available</span>: ${maxQty} kg`;
+
+        const iconDiv = document.getElementById('wishlistModalIcon');
+        iconDiv.innerHTML = img && img !== 'null'
+            ? `<img src="${img}" style="width:80px;height:80px;border-radius:16px;object-fit:cover;box-shadow:0 8px 16px rgba(0,0,0,.1);">`
+            : `<div style="font-size:40px;">🌾</div>`;
+
+        const effectiveStep = maxQty < 20 ? 1 : 5;
+        const effectiveMin  = maxQty < 20 ? 1 : 20;
+        const input = document.getElementById('wishlistPopupQuantity');
+        input.step  = effectiveStep;
+        input.min   = effectiveMin;
+        input.value = maxQty < 20 ? maxQty : effectiveMin;
+        updateModalPrice();
+
+        if (!$("#wishlistQuantityModal").data("kendoWindow")) {
+            $("#wishlistQuantityModal").kendoWindow({
+                title: false, modal: true, visible: false, width: 500, resizable: false, draggable: true,
+                animation: { open: { effects: "fade:in", duration: 300 }, close: { effects: "fade:out", duration: 200 } }
+            });
+        }
+        $("#wishlistQuantityModal").data("kendoWindow").center().open();
+    }
+
+    function updateModalPrice() {
+        const qty = parseFloat(document.getElementById('wishlistPopupQuantity').value) || 0;
+        const total = qty * (currentWishlistProduct?.price || 0);
+        document.getElementById('wishlistModalTotalPrice').innerText = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function clampWishlistInput() {
+        if (!currentWishlistProduct) return;
+        const input = document.getElementById('wishlistPopupQuantity');
+        let val = parseFloat(input.value);
+        let min = currentWishlistProduct.max < 20 ? 1 : 20;
+        
+        if (val > currentWishlistProduct.max) input.value = currentWishlistProduct.max;
+        if (val < min && val !== 0) input.value = min;
+        
+        updateModalPrice();
+    }
+
+    async function confirmAddToCart() {
+        const qty = parseInt($('#wishlistPopupQuantity').val());
+        try {
+            const res = await authorizedFetch(`${API_URL}/cart/add`, {
+                method: 'POST',
+                body: JSON.stringify({ cropId: currentWishlistProduct.id, quantity: qty, grade: currentWishlistProduct.grade || '' })
+            });
+            if (res?.ok) {
+                $("#wishlistQuantityModal").data("kendoWindow").close();
+                updateCartCount();
+                if (window.fbNotify) fbNotify({ message: "Added to cart successfully!", icon: "success", type: 'toast' });
+            }
+        } catch(e) {}
+    }
+
+    /* ── Standalone globals called from onclick attrs (Kendo-safe) ── */
+    function wishlistStepQty(direction) {
+        if (!currentWishlistProduct) return;
+        const input = document.getElementById('wishlistPopupQuantity');
+        let val  = parseFloat(input.value) || 0;
+        let step = currentWishlistProduct.max < 20 ? 1 : 5;
+        let min  = currentWishlistProduct.max < 20 ? 1 : 20;
+        let next = val + direction * step;
+        if (next < min) next = min;
+        if (next > currentWishlistProduct.max) next = currentWishlistProduct.max;
+        input.value = next;
+        updateModalPrice();
+    }
+
+    function closeWishlistModal() {
+        const kw = $("#wishlistQuantityModal").data("kendoWindow");
+        if (kw) kw.close();
+    }
+
+    async function confirmAddToCart() {
+        if (!currentWishlistProduct) return;
+        const input = document.getElementById('wishlistPopupQuantity');
+        const qty = parseFloat(input.value) || 0;
+
+        if (qty <= 0 || qty > currentWishlistProduct.max) {
+            if (window.fbNotify) fbNotify({ message: `Please enter a valid quantity (max ${currentWishlistProduct.max} kg)`, icon: 'warning', type: 'toast' });
+            return;
+        }
+
+        const btn = document.getElementById('confirmWishlistQtyBtn');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fi fi-rr-loading"></i> Adding...'; }
+
+        try {
+            const res = await authorizedFetch(`${API_URL}/cart/add`, {
+                method: 'POST',
+                body: JSON.stringify({ cropId: currentWishlistProduct.id, quantity: qty, grade: currentWishlistProduct.grade || '' })
+            });
+            if (res?.ok) {
+                closeWishlistModal();
+                updateCartCount();
+                if (typeof syncGlobalBadges === 'function') syncGlobalBadges();
+                if (window.fbNotify) fbNotify({ message: "Added to cart successfully!", icon: "success", type: 'toast' });
+            } else {
+                const err = await res?.json();
+                if (window.fbNotify) fbNotify({ message: err?.message || "Failed to add to cart", icon: "error", type: 'toast' });
+            }
+        } catch(e) {
+            if (window.fbNotify) fbNotify({ message: "Network error. Please try again.", icon: "error", type: 'toast' });
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fi fi-rr-shopping-cart-add"></i> <span>Add to Cart</span>'; }
+        }
+    }
+
+    /* ── Init ── */
+    $(document).ready(() => {
+        loadWishlist();
+        updateCartCount();
+    });
+
+    window.removeFromWishlist   = removeFromWishlist;
+    window.openAddToCartModal   = openAddToCartModal;
+    window.clearAllWishlist     = clearAllWishlist;
+    window.wishlistStepQty      = wishlistStepQty;
+    window.closeWishlistModal   = closeWishlistModal;
+    window.confirmAddToCart     = confirmAddToCart;
+    window.updateModalPrice     = updateModalPrice;
+    window.clampWishlistInput   = clampWishlistInput;
+
+</script>
 }

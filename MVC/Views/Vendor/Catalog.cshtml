@@ -103,12 +103,12 @@
         <div class="quantity-control-section">
             <label class="qty-label" data-i18n="cat_qty_title">Order Quantity</label>
             <div class="modern-stepper-pill">
-                <button id="qtyMinus" class="pill-step-btn"><i class="fi fi-rr-minus-small"></i></button>
+                <button id="qtyMinus" class="pill-step-btn" onclick="catalogStepQty(-1)"><i class="fi fi-rr-minus-small"></i></button>
                 <div class="pill-input-area">
-                    <input type="number" id="popupQuantity" value="20" min="20" step="5">
+                    <input type="number" id="popupQuantity" value="20" min="20" step="5" oninput="clampCatalogInput()">
                     <span class="pill-unit">kg</span>
                 </div>
-                <button id="qtyPlus" class="pill-step-btn"><i class="fi fi-rr-plus-small"></i></button>
+                <button id="qtyPlus" class="pill-step-btn" onclick="catalogStepQty(1)"><i class="fi fi-rr-plus-small"></i></button>
             </div>
         </div>
 
@@ -118,10 +118,10 @@
         </div>
 
         <div class="modal-footer-actions">
-            <button id="cancelQtyBtn" class="btn-modal-cancel">
+            <button id="cancelQtyBtn" class="btn-modal-cancel" onclick="closeCatalogModal()">
                 <i class="fi fi-rr-cross-small"></i> <span data-i18n="cat_qty_cancel">Cancel</span>
             </button>
-            <button id="confirmQtyBtn" class="btn-modal-confirm">
+            <button id="confirmQtyBtn" class="btn-modal-confirm" onclick="confirmAddToCart()">
                 <i class="fi fi-rr-shopping-cart-add"></i> <span data-i18n="cat_qty_add">Add to Cart</span>
             </button>
         </div>
@@ -199,7 +199,7 @@
                 if (typeof window.showCardSkeleton === 'function') {
                     window.showCardSkeleton('#catalogGrid', 4);
                 }
-                const response = await authorizedFetch('/Vendor/SearchCatalog', {
+                const response = await authorizedFetch(`${API_URL}/search/vendor-catalog`, {
                     method: 'POST',
                     body: JSON.stringify({ Query: searchQuery, Page: 1, PageSize: 100 })
                 });
@@ -448,7 +448,18 @@
         }
 
         async function confirmAddToCart() {
-            const qty = parseInt($('#popupQuantity').val());
+            if (!currentProduct) return;
+            const input = document.getElementById('popupQuantity');
+            const qty = parseInt(input.value) || 0;
+            
+            if (qty <= 0 || qty > currentProduct.max) {
+                if (window.fbNotify) fbNotify({ message: `Please enter a valid quantity (max ${currentProduct.max} kg)`, icon: 'warning', type: 'toast' });
+                return;
+            }
+
+            const btn = document.getElementById('confirmQtyBtn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fi fi-rr-loading"></i> Adding...'; }
+
             try {
                 const response = await authorizedFetch(`${API_URL}/cart/add`, {
                     method: 'POST',
@@ -458,13 +469,48 @@
                     if (window.fbNotify) {
                         fbNotify({ message: "Added to cart successfully!", icon: "success", type: 'toast' });
                     }
-                    $("#quantityWindow").data("kendoWindow").close();
+                    closeCatalogModal();
                     updateHeaderCartCount();
+                } else {
+                    const err = await response?.json();
+                    if (window.fbNotify) fbNotify({ message: err?.message || "Failed to add to cart", icon: "error", type: 'toast' });
                 }
             } catch (e) { 
                 console.error(e); 
-                if (window.fbNotify) fbNotify({ message: "Failed to add to cart", icon: "error", type: 'toast' });
+                if (window.fbNotify) fbNotify({ message: "Network error. Please try again.", icon: "error", type: 'toast' });
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fi fi-rr-shopping-cart-add"></i> <span data-i18n="cat_qty_add">Add to Cart</span>'; }
             }
+        }
+
+        function closeCatalogModal() {
+            const kw = $("#quantityWindow").data("kendoWindow");
+            if (kw) kw.close();
+        }
+
+        function catalogStepQty(direction) {
+            if (!currentProduct) return;
+            const input = document.getElementById('popupQuantity');
+            let val  = parseFloat(input.value) || 0;
+            let step = currentProduct.max < 20 ? 1 : 5;
+            let min  = currentProduct.max < 20 ? 1 : 20;
+            let next = val + direction * step;
+            if (next < min) next = min;
+            if (next > currentProduct.max) next = currentProduct.max;
+            input.value = next;
+            updateTotalPrice();
+        }
+
+        function clampCatalogInput() {
+            if (!currentProduct) return;
+            const input = document.getElementById('popupQuantity');
+            let val = parseFloat(input.value);
+            let min = currentProduct.max < 20 ? 1 : 20;
+            
+            if (val > currentProduct.max) input.value = currentProduct.max;
+            if (val < min && val !== 0) input.value = min;
+            
+            updateTotalPrice();
         }
 
         function escapeHtml(text) {
@@ -488,37 +534,13 @@
             $('#categoryFilter').on('change', () => { if (!isSearchMode) loadCatalogFromDatabase(); });
             $('#sortFilter').on('change', applySortAndDisplay);
             $('#clearSearch').on('click', () => { $('#searchInput').val(''); elasticSearchProducts(''); });
-
-            $('#qtyPlus').on('click', () => { 
-                const input = document.getElementById('popupQuantity'); 
-                let val  = parseFloat(input.value) || 0;
-                let step = currentProduct.max < 20 ? 1 : 5;
-                if (val >= currentProduct.max) {
-                    if (window.fbNotify) fbNotify({ message: `Maximum available: ${currentProduct.max} kg`, icon: 'warning', type: 'toast' });
-                    return;
-                }
-                let next = val + step;
-                input.value = next <= currentProduct.max ? next : currentProduct.max;
-                updateTotalPrice();
-            });
-            $('#qtyMinus').on('click', () => { 
-                const input = document.getElementById('popupQuantity'); 
-                let val  = parseFloat(input.value) || 0;
-                let step = currentProduct.max < 20 ? 1 : 5;
-                let min  = currentProduct.max < 20 ? 1 : 20;
-                let prev = val - step;
-                input.value = prev >= min ? prev : min;
-                updateTotalPrice();
-            });
-            $('#popupQuantity').on('input', function() {
-                let val  = parseFloat(this.value);
-                let min  = currentProduct.max < 20 ? 1 : 20;
-                if (val > currentProduct.max) this.value = currentProduct.max;
-                if (val < min && val !== 0)   this.value = min;
-                updateTotalPrice();
-            });
-            $('#cancelQtyBtn').on('click', () => $("#quantityWindow").data("kendoWindow").close());
-            $('#confirmQtyBtn').on('click', confirmAddToCart);
         });
+
+        window.addToCart = addToCart;
+        window.confirmAddToCart = confirmAddToCart;
+        window.closeCatalogModal = closeCatalogModal;
+        window.catalogStepQty = catalogStepQty;
+        window.clampCatalogInput = clampCatalogInput;
+        window.toggleWishlistItem = toggleWishlistItem;
     </script>
 }

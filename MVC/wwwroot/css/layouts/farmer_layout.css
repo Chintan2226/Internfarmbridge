@@ -40,7 +40,8 @@ body {
     height: var(--topbar-height);
     display: flex;
     align-items: center;
-    padding: 0 16px;
+    justify-content: center;
+    padding: 0 12px;
     border-bottom: 1px solid var(--border-color);
     overflow: hidden;
     position: relative;
@@ -61,7 +62,7 @@ body {
 .fv-sidebar-logo img {
     height: 32px !important;
     width: auto !important;
-    margin-right: 10px;
+    margin-right: 8px;
     object-fit: contain;
     flex-shrink: 0;
 }

@@ -1829,13 +1829,12 @@ namespace API.Services
             COALESCE(MIN(ip.c_photo_url), cp.c_image_url) AS ImageUrl,
             wl.c_grade,
             AVG(qif.c_fo_assessed_price * 1.10) AS Price,
-            SUM(wl.c_quantity_remaining) AS QuantityAvailable
+            SUM(CASE WHEN LOWER(wl.c_status) = 'available' THEN wl.c_quantity_remaining ELSE 0 END) AS QuantityAvailable
         FROM t_warehouse_lots wl
         INNER JOIN t_catalog_products cp ON wl.c_catalog_product_id = cp.c_id
         INNER JOIN t_quality_inspection_forms qif ON wl.c_quality_inspection_id = qif.c_id
         LEFT JOIN t_inspection_photos ip ON ip.c_inspection_id = qif.c_id
-        WHERE LOWER(wl.c_status) = 'available'
-          AND qif.c_passed = true
+        WHERE qif.c_passed = true
         GROUP BY 
             wl.c_catalog_product_id, cp.c_name, cp.c_category, 
             cp.c_unit_of_measure, cp.c_description, cp.c_image_url, wl.c_grade
@@ -1904,7 +1903,6 @@ namespace API.Services
                     {
                         Should = new List<Query>
                         {
-                            // "ap" → "Apple" (partial prefix match)
                             new MultiMatchQuery
                             {
                                 Query = request.Query,
@@ -1912,7 +1910,6 @@ namespace API.Services
                                 Type = TextQueryType.PhrasePrefix,
                                 Operator = Operator.Or
                             },
-                            // "aple" → "Apple" (typo/fuzzy match)
                             new MultiMatchQuery
                             {
                                 Query = request.Query,
@@ -1920,18 +1917,33 @@ namespace API.Services
                                 Fuzziness = new Fuzziness("AUTO"),
                                 Operator = Operator.Or
                             },
-                            // "ap*" wildcard match
                             new WildcardQuery(new Field("Name"))
                             {
                                 Value = $"{request.Query.ToLower()}*"
                             }
                         },
-                        MinimumShouldMatch = 1
+                        MinimumShouldMatch = 1,
+                        Filter = new List<Query>
+                        {
+                            new NumberRangeQuery(new Field("QuantityAvailable"))
+                            {
+                                Gt = 0
+                            }
+                        }
                     };
                 }
                 else
                 {
-                    query = new MatchAllQuery();
+                    query = new BoolQuery
+                    {
+                        Filter = new List<Query>
+                        {
+                            new NumberRangeQuery(new Field("QuantityAvailable"))
+                            {
+                                Gt = 0
+                            }
+                        }
+                    };
                 }
 
                 var searchRequest = new SearchRequest("vendor_catalog")

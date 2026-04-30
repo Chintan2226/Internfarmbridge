@@ -106,6 +106,8 @@
     box-shadow: var(--catalog-shadow);
     margin-bottom: 32px;
     align-items: center;
+    position: relative;
+    z-index: 50;
 }
 
 .search-container {

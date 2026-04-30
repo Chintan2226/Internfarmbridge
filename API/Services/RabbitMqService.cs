@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace API.Services
 {
-    public class RabbitMqService
+    public class RabbitMqService : IAsyncDisposable
     {
         private readonly IConfiguration _config;
         private readonly ILogger<RabbitMqService> _logger;
@@ -182,7 +182,7 @@ namespace API.Services
                 body: body
             );
         }
-        public async Task DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             try
             {

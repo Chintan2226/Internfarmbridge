@@ -108,15 +108,14 @@
         const isCancelled = data.status.toLowerCase() === 'cancelled' || data.status.toLowerCase() === 'canceled';
         
         const statusSteps = [
-            { key: 'placed', label: 'Order Placed', desc: 'Order received and logged.', icon: 'fi-rr-shopping-cart-add' },
-            { key: 'admin_confirmed', label: 'Confirmed', desc: 'Order verified by FarmBridge.', icon: 'fi-rr-box-check' },
-            { key: 'dispatched', label: 'Dispatched', desc: 'Package left the warehouse.', icon: 'fi-rr-truck-loading' },
-            { key: 'in_transit', label: 'In Transit', desc: 'Journey to destination started.', icon: 'fi-rr-map-marker' },
-            { key: 'delivered', label: 'Delivered', desc: 'Handover complete.', icon: 'fi-rr-badge-check' }
+            { key: 'placed',      dbStatus: 'placed',         label: 'Order Placed', desc: 'Order received and logged.',         icon: 'fi-rr-shopping-cart-add' },
+            { key: 'confirmed',   dbStatus: 'admin_confirmed', label: 'Confirmed',    desc: 'Order verified by FarmBridge.',       icon: 'fi-rr-box-check' },
+            { key: 'dispatched',  dbStatus: 'dispatched',      label: 'Dispatched',   desc: 'Package left the warehouse.',          icon: 'fi-rr-truck-loading' },
+            { key: 'transit',     dbStatus: 'in_transit',      label: 'In Transit',   desc: 'Journey to destination started.',      icon: 'fi-rr-map-marker' },
+            { key: 'delivered',   dbStatus: 'delivered',       label: 'Delivered',    desc: 'Handover complete.',                   icon: 'fi-rr-badge-check' }
         ];
 
-        const statusOrder = ['placed', 'admin_confirmed', 'dispatched', 'in_transit', 'delivered'];
-        const currentIdx = statusOrder.indexOf(data.status);
+        const currentIdx = statusSteps.findIndex(s => s.dbStatus === data.status);
         const statusText = data.status.replace('_', ' ').toUpperCase();
 
         // Billing calculations

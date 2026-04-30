@@ -66,11 +66,30 @@ namespace API.Services
             return JsonSerializer.Deserialize<T>(value!, _options);
         }
 
-        public async void DeleteAsync(string key)
+        public async Task DeleteAsync(string key)
         {
-            var value = await _db.KeyDeleteAsync(key);
+            await _db.KeyDeleteAsync(key);
         }
-        
+
+        public async Task DeleteKeyAsync(string key)
+        {
+            await _db.KeyDeleteAsync(key);
+        }
+
+        public async Task DeleteByPatternAsync(string pattern)
+        {
+            var endpoints = _db.Multiplexer.GetEndPoints();
+            if (endpoints.Length > 0)
+            {
+                var server = _db.Multiplexer.GetServer(endpoints.First());
+                var keys = server.Keys(pattern: pattern).ToArray();
+                if (keys.Length > 0)
+                {
+                    await _db.KeyDeleteAsync(keys);
+                }
+            }
+        }
+
 
         public async Task SetAsync<T>(string key, T data, TimeSpan expiry)
         {

@@ -29,7 +29,7 @@ builder.Services.AddScoped<GoogleAuthBal>();
 
 // Service Injection
 builder.Services.AddScoped<RedisService>();
-builder.Services.AddScoped<RabbitMqService>();
+builder.Services.AddSingleton<RabbitMqService>();
 builder.Services.AddHostedService<NotificationConsumer>();
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<ElasticService>();

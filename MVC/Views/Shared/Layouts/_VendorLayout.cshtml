@@ -73,7 +73,6 @@
             var path = Context.Request.Path.ToString().ToLower();
         }
 
-        <ul class="fv-nav">
             <li>
                 <a href="/Vendor/Catalog" class="fv-nav-link @(path.Contains("/vendor/catalog") ? "active" : "")">
                     <i class="fi fi-rr-shop"></i>
@@ -129,6 +128,9 @@
                     else if (path.Contains("/vendor/orders")) titleKey = "title_orders";
                     else if (path.Contains("/vendor/payments")) titleKey = "title_payments";
                     else if (path.Contains("/vendor/profile")) titleKey = "title_profile";
+                    else if (path.Contains("/vendor/checkout")) titleKey = "title_checkout";
+                    else if (path.Contains("/vendor/wishlist")) titleKey = "title_wishlist";
+                    else if (path.Contains("/vendor/ordertracking")) titleKey = "title_tracking";
                 }
                 <h1 class="fv-page-title" data-i18n="@titleKey">@title</h1>
             </div>
@@ -149,9 +151,9 @@
                 </button>
 
 
-                
-                <div class="fv-avatar" id="fvAvatar" onclick="location.href='/Vendor/Profile'" title="Profile">
-                    V
+                <div class="fv-avatar" id="fvAvatar" onclick="location.href='/Vendor/Profile'" title="Profile" style="overflow:hidden; position:relative;">
+                    <img id="fvAvatarImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; inset:0; border-radius:50%;" />
+                    <span id="fvAvatarLetter" style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:15px; font-weight:700; color:#fff;">V</span>
                 </div>
             </div>
         </header>
@@ -260,16 +262,47 @@
             window.addEventListener('storage', syncGlobalBadges);
             
             try {
-                const token = getCookie("authToken");
+                const token = typeof getAuthToken === 'function' ? getAuthToken() : null;
                 if(token) {
-                    const decoded = parseJwtVendor(token);
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    const decoded = JSON.parse(jsonPayload);
+
                     if(decoded && decoded.full_name) {
+                        const fvAvatarLetter = document.getElementById('fvAvatarLetter');
+                        if (fvAvatarLetter) {
+                            fvAvatarLetter.textContent = decoded.full_name.charAt(0).toUpperCase();
+                        }
                         const fvAvatar = document.getElementById('fvAvatar');
                         if (fvAvatar) {
-                            fvAvatar.textContent = decoded.full_name.charAt(0).toUpperCase();
                             fvAvatar.title = decoded.full_name;
                         }
                     }
+
+                    fetch(window.API_BASE_URL + '/profile', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result && result.success && result.data) {
+                            const imgUrl = result.data.profileImageUrl || result.data.ProfileImageUrl;
+                            if (imgUrl) {
+                                const avatarImg = document.getElementById('fvAvatarImg');
+                                const avatarLetter = document.getElementById('fvAvatarLetter');
+                                if (avatarImg) {
+                                    avatarImg.src = imgUrl;
+                                    avatarImg.onload = function() {
+                                        avatarImg.style.display = 'block';
+                                        if (avatarLetter) avatarLetter.style.display = 'none';
+                                    };
+                                }
+                            }
+                        }
+                    })
+                    .catch(e => console.warn("Avatar fetch fail", e));
                 }
             } catch(e) { console.warn("Avatar parsing fail", e); }
         });

@@ -19,7 +19,7 @@ namespace API.BAL
     {
         private readonly NpgsqlConnection _conn;
         private readonly IConfiguration _configuration;
-        private readonly ElasticService _elasticService;
+        private readonly ElasticService _elasticService; 
 
         public VendorHelper(
             NpgsqlConnection conn,
@@ -452,8 +452,8 @@ namespace API.BAL
                 string paymentMethodValue = request.PaymentMethod?.ToLower() switch
                 {
                     "upi" => "upi",
-                    "online_banking" or "card" or "netbanking" => "online_banking",
-                    _ => "upi"
+                    "online_banking" or "card" or "netbanking" or "razorpay" => "online_banking",
+                    _ => "online_banking"
                 };
 
                 await using var paymentCmd = new NpgsqlCommand(@"
@@ -471,19 +471,29 @@ namespace API.BAL
                     decimal remainingToDeduct = item.Quantity;
                     int primaryLotId = 0;
 
-                    // Fetch available lots for this product and grade (FIFO)
-                    const string getLotsSql = @"
+                    // Fetch available lots for this product (FIFO; grade filter only when provided)
+                    string getLotsSql = @"
                         SELECT c_id, c_quantity_remaining 
                         FROM t_warehouse_lots 
                         WHERE c_catalog_product_id = @pid 
-                          AND (c_grade = @grade OR (c_grade IS NULL AND @grade = ''))
                           AND LOWER(c_status) = 'available'
-                          AND c_quantity_remaining > 0
-                        ORDER BY c_id ASC FOR UPDATE";
+                          AND c_quantity_remaining > 0"
+                        + (string.IsNullOrWhiteSpace(item.Grade)
+                            ? "" 
+                            : " AND (c_grade = @grade OR (c_grade IS NULL AND @grade = ''))") 
+                        + " ORDER BY c_id ASC FOR UPDATE";
 
                     await using var lotsCmd = new NpgsqlCommand(getLotsSql, _conn, transaction);
                     lotsCmd.Parameters.AddWithValue("@pid", item.ProductId);
-                    lotsCmd.Parameters.AddWithValue("@grade", item.Grade ?? "");
+                    if (!string.IsNullOrWhiteSpace(item.Grade) && item.Grade != "nograde")
+                    {
+                        lotsCmd.Parameters.AddWithValue("@grade", item.Grade);
+                    }
+                    else
+                    {
+                        // If "nograde" or empty, match NULL columns
+                        lotsCmd.Parameters.AddWithValue("@grade", "");
+                    }
 
                     var lotsToUpdate = new List<(int id, decimal currentQty)>();
                     await using (var lotRdr = await lotsCmd.ExecuteReaderAsync())
@@ -524,13 +534,12 @@ namespace API.BAL
                     // Insert into order_items (using primary lot ID)
                     await using var itemCmd = new NpgsqlCommand(@"
                         INSERT INTO t_order_items 
-                            (c_order_id, c_catalog_product_id, c_grade, c_quantity, c_unit_price, c_subtotal, c_lot_id)
+                            (c_order_id, c_catalog_product_id, c_quantity, c_unit_price, c_subtotal, c_lot_id)
                         VALUES 
-                            (@orderId, @productId, @grade, @quantity, @price, @price * @quantity, @lotId)
+                            (@orderId, @productId, @quantity, @price, @price * @quantity, @lotId)
                     ", _conn, transaction);
                     itemCmd.Parameters.AddWithValue("@orderId", orderId);
                     itemCmd.Parameters.AddWithValue("@productId", item.ProductId);
-                    itemCmd.Parameters.AddWithValue("@grade", item.Grade ?? "");
                     itemCmd.Parameters.AddWithValue("@quantity", item.Quantity);
                     itemCmd.Parameters.AddWithValue("@price", item.Price);
                     itemCmd.Parameters.AddWithValue("@lotId", primaryLotId);
@@ -939,7 +948,7 @@ namespace API.BAL
         )
         ON CONFLICT (c_vendor_id, c_catalog_product_id, c_grade)
         DO UPDATE SET
-            c_quantity = t_vendor_cart_items.c_quantity + EXCLUDED.c_quantity,
+            c_quantity = EXCLUDED.c_quantity,
 
             c_added_at = NOW()";
 

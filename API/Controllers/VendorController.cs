@@ -246,14 +246,6 @@ namespace API.Controllers
              [FromQuery] string search = "",
              [FromQuery] string grade = "all")
         {
-            string cacheKey = $"vendor:catalog:{category}:{search}:{grade}";
-            var cachedData = await _redisService.GetAsync<List<VM_CatalogCropItem>>(cacheKey);
-
-            if (cachedData != null && cachedData.Any())
-            {
-                return Ok(new { success = true, data = cachedData, source = "cache" });
-            }
-
             var filter = new VM_CropFilter
             {
                 CropType = string.IsNullOrEmpty(search) ? null : search,
@@ -261,24 +253,14 @@ namespace API.Controllers
                 Grade = grade == "all" ? null : grade
             };
             var products = await _vendorHelper.GetFilteredCatalogAsync(filter);
-            
-            await _redisService.SetAsync(cacheKey, products, TimeSpan.FromMinutes(60));
+
             return Ok(new { success = true, data = products, source = "db" });
         }
 
         [HttpPost("catalog/filter")]
         public async Task<IActionResult> FilterCatalog([FromBody] VM_CropFilter filter)
         {
-            string cacheKey = $"vendor:catalog:filter:{filter.Category ?? "all"}:{filter.CropType ?? ""}:{filter.Grade ?? "all"}";
-            var cachedData = await _redisService.GetAsync<List<VM_CatalogCropItem>>(cacheKey);
-
-            if (cachedData != null && cachedData.Any())
-            {
-                return Ok(new { success = true, data = cachedData, source = "cache" });
-            }
-
             var products = await _vendorHelper.GetFilteredCatalogAsync(filter);
-            await _redisService.SetAsync(cacheKey, products, TimeSpan.FromMinutes(60));
             return Ok(new { success = true, data = products, source = "db" });
         }
 
@@ -453,10 +435,14 @@ namespace API.Controllers
             var result = await _vendorHelper.PlaceOrderAsync(CurrentVendorId, request);
             if (result.Success)
             {
-                await _redisService.RemoveUserAsync($"vendor:dashboard:kpi:{CurrentVendorId}");
-                await _redisService.RemoveUserAsync($"vendor:dashboard:stats:{CurrentVendorId}");
-                await _redisService.RemoveUserAsync($"vendor:dashboard:monthly:{CurrentVendorId}");
-                await _redisService.RemoveUserAsync($"vendor:dashboard:category:{CurrentVendorId}");
+                await _redisService.DeleteKeyAsync($"vendor:dashboard:kpi:{CurrentVendorId}");
+                await _redisService.DeleteKeyAsync($"vendor:dashboard:stats:{CurrentVendorId}");
+                await _redisService.DeleteKeyAsync($"vendor:dashboard:monthly:{CurrentVendorId}");
+                await _redisService.DeleteKeyAsync($"vendor:dashboard:category:{CurrentVendorId}");
+                
+                // Clear catalog and wishlist cache so stock is dynamic
+                await _redisService.DeleteByPatternAsync("vendor:catalog*");
+                await _redisService.DeleteKeyAsync($"vendor:wishlist:{CurrentVendorId}");
 
                 var profile = await _vendorHelper.GetProfileAsync(CurrentVendorId);
                 await _emailService.SendVendorOrderSuccessEmailAsync(
@@ -480,6 +466,13 @@ namespace API.Controllers
                     "New Order Placed",
                     $"Vendor {profile?.BusinessName} has placed a new order.",
                     "order");
+
+                // ✅ UPDATE ELASTICSEARCH VENDOR CATALOG STOCK
+                try {
+                    await _elasticService.ReindexVendorCatalogAsync();
+                } catch (Exception ex) {
+                    Console.WriteLine($"Failed to reindex catalog: {ex.Message}");
+                }
             }
             return Ok(result);
         }

@@ -251,6 +251,9 @@ window.FB_I18N = {
         title_orders: 'Order Management',
         title_payments: 'Payment History',
         title_profile: 'Business Profile',
+        title_checkout: 'Checkout & Cart',
+        title_wishlist: 'My Wishlist',
+        title_tracking: 'Track Order',
 
         // Profile Hints
         prof_gst_hint: 'Tax details locked. Contact support to update.',
@@ -591,6 +594,9 @@ window.FB_I18N = {
         title_orders: 'ऑर्डर प्रबंधन',
         title_payments: 'भुगतान इतिहास',
         title_profile: 'व्यावसायिक प्रोफ़ाइल',
+        title_checkout: 'चेकआउट और कार्ट',
+        title_wishlist: 'मेरी इच्छा सूची',
+        title_tracking: 'ऑर्डर ट्रैक करें',
 
         // Profile Hints
         prof_gst_hint: 'टैक्स विवरण लॉक हैं। अपडेट करने के लिए सहायता से संपर्क करें।',
@@ -931,6 +937,10 @@ window.FB_I18N = {
         title_orders: 'ઓર્ડર મેનેજમેન્ટ',
         title_payments: 'ચુકવણી ઇતિહાસ',
         title_profile: 'વ્યવસાયિક પ્રોફાઇલ',
+        title_checkout: 'ચેકઆઉટ અને કાર્ટ',
+        title_wishlist: 'મારી ઇચ્છા સૂચિ',
+        title_tracking: 'ઓર્ડર ટ્રૅક કરો',
+
 
         // Profile Hints
         prof_gst_hint: 'ટેક્સ વિગતો લૉક કરેલી છે. અપડેટ કરવા માટે સપોર્ટનો સંપર્ક કરો.',

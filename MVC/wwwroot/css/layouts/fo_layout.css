@@ -914,18 +914,31 @@ ul {
 }
 
 .fo-alert-btn {
-    border: 1px solid #eabf72;
-    background: #fff;
-    color: #9a6709;
-    border-radius: 20px;
-    padding: 6px 12px;
-    font-size: 12px;
+    background: #f59e0b;
+    color: #ffffff;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+
+    transition: all 0.25s ease;
 }
 
+/* ✅ FIXED HOVER */
 .fo-alert-btn:hover {
-    background: #fffbf1;
+    background: #d97706;   /* darker instead of brighter */
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* OPTIONAL ACTIVE */
+.fo-alert-btn:active {
+    transform: scale(0.96);
 }
 
 /* Dashboard Stat Cards */
