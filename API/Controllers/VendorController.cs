@@ -292,7 +292,7 @@ namespace API.Controllers
         [HttpPost("cart/add")]
         public async Task<IActionResult> AddToCart([FromBody] VM_AddToCartRequest req)
         {
-            var result = await _vendorHelper.AddItemToCartAsync(CurrentVendorId, req.CropId, req.Quantity);
+            var result = await _vendorHelper.AddItemToCartAsync(CurrentVendorId, req.CropId, req.Quantity, req.Grade);
 
             if (result == "Success")
             {
@@ -503,9 +503,11 @@ namespace API.Controllers
       [HttpPost("payment/verify")]
 public async Task<IActionResult> VerifyRazorpayPayment([FromBody] VM_RazorpayPaymentVerification verification)
 {
+    Console.WriteLine(verification.Amount);
     var result = await _vendorHelper.VerifyRazorpayPaymentAsync(CurrentVendorId, verification);
     if (result.Success)
     {
+        
         // ✅ NOTIFICATION: Payment successful - Now verification.Amount exists!
         await _rabbitMqService.PublishToUserAsync(CurrentVendorId,
             "Payment Successful 💰",

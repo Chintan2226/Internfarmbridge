@@ -117,10 +117,7 @@
             Object.keys(groupedByCategory).sort().forEach(category => {
                 html += `
                 <div class="wishlist-category-section">
-                    <div class="wishlist-category-title">
-                        <div class="wishlist-category-icon"><i class="fi fi-rr-apps"></i></div>
-                        <span>${fbT('cat_cat_' + category.toLowerCase()) || escapeHtml(category)}</span>
-                    </div>
+                    
                     <div class="wishlist-grid">`;
 
                 groupedByCategory[category].forEach(item => {
@@ -146,9 +143,7 @@
                         </div>
                         <div class="wishlist-card-body">
                             <div class="wishlist-card-name">${escapeHtml(cleanName)}</div>
-                            <div class="wishlist-card-category">
-                                <i class="fi fi-rr-tag"></i> ${escapeHtml(item.category || fbT('cat_cat_other'))}
-                            </div>
+                            
                             <div class="wishlist-card-price">
                                 ₹${(item.avgPrice || 0).toLocaleString('en-IN')}<small>/${item.unit || 'kg'}</small>
                             </div>

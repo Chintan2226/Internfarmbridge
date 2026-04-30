@@ -465,28 +465,75 @@ namespace API.BAL
                 paymentCmd.Parameters.AddWithValue("@paymentMethod", paymentMethodValue);
                 await paymentCmd.ExecuteNonQueryAsync();
 
-                // 4. Insert order items
+                // 4. Insert order items & Deduct Stock
                 foreach (var item in request.Items)
                 {
-                    await using var lotCmd = new NpgsqlCommand(@"
-                SELECT c_id FROM t_warehouse_lots WHERE c_catalog_product_id = @productId LIMIT 1
-            ", _conn, transaction);
-                    lotCmd.Parameters.AddWithValue("@productId", item.ProductId);
+                    decimal remainingToDeduct = item.Quantity;
+                    int primaryLotId = 0;
 
-                    var lotResult = await lotCmd.ExecuteScalarAsync();
-                    int lotId = lotResult != null ? Convert.ToInt32(lotResult) : 1;
+                    // Fetch available lots for this product and grade (FIFO)
+                    const string getLotsSql = @"
+                        SELECT c_id, c_quantity_remaining 
+                        FROM t_warehouse_lots 
+                        WHERE c_catalog_product_id = @pid 
+                          AND (c_grade = @grade OR (c_grade IS NULL AND @grade = ''))
+                          AND LOWER(c_status) = 'available'
+                          AND c_quantity_remaining > 0
+                        ORDER BY c_id ASC FOR UPDATE";
 
+                    await using var lotsCmd = new NpgsqlCommand(getLotsSql, _conn, transaction);
+                    lotsCmd.Parameters.AddWithValue("@pid", item.ProductId);
+                    lotsCmd.Parameters.AddWithValue("@grade", item.Grade ?? "");
+
+                    var lotsToUpdate = new List<(int id, decimal currentQty)>();
+                    await using (var lotRdr = await lotsCmd.ExecuteReaderAsync())
+                    {
+                        while (await lotRdr.ReadAsync())
+                        {
+                            lotsToUpdate.Add((lotRdr.GetInt32(0), lotRdr.GetDecimal(1)));
+                        }
+                    }
+
+                    foreach (var lot in lotsToUpdate)
+                    {
+                        if (remainingToDeduct <= 0) break;
+                        if (primaryLotId == 0) primaryLotId = lot.id;
+
+                        decimal deductNow = Math.Min(lot.currentQty, remainingToDeduct);
+                        decimal newQty = lot.currentQty - deductNow;
+                        remainingToDeduct -= deductNow;
+
+                        const string updateLotSql = @"
+                            UPDATE t_warehouse_lots 
+                            SET c_quantity_remaining = @newQty,
+                                c_status = CASE WHEN @newQty <= 0 THEN 'out_of_stock' ELSE c_status END,
+                                c_updated_at = NOW()
+                            WHERE c_id = @lotId";
+
+                        await using var updLotCmd = new NpgsqlCommand(updateLotSql, _conn, transaction);
+                        updLotCmd.Parameters.AddWithValue("@newQty", newQty);
+                        updLotCmd.Parameters.AddWithValue("@lotId", lot.id);
+                        await updLotCmd.ExecuteNonQueryAsync();
+                    }
+
+                    if (remainingToDeduct > 0)
+                    {
+                        throw new Exception($"Insufficient stock for {item.ProductName} ({item.Grade}). Required: {item.Quantity}kg, but only {item.Quantity - remainingToDeduct}kg available.");
+                    }
+
+                    // Insert into order_items (using primary lot ID)
                     await using var itemCmd = new NpgsqlCommand(@"
-                INSERT INTO t_order_items 
-                    (c_order_id, c_catalog_product_id, c_quantity, c_unit_price, c_subtotal, c_lot_id)
-                VALUES 
-                    (@orderId, @productId, @quantity, @price, @price * @quantity, @lotId)
-            ", _conn, transaction);
+                        INSERT INTO t_order_items 
+                            (c_order_id, c_catalog_product_id, c_grade, c_quantity, c_unit_price, c_subtotal, c_lot_id)
+                        VALUES 
+                            (@orderId, @productId, @grade, @quantity, @price, @price * @quantity, @lotId)
+                    ", _conn, transaction);
                     itemCmd.Parameters.AddWithValue("@orderId", orderId);
                     itemCmd.Parameters.AddWithValue("@productId", item.ProductId);
+                    itemCmd.Parameters.AddWithValue("@grade", item.Grade ?? "");
                     itemCmd.Parameters.AddWithValue("@quantity", item.Quantity);
                     itemCmd.Parameters.AddWithValue("@price", item.Price);
-                    itemCmd.Parameters.AddWithValue("@lotId", lotId);
+                    itemCmd.Parameters.AddWithValue("@lotId", primaryLotId);
                     await itemCmd.ExecuteNonQueryAsync();
                 }
 
@@ -699,8 +746,8 @@ namespace API.BAL
             -- ✅ Correct quantity (no duplication issue)
             SUM(wl.c_quantity_remaining) AS quantity_available,
 
-            -- ✅ Inspection image (thumbnail)
-            MIN(ip.c_photo_url) AS image_url,
+            -- ✅ Inspection image (thumbnail) with catalog fallback
+            COALESCE(MIN(ip.c_photo_url), cp.c_image_url) AS image_url,
 
             wl.c_grade AS grade
 
@@ -741,6 +788,7 @@ namespace API.BAL
             cp.c_name,
             cp.c_category,
             cp.c_unit_of_measure,
+            cp.c_image_url,
             wl.c_grade
 
         ORDER BY cp.c_name;
@@ -777,25 +825,30 @@ namespace API.BAL
             return list;
         }
 
-
-        // ─── CART ──────────────────────────────────────────────────────────────
+         // ─── CART ──────────────────────────────────────────────────────────────
         public async Task<VM_CartSummary> GetCartSummaryAsync(int vendorUserId)
         {
             var summary = new VM_CartSummary();
-
             if (_conn.State != ConnectionState.Open)
                 await _conn.OpenAsync();
 
             const string sql = @"
                 SELECT vc.c_id, vc.c_catalog_product_id, cp.c_name, cp.c_unit_of_measure,
-                    COALESCE(AVG(fcl.c_asking_price),0) AS unit_price, vc.c_quantity,
-                    SUM(fcl.c_quantity_available) AS available_stock
+                    (SELECT COALESCE(AVG(qif_sub.c_fo_assessed_price * 1.10), 0) 
+                     FROM t_warehouse_lots wl_sub
+                     JOIN t_quality_inspection_forms qif_sub ON qif_sub.c_id = wl_sub.c_quality_inspection_id
+                     WHERE wl_sub.c_catalog_product_id = cp.c_id 
+                       AND LOWER(wl_sub.c_status) = 'available'
+                       AND (wl_sub.c_grade = vc.c_grade OR (wl_sub.c_grade IS NULL AND vc.c_grade IS NULL))
+                    ) AS unit_price, vc.c_quantity,
+                    (SELECT COALESCE(SUM(c_quantity_remaining), 0) FROM t_warehouse_lots WHERE c_catalog_product_id = vc.c_catalog_product_id AND LOWER(c_status) = 'available' AND (c_grade = vc.c_grade OR (c_grade IS NULL AND vc.c_grade IS NULL))) AS available_stock,
+                    vc.c_grade
                 FROM t_vendor_cart_items vc
                 JOIN t_catalog_products cp ON cp.c_id = vc.c_catalog_product_id
-                LEFT JOIN t_farmer_crop_listings fcl ON fcl.c_catalog_product_id = cp.c_id
-                    AND fcl.c_status = 'qc_passed'
+
+
                 WHERE vc.c_vendor_id = (SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid)
-                GROUP BY vc.c_id, vc.c_catalog_product_id, cp.c_name, cp.c_unit_of_measure, vc.c_quantity";
+";
 
             await using var cmd = new NpgsqlCommand(sql, _conn);
             cmd.Parameters.AddWithValue("@uid", vendorUserId);
@@ -806,6 +859,7 @@ namespace API.BAL
                 var qty = rdr.GetDecimal(5);
                 var price = rdr.GetDecimal(4);
                 var availableStock = rdr.IsDBNull(6) ? 0 : rdr.GetDecimal(6);
+                var grade = rdr.IsDBNull(7) ? "" : rdr.GetString(7);
 
                 // Check if cart quantity exceeds available stock
                 bool isStockValid = qty <= availableStock;
@@ -820,7 +874,8 @@ namespace API.BAL
                     Quantity = qty,
                     TotalPrice = qty * price,
                     AvailableStock = availableStock,
-                    IsStockValid = isStockValid
+                    IsStockValid = isStockValid,
+                    Grade = grade
                 };
                 summary.Items.Add(item);
                 summary.EstimatedOrderValue += item.TotalPrice;
@@ -832,50 +887,67 @@ namespace API.BAL
             return summary;
         }
 
-        public async Task<string> AddItemToCartAsync(int vendorUserId, int cropId, decimal quantity)
+        public async Task<string> AddItemToCartAsync(int vendorUserId, int cropId, decimal quantity, string grade = null)
         {
-            // Validation 1: Business Logic
-            if (quantity < 20) return "Minimum order quantity is 20kg";
+            // Validation 1: quantity must be positive first
             if (quantity <= 0) return "Quantity must be greater than zero.";
 
             if (_conn.State != ConnectionState.Open)
                 await _conn.OpenAsync();
 
-            // 🔹 FIX 1: Check stock from t_warehouse_lots (not listings)
-            // We look for 'available' status and matching product ID
-            const string stockSql = @"
-        SELECT COALESCE(SUM(c_quantity_remaining), 0) 
-        FROM t_warehouse_lots 
-        WHERE c_catalog_product_id = @cropId 
+            // Check grade-specific available stock from t_warehouse_lots.
+            // The catalog shows stock per grade, so we must check per grade
+            // to avoid summing all grades and inflating the effective minimum.
+            string stockSql = @"
+        SELECT COALESCE(SUM(c_quantity_remaining), 0)
+        FROM t_warehouse_lots
+        WHERE c_catalog_product_id = @cropId
         AND LOWER(c_status) = 'available'";
+
+            if (!string.IsNullOrWhiteSpace(grade))
+                stockSql += " AND LOWER(c_grade) = LOWER(@grade)";
 
             await using var stockCmd = new NpgsqlCommand(stockSql, _conn);
             stockCmd.Parameters.AddWithValue("@cropId", cropId);
+            if (!string.IsNullOrWhiteSpace(grade))
+                stockCmd.Parameters.AddWithValue("@grade", grade);
 
             var availableStock = Convert.ToDecimal(await stockCmd.ExecuteScalarAsync() ?? 0);
+
+            if (availableStock <= 0)
+                return "Product is currently out of stock.";
 
             if (quantity > availableStock)
                 return $"Only {availableStock}kg available. Please reduce quantity.";
 
-            // 🔹 FIX 2: Correct UPSERT logic
-            // We use the User ID to find the Vendor ID via a subquery
+            // Enforce minimum order: 1kg for low-stock lots, 20kg otherwise.
+            // This matches the frontend stepper behaviour.
+            decimal effectiveMinimum = availableStock < 20m ? 1m : 20m;
+            if (quantity < effectiveMinimum)
+                return $"Minimum order quantity is {effectiveMinimum}kg.";
+
+            // UPSERT: REPLACE the quantity (not accumulate) so every
+            // "Add to Cart" click sets exactly what the user picked in the popup.
             const string upsert = @"
-        INSERT INTO t_vendor_cart_items (c_vendor_id, c_catalog_product_id, c_quantity, c_added_at)
+        INSERT INTO t_vendor_cart_items (c_vendor_id, c_catalog_product_id, c_grade, c_quantity, c_added_at)
         VALUES (
-            (SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid), 
-            @cid, 
-            @qty, 
+            (SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid),
+            @cid,
+            @grade,
+            @qty,
             NOW()
         )
-        ON CONFLICT (c_vendor_id, c_catalog_product_id)
-        DO UPDATE SET 
+        ON CONFLICT (c_vendor_id, c_catalog_product_id, c_grade)
+        DO UPDATE SET
             c_quantity = t_vendor_cart_items.c_quantity + EXCLUDED.c_quantity,
+
             c_added_at = NOW()";
 
             await using var cmd = new NpgsqlCommand(upsert, _conn);
-            cmd.Parameters.AddWithValue("@uid", vendorUserId); // This is the CurrentUserId from Controller
+            cmd.Parameters.AddWithValue("@uid", vendorUserId);
             cmd.Parameters.AddWithValue("@cid", cropId);
             cmd.Parameters.AddWithValue("@qty", quantity);
+            cmd.Parameters.AddWithValue("@grade", (object)grade ?? DBNull.Value);
 
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0 ? "Success" : "Failed to add item.";
@@ -949,13 +1021,13 @@ namespace API.BAL
                 await _conn.OpenAsync();
 
             const string sql = @"
-                INSERT INTO t_vendor_cart_items (c_vendor_id, c_catalog_product_id, c_quantity, c_added_at)
-                SELECT vo.c_vendor_id, oi.c_catalog_product_id, oi.c_quantity, NOW()
+                INSERT INTO t_vendor_cart_items (c_vendor_id, c_catalog_product_id, c_grade, c_quantity, c_added_at)
+                SELECT vo.c_vendor_id, oi.c_catalog_product_id, oi.c_grade, oi.c_quantity, NOW()
                 FROM t_order_items oi
                 JOIN t_vendor_orders vo ON oi.c_order_id = vo.c_id
                 WHERE vo.c_id = @oid
                   AND vo.c_vendor_id = (SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid)
-                ON CONFLICT (c_vendor_id, c_catalog_product_id)
+                ON CONFLICT (c_vendor_id, c_catalog_product_id, c_grade)
                 DO UPDATE SET c_quantity = t_vendor_cart_items.c_quantity + EXCLUDED.c_quantity";
 
             await using var cmd = new NpgsqlCommand(sql, _conn);
@@ -1014,13 +1086,15 @@ namespace API.BAL
                 UPDATE t_vendor_profiles
                 SET c_business_name = @businessName, 
                     c_contact_person = @contactPerson, 
-                    c_phone = @phone
+                    c_phone = @phone,
+                    c_gstin = @gstin
                 WHERE c_id = @vid AND c_user_id = @userId";
 
             await using var cmd = new NpgsqlCommand(sql, _conn);
             cmd.Parameters.AddWithValue("@businessName", request.BusinessName ?? "");
             cmd.Parameters.AddWithValue("@contactPerson", request.ContactPerson ?? "");
             cmd.Parameters.AddWithValue("@phone", request.Phone ?? "");
+            cmd.Parameters.AddWithValue("@gstin", request.Gstin ?? "");
             cmd.Parameters.AddWithValue("@vid", request.VendorId);
             cmd.Parameters.AddWithValue("@userId", vendorUserId);
 
@@ -1142,7 +1216,8 @@ namespace API.BAL
             w.c_grade AS grade
         FROM t_wishlist w
         INNER JOIN t_catalog_products cp ON cp.c_id = w.c_catalog_product_id
-        LEFT JOIN t_warehouse_lots wl ON wl.c_catalog_product_id = cp.c_id
+        LEFT JOIN t_warehouse_lots wl ON wl.c_catalog_product_id = cp.c_id 
+             AND (wl.c_grade = w.c_grade OR (wl.c_grade IS NULL AND w.c_grade IS NULL))
         LEFT JOIN t_quality_inspection_forms qif ON qif.c_id = wl.c_quality_inspection_id
         LEFT JOIN t_inspection_photos ip ON ip.c_inspection_id = qif.c_id
         WHERE w.c_vendor_id = (SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid)
@@ -1487,25 +1562,54 @@ namespace API.BAL
             if (_conn.State != ConnectionState.Open)
                 await _conn.OpenAsync();
 
-            const string sql = @"
+            await using var transaction = await _conn.BeginTransactionAsync();
+            try
+            {
+                // Step 1: If this new address is being set as default,
+                // first clear the default flag from all existing addresses for this vendor
+                if (request.IsDefault)
+                {
+                    const string clearDefaultSql = @"
+                        UPDATE t_vendor_delivery_locations
+                        SET c_is_active = false
+                        WHERE c_vendor_id = (SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid)";
+
+                    await using var clearCmd = new NpgsqlCommand(clearDefaultSql, _conn, transaction);
+                    clearCmd.Parameters.AddWithValue("@uid", vendorUserId);
+                    await clearCmd.ExecuteNonQueryAsync();
+                }
+
+                // Step 2: Insert the new address with the correct c_is_active value
+                const string sql = @"
                 INSERT INTO t_vendor_delivery_locations 
                     (c_vendor_id, c_address, c_city, c_state, c_pincode, c_is_active, c_created_at)
                 VALUES 
-                    ((SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid), @address, @city, @state, @pincode, true, NOW())
+                    ((SELECT c_id FROM t_vendor_profiles WHERE c_user_id = @uid), @address, @city, @state, @pincode, @isDefault, NOW())
                 RETURNING c_id";
 
-            await using var cmd = new NpgsqlCommand(sql, _conn);
-            cmd.Parameters.AddWithValue("@uid", vendorUserId);
-            cmd.Parameters.AddWithValue("@address", $"{request.AddressLine1} {request.AddressLine2}".Trim());
-            cmd.Parameters.AddWithValue("@city", request.City);
-            cmd.Parameters.AddWithValue("@state", request.State);
-            cmd.Parameters.AddWithValue("@pincode", request.ZipCode);
+                await using var cmd = new NpgsqlCommand(sql, _conn, transaction);
+                cmd.Parameters.AddWithValue("@uid", vendorUserId);
+                cmd.Parameters.AddWithValue("@address", $"{request.AddressLine1} {request.AddressLine2}".Trim());
+                cmd.Parameters.AddWithValue("@city", request.City);
+                cmd.Parameters.AddWithValue("@state", request.State);
+                cmd.Parameters.AddWithValue("@pincode", request.ZipCode);
+                cmd.Parameters.AddWithValue("@isDefault", request.IsDefault);
 
-            var addressId = await cmd.ExecuteScalarAsync();
-            response.Success = true;
-            response.AddressId = Convert.ToInt32(addressId);
-            response.Message = "Address saved successfully";
-            return response;
+                var addressId = await cmd.ExecuteScalarAsync();
+                await transaction.CommitAsync();
+
+                response.Success = true;
+                response.AddressId = Convert.ToInt32(addressId);
+                response.Message = "Address saved successfully";
+                return response;
+            }
+            catch (Exception ex)
+            {
+                try { await transaction.RollbackAsync(); } catch { }
+                response.Success = false;
+                response.Message = "Error saving address: " + ex.Message;
+                return response;
+            }
         }
 
         // ─── HELPERS ───────────────────────────────────────────────────────────

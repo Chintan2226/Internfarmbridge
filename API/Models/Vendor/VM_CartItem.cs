@@ -13,6 +13,7 @@ namespace API.Models.Vendor
         public decimal TotalPrice { get; set; }
         public decimal AvailableStock { get; set; } 
         public bool IsStockValid { get; set; } = true;
+        public string Grade {get;set;}
     }
 
     public class VM_CartSummary
