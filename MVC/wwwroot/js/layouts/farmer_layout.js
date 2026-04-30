@@ -159,7 +159,8 @@ async function markNotificationAsRead(notificationId) {
 
 // Delete single notification
 async function deleteNotification(notificationId) {
-    if (!confirm('Delete this notification?')) return;
+    const confirmed = await window.fbConfirm('Delete this notification?');
+    if (!confirmed) return;
     
     try {
         const response = await authFetch(`${NOTIF_API_BASE}/DeleteNotification`, {
@@ -212,7 +213,8 @@ async function markAllAsRead() {
 
 // Clear all notifications
 async function clearAllNotifications() {
-    if (!confirm('Clear all notifications? This action cannot be undone.')) return;
+    const confirmed = await window.fbConfirm('Clear all notifications?', 'This action cannot be undone.', 'Yes, Clear All');
+    if (!confirmed) return;
     
     try {
         const response = await authFetch(`${NOTIF_API_BASE}/ClearAllNotifications`, {

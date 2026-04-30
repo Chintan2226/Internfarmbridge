@@ -303,7 +303,16 @@
         }
 
         async function repeatOrder(orderId) {
-            if (!confirm("Are you sure you want to reorder these items? A new order will be placed instantly.")) return;
+            const confirmed = await Swal.fire({
+                title: "Are you sure you want to reorder these items?",
+                text: "A new order will be placed instantly.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Reorder'
+            }).then(r => r.isConfirmed);
+            if (!confirmed) return;
             
             const token = getCookie('authToken');
             try {

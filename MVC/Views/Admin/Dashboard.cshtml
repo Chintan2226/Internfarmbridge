@@ -12,18 +12,18 @@
 <div class="search-wrapper mb-4">
     <div class="search-box">
         <div class="search-icon">
-            <i class="fas fa-search"></i>
+            <i class="fi fi-rr-search"></i>
         </div>
         <input type="text" id="globalSearchInput" class="search-input" 
                placeholder="Search farmers, vendors, warehouses, crops, orders..." 
                autocomplete="off">
         <button id="globalSearchBtn" class="search-btn">
-            <i class="fas fa-arrow-right"></i> Search
+            <i class="fi fi-rr-arrow-right"></i> Search
         </button>
     </div>
     <div id="globalSearchResults" class="search-results mt-3" style="display: none;">
         <div class="results-header">
-            <span><i class="fas fa-search"></i> Search Results</span>
+            <span><i class="fi fi-rr-search"></i> Search Results</span>
             <button id="closeSearchResults" class="close-btn">&times;</button>
         </div>
         <div id="searchResultsList" class="results-list">
@@ -171,14 +171,57 @@
     }
 
     function loadKPIs(ts) {
+        // Show skeleton if not already loaded
+        const kpiStrip = $('.kpi-strip');
+        if (kpiStrip.find('.kpi-card').length > 0 && kpiStrip.find('#kpiRevenue').text() === '₹0') {
+             FBSkeleton.show('.kpi-strip', 5, 'kpi');
+        }
+
         return $.getJSON(`${API_URLS.kpi}?_=${ts}`, res => {
             if (!res.success) return;
+            
+            // If skeleton was shown, it would have replaced the HTML. 
+            // We need to restore the original HTML structure if it was replaced.
+            if ($('.kpi-strip .fbs-card').length > 0) {
+                restoreKpiHtml();
+            }
+
             animateValue("kpiRevenue", "₹ " + Number(res.data.todayRevenue).toLocaleString('en-IN'));
             animateValue("kpiFarmers", res.data.totalFarmers);
             animateValue("kpiVendors", res.data.totalVendors);
             animateValue("kpiFOs",     res.data.activeFOs);
             animateValue("kpiOrders",  res.data.todayNewOrders);
         });
+    }
+
+    function restoreKpiHtml() {
+        const html = `
+            <div class="kpi-card kpi-accent">
+                <div class="kpi-top"><div class="kpi-lbl">Total Revenue</div><div class="kpi-icon">💰</div></div>
+                <div class="kpi-val" id="kpiRevenue">₹0</div>
+                <div class="kpi-sub">Today's earnings</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-top"><div class="kpi-lbl">Farmers</div><div class="kpi-icon">🌾</div></div>
+                <div class="kpi-val" id="kpiFarmers">0</div>
+                <div class="kpi-sub">Registered</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-top"><div class="kpi-lbl">Vendors</div><div class="kpi-icon">🏪</div></div>
+                <div class="kpi-val" id="kpiVendors">0</div>
+                <div class="kpi-sub">Active</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-top"><div class="kpi-lbl">Field Officers</div><div class="kpi-icon">👷</div></div>
+                <div class="kpi-val" id="kpiFOs">0</div>
+                <div class="kpi-sub">On ground</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-top"><div class="kpi-lbl">Today's Orders</div><div class="kpi-icon">📦</div></div>
+                <div class="kpi-val" id="kpiOrders">0</div>
+                <div class="kpi-sub">New today</div>
+            </div>`;
+        $('.kpi-strip').html(html);
     }
 
     function animateValue(id, newVal) {
@@ -195,6 +238,9 @@
     }
 
     function loadRevenueChart(ts) {
+        if (!dashboardState.revChartInit) {
+            FBSkeleton.show('#revenueChart', 1, 'chart');
+        }
         return $.getJSON(`${API_URLS.revenue}?period=${dashboardState.revPeriod}&_=${ts}`, res => {
             if (!res.success) return;
             if (dashboardState.revChartInit) {
@@ -206,8 +252,8 @@
                     dataSource: { data: res.data },
                     series: [{
                         type: "area",
-                        field: "value",
-                        categoryField: "label",
+                        field: "Value",
+                        categoryField: "Label",
                         color: "#d4af37", 
                         opacity: 0.25,
                         line: { color: "#d4af37", width: 3.5 },
@@ -242,6 +288,9 @@
     }
 
     function loadOrderChart(ts) {
+        if (!dashboardState.orderChartInit) {
+            FBSkeleton.show('#orderVolumeChart', 1, 'chart');
+        }
         return $.getJSON(`${API_URLS.orders}?period=${dashboardState.orderPeriod}&_=${ts}`, res => {
             if (!res.success) return;
             if (dashboardState.orderChartInit) {
@@ -253,8 +302,8 @@
                     dataSource: { data: res.data },
                     series: [{
                         type: "column",
-                        field: "value",
-                        categoryField: "label",
+                        field: "Value",
+                        categoryField: "Label",
                         color: "#16a34a",
                         border: { width: 0, radius: 8 },
                         gap: 0.5
@@ -309,17 +358,11 @@
         // 1. 👉 Check if function exists and show skeleton!
         if (!dashboardState.catalogGridInit) {
             if (typeof window.showGridSkeleton === 'function') {
-                console.log("SUCCESS: Drawing Skeleton for Admin Catalog!");
-                window.showGridSkeleton('#activeCatalogGrid', 5);
-            } else {
-                console.error("ERROR: showGridSkeleton not found. Please Hard Refresh (Cmd+Shift+R or Ctrl+F5)!");
+                window.showGridSkeleton('#activeCatalogGrid', 6);
             }
         }
-
-        // 2. 👉 ARTIFICIAL DELAY: We force a 1.5 second wait so you can actually see the animation!
         return new Promise((resolve) => {
             setTimeout(() => {
-                
                 $.getJSON(`${API_URLS.catalog}?_=${ts}`, res => {
                     if (!res || res.success === false || !Array.isArray(res.data)) {
                         const msg = (res && res.message) ? res.message : "Catalog data is unavailable.";
@@ -388,7 +431,7 @@
                             {
                                 title: "Action",
                                 width: "20%",
-                                template: "# if (status === 'Discount Now' || status === 'Low Stock') { #<button style='background:\\#991B1B; color:white; padding:6px 16px; border-radius:6px; border:none; font-weight:bold; font-size: 11px; cursor:pointer; min-width: 110px; transition: 0.2s;' onclick='applyDiscount(\"#: productName #\")'>Apply Discount</button># } else { #<button style='background:\\#F3F4F6; color:\\#4B5563; padding:6px 16px; border-radius:6px; border:1px solid \\#E5E7EB; font-weight:bold; font-size: 11px; cursor:pointer; min-width: 110px; transition: 0.2s;' onclick='manageCrop(\"#: productName #\")'>Manage</button># } #"
+                                template: "# if (status === 'Discount Now' || status === 'Low Stock') { #<button type='button' style='background:\\#991B1B; color:white; padding:6px 16px; border-radius:6px; border:none; font-weight:bold; font-size: 11px; cursor:pointer; min-width: 110px; transition: 0.2s;' onclick='applyDiscount(event, \"#: productName #\")'>Apply Discount</button># } else { #<button type='button' style='background:\\#F3F4F6; color:\\#4B5563; padding:6px 16px; border-radius:6px; border:1px solid \\#E5E7EB; font-weight:bold; font-size: 11px; cursor:pointer; min-width: 110px; transition: 0.2s;' onclick='manageCrop(event, \"#: productName #\")'>Manage</button># } #"
                             }
                         ]
                     });
@@ -400,7 +443,8 @@
         });
     }
 
-    function applyDiscount(cropName) {
+    function applyDiscount(e, cropName) {
+        if (e) e.preventDefault();
         Swal.fire({
             title: 'Apply Discount?',
             text: `Initiate automated discount protocol for ${cropName}? This will instantly notify all active vendors.`,
@@ -411,9 +455,28 @@
             confirmButtonText: 'Yes, apply discount!'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Update local grid state so the button changes to Manage
+                const grid = $("#activeCatalogGrid").data("kendoGrid");
+                if (grid) {
+                    const data = grid.dataSource.data();
+                    const item = data.find(x => x.productName === cropName);
+                    if (item) {
+                        item.set("status", "Optimal");
+                    }
+                }
+                
+                // Persist to backend so it survives refresh
+                $.post('/Admin/ApplyDiscount', { cropName: cropName });
+
                 Swal.fire({ title: 'Discount Applied!', text: `Vendors have been notified about the ${cropName} discount.`, icon: 'success', confirmButtonColor: '#1B7A3E' });
             }
         });
+    }
+
+    function manageCrop(e, cropName) {
+        if (e) e.preventDefault();
+        // Placeholder for manage logic
+        window.location.href = '/Admin/Catalog';
     }
         // ========== ELASTICSEARCH GLOBAL SEARCH ==========
     

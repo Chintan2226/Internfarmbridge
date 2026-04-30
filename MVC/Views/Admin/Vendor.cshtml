@@ -144,22 +144,22 @@
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--green-main)"></div>
             <div class="stat-label">Total Vendors</div>
-            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-value" id="stat-total"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:24px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--green-main)"></div>
             <div class="stat-label">Total Volume</div>
-            <div class="stat-value" id="stat-value">—</div>
+            <div class="stat-value" id="stat-value"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:24px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:#3B82F6"></div>
             <div class="stat-label">Orders Placed</div>
-            <div class="stat-value" id="stat-orders">—</div>
+            <div class="stat-value" id="stat-orders"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:24px;"></div></div>
         </div>
         <div class="stat-card">
             <div class="stat-strip" style="background:var(--amber)"></div>
             <div class="stat-label">Fulfillment</div>
-            <div class="stat-value" id="stat-rate">—</div>
+            <div class="stat-value" id="stat-rate"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:24px;"></div></div>
         </div>
     </div>
 
@@ -207,6 +207,10 @@
             }
 
             // Vendors list
+            if (typeof FBSkeleton !== 'undefined') {
+                FBSkeleton.show('#vendor-grid', 8, 'farmer');
+            }
+
             const res = await fetch(`${API}/Admin/Vendors`);
             if (!res.ok) throw new Error("Could not fetch vendors");
             

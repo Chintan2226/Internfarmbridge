@@ -290,11 +290,6 @@ namespace API.BAL
                     await cmdPr.ExecuteNonQueryAsync();
                 }
 
-                string logAct = "INSERT INTO t_farmer_activities (c_farmer_id, c_action_type, c_details) VALUES (@fid, 'QC_BOOKED', 'Requested a QC slot. Awaiting Field Officer approval.')";
-                using var cmd3 = new NpgsqlCommand(logAct, _conn, tx);
-                cmd3.Parameters.AddWithValue("@fid", req.FarmerId);
-                await cmd3.ExecuteNonQueryAsync();
-
                 await tx.CommitAsync();
                 return true;
             }
@@ -313,16 +308,39 @@ namespace API.BAL
             await _conn.OpenAsync();
 
             string sql = @"
+                WITH RankedPayments AS (
+                    SELECT 
+                        pf.c_id, 
+                        pf.c_procurement_request_id,
+                        pf.c_amount, 
+                        pf.c_trigger_event, 
+                        pf.c_payment_mode, 
+                        pf.c_utr_reference, 
+                        pf.c_status, 
+                        pf.c_created_at,
+                        ROW_NUMBER() OVER(PARTITION BY COALESCE(pf.c_procurement_request_id, pf.c_id) ORDER BY pf.c_created_at DESC) as rn
+                    FROM t_payments_farmer pf
+                    WHERE pf.c_farmer_id = @fid
+                )
                 SELECT 
-                    pf.c_id, cp.c_name, pf.c_amount, pf.c_payment_number, 
-                    pf.c_trigger_event, pf.c_payment_mode, pf.c_utr_reference, 
-                    pf.c_status, pf.c_created_at
-                FROM t_payments_farmer pf
-                LEFT JOIN t_procurement_requests pr ON pf.c_procurement_request_id = pr.c_id
+                    rp.c_id, 
+                    cp.c_name, 
+                    rp.c_amount, 
+                    COALESCE((SELECT MAX(c_payment_number) FROM t_payments_farmer p2 WHERE p2.c_procurement_request_id = rp.c_procurement_request_id), 1) as max_payment_number, 
+                    rp.c_trigger_event, 
+                    rp.c_payment_mode, 
+                    rp.c_utr_reference, 
+                    rp.c_status, 
+                    rp.c_created_at,
+                    COALESCE(qif.c_accepted_quantity * qif.c_fo_assessed_price, 
+                             pr.c_requested_quantity * cl.c_asking_price, 0) as contract_value
+                FROM RankedPayments rp
+                LEFT JOIN t_procurement_requests pr ON rp.c_procurement_request_id = pr.c_id
+                LEFT JOIN t_quality_inspection_forms qif ON pr.c_id = qif.c_procurement_request_id
                 LEFT JOIN t_farmer_crop_listings cl ON pr.c_crop_listing_id = cl.c_id
                 LEFT JOIN t_catalog_products cp ON cl.c_catalog_product_id = cp.c_id
-                WHERE pf.c_farmer_id = @fid
-                ORDER BY pf.c_created_at DESC";
+                WHERE rp.rn = 1
+                ORDER BY rp.c_created_at DESC";
 
             using var cmd = new NpgsqlCommand(sql, _conn);
             cmd.Parameters.AddWithValue("@fid", farmerId);
@@ -340,7 +358,8 @@ namespace API.BAL
                     PaymentMode = r.IsDBNull(5) ? "" : r.GetString(5),
                     UtrReference = r.IsDBNull(6) ? "" : r.GetString(6),
                     Status = r.IsDBNull(7) ? "" : r.GetString(7),
-                    CreatedAt = r.GetDateTime(8)
+                    CreatedAt = r.GetDateTime(8),
+                    ContractValue = r.IsDBNull(9) ? 0 : r.GetDecimal(9)
                 });
             }
             return list;

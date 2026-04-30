@@ -345,7 +345,8 @@ async function foMarkNotificationAsRead(notificationId) {
 }
 
 async function foDeleteNotification(notificationId) {
-    if (!confirm('Delete this notification?')) return;
+    const confirmed = await window.foConfirm('Delete this notification?', '', 'Yes');
+    if (!confirmed) return;
     try {
         const response = await foFetch(`${FO_NOTIF_API_BASE}/DeleteNotification`, {
             method: 'POST',
@@ -375,8 +376,9 @@ function foMarkAllRead() {
         .catch(() => { });
 }
 
-function foClearAll() {
-    if (!confirm('Clear all notifications? This action cannot be undone.')) return;
+async function foClearAll() {
+    const confirmed = await window.foConfirm('Clear all notifications?', 'This action cannot be undone.', 'Yes, Clear All');
+    if (!confirmed) return;
     foNotifs = [];
     renderFoNotifs();
     updateFoBellBadge(0);

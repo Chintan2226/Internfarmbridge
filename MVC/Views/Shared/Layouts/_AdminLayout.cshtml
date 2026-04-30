@@ -68,7 +68,7 @@
                     <i class="fi fi-rr-warehouse-alt"></i><span>Warehouse</span>
                 </a></li>
                 <li><a href="/Admin/catalog" class="adm-nav-link @(path.Contains("/admin/catalog") ? "active" : "")">
-                    <i class="fi fi-rr-sprout"></i><span>Crop Catalog</span>
+                    <i class="fi fi-rr-leaf"></i><span>Crop Catalog</span>
                 </a></li>
                 <li><a href="/Admin/MarketIntelligence" class="adm-nav-link @(path.Contains("/admin/marketintelligence") ? "active" : "")">
                     <i class="fi fi-rr-chart-histogram"></i><span>Market Intelligence</span>
@@ -102,7 +102,7 @@
                         <span id="admBellBadge" class="bell-badge" style="display: none;">0</span>
                         <span id="admBellDot" class="bell-dot" hidden></span>
                     </button>
-                    <div class="adm-avatar" onclick="location.href='/@role/Profile'" title="Profile">
+                    <div class="adm-avatar">
                         @role.Substring(0, 1).ToUpper()
                     </div>
                 </div>

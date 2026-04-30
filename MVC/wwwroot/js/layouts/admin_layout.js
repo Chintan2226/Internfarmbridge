@@ -159,7 +159,15 @@ async function markNotificationAsRead(notificationId) {
 
 // Delete single notification
 async function deleteNotification(notificationId) {
-    if (!confirm('Delete this notification?')) return;
+    const confirmed = await Swal.fire({
+        title: 'Delete this notification?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes'
+    }).then(r => r.isConfirmed);
+    if (!confirmed) return;
     
     try {
         const response = await authFetch(`${NOTIF_API_BASE}/DeleteNotification`, {
@@ -210,9 +218,17 @@ async function markAllAsRead() {
     }
 }
 
-// Clear all notifications
 async function clearAllNotifications() {
-    if (!confirm('Clear all notifications? This action cannot be undone.')) return;
+    const confirmed = await Swal.fire({
+        title: 'Clear all notifications?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, clear all'
+    }).then(r => r.isConfirmed);
+    if (!confirmed) return;
     
     try {
         const response = await authFetch(`${NOTIF_API_BASE}/ClearAllNotifications`, {
@@ -319,7 +335,7 @@ function renderAdmNotifs() {
     
     list.innerHTML = filtered.map(n => `
         <div class="adm-notif-item ${n.isRead ? '' : 'unread'}" data-id="${n.id}">
-            <div class="adm-notif-content" onclick="handleNotificationClick(${n.id}, '${escapeHtml(n.redirectUrl || '')}')">
+            <div class="adm-notif-content" onclick="handleNotificationClick(${n.id}, '${escapeHtml(n.redirectUrl || '')}')" style="display:flex; gap:10px; flex:1">
                 <div class="adm-notif-icon">
                     <i class="fi fi-rr-bell" style="font-size:18px;color:#10b981"></i>
                 </div>
@@ -329,16 +345,16 @@ function renderAdmNotifs() {
                     <div style="font-size:10px;color:#9ca3af; margin-top:4px;">${formatDate(n.createdAt)}</div>
                 </div>
             </div>
-            <div class="adm-notif-actions">
+            <div class="adm-notif-item-actions">
                 ${!n.isRead ? `
                     <button onclick="event.stopPropagation(); markNotificationAsRead(${n.id})" 
-                            class="adm-notif-btn" title="Mark as read">
-                        ✓
+                            class="adm-notif-action-btn check" title="Mark as read">
+                        <i class="fi fi-rr-check"></i>
                     </button>
                 ` : ''}
                 <button onclick="event.stopPropagation(); deleteNotification(${n.id})" 
-                        class="adm-notif-btn" title="Delete">
-                    ✕
+                        class="adm-notif-action-btn cross" title="Delete">
+                    <i class="fi fi-rr-cross-small"></i>
                 </button>
             </div>
         </div>

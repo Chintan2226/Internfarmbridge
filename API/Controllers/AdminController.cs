@@ -898,11 +898,46 @@ namespace API.Controllers
         }
 
 
+        [HttpPost("ApplyDiscount")]
+        public async Task<IActionResult> ApplyDiscount([FromForm] string cropName)
+        {
+            if (string.IsNullOrWhiteSpace(cropName))
+                return BadRequest("Crop name is required");
+                
+            await _redisService.SetAsync($"discounted_crop:{cropName}", true, TimeSpan.FromDays(1));
+            return Ok(new { success = true });
+        }
+
         [HttpGet("GetCropsCatalog")]
         public async Task<IActionResult> GetCropsCatalog()
         {
             // Ask Python to read the CSV and run the AI predictions!
             var aiData = await _aiInventoryService.GetAiInventoryDataAsync();
+            
+            if (aiData is System.Text.Json.JsonElement element)
+            {
+                try {
+                    var doc = System.Text.Json.Nodes.JsonNode.Parse(element.GetRawText());
+                    if (doc != null && doc["data"] is System.Text.Json.Nodes.JsonArray arr)
+                    {
+                        foreach(var item in arr)
+                        {
+                            var cropName = item["productName"]?.ToString();
+                            if (!string.IsNullOrEmpty(cropName))
+                            {
+                                var isDiscounted = await _redisService.GetAsync<bool>($"discounted_crop:{cropName}");
+                                if (isDiscounted)
+                                {
+                                    item["status"] = "Optimal"; // Override status
+                                }
+                            }
+                        }
+                    }
+                    return Ok(doc);
+                } catch {
+                    return Ok(aiData);
+                }
+            }
             
             return Ok(aiData);
         }

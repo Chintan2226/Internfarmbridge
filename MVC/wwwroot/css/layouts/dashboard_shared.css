@@ -153,11 +153,10 @@ body {
 .kpi-card.farm-card { border-top: 4px solid var(--blue-500); }
 .kpi-card.fo-card { border-top: 4px solid var(--purple-500); }
 
-.kpi-card.kpi-accent:hover .kpi-lbl,
-.kpi-card.kpi-accent:hover .kpi-val,
-.kpi-card.kpi-accent:hover .kpi-sub {
-    color: #ffffff !important; 
+.kpi-card.kpi-accent:hover {
+    /* Retain hover effect on card background but not on text colors */
 }
+
 
 .kpi-top {
     display: flex;

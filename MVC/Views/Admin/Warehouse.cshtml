@@ -15,10 +15,10 @@
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card"><div class="stat-strip" style="background:var(--green-main)"></div><div class="stat-label">Total Warehouses</div><div class="stat-value" style="color:var(--green-main)" id="kpi-total">—</div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--blue)"></div><div class="stat-label">Total Capacity</div><div class="stat-value" style="color:var(--blue)" id="kpi-cap">—</div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--amber)"></div><div class="stat-label">Avg. Utilization</div><div class="stat-value" style="color:var(--amber)" id="kpi-util">—</div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--red)"></div><div class="stat-label">Near Capacity (&gt;85%)</div><div class="stat-value" style="color:var(--red)" id="kpi-near">—</div></div>
+                <div class="stat-card"><div class="stat-strip" style="background:var(--green-main)"></div><div class="stat-label">Total Warehouses</div><div class="stat-value" style="color:var(--green-main)" id="kpi-total"><div class="fb-skeleton fb-skeleton-text" style="width:40%; height:24px;"></div></div></div>
+                <div class="stat-card"><div class="stat-strip" style="background:var(--blue)"></div><div class="stat-label">Total Capacity</div><div class="stat-value" style="color:var(--blue)" id="kpi-cap"><div class="fb-skeleton fb-skeleton-text" style="width:60%; height:24px;"></div></div></div>
+                <div class="stat-card"><div class="stat-strip" style="background:var(--amber)"></div><div class="stat-label">Avg. Utilization</div><div class="stat-value" style="color:var(--amber)" id="kpi-util"><div class="fb-skeleton fb-skeleton-text" style="width:40%; height:24px;"></div></div></div>
+                <div class="stat-card"><div class="stat-strip" style="background:var(--red)"></div><div class="stat-label">Near Capacity (&gt;85%)</div><div class="stat-value" style="color:var(--red)" id="kpi-near"><div class="fb-skeleton fb-skeleton-text" style="width:30%; height:24px;"></div></div></div>
             </div>
 
             <div class="toolbar">
@@ -192,8 +192,8 @@
     // â”€â”€ LOAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function loadData() {
         try {
-            if (typeof window.showCardSkeleton === 'function') {
-                window.showCardSkeleton('#wh-grid', 6);
+            if (typeof FBSkeleton !== 'undefined') {
+                FBSkeleton.show('#wh-grid', 6, 'warehouse');
             }
             const [kpiRes, gridRes] = await Promise.all([
                 fetch(`${WAREHOUSE_API_BASE}/admin/kpi`),   // ✅ correct KPI url
@@ -231,6 +231,8 @@
                     };
                 });
 
+                // 👉 Clear Skeletons
+                document.getElementById('wh-grid').innerHTML = '';
                 renderGrid(allWarehouses);
             } else {
                 renderEmpty('Failed to load warehouses.');
