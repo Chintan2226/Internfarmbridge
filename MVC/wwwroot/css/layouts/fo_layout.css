@@ -1251,11 +1251,31 @@ ul {
 .k-window-titlebar .k-window-action {
     color: white !important;
     background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
 }
 
-.k-window-titlebar .k-icon {
+.k-window-titlebar .k-window-action:hover {
+    background: rgba(255,255,255,0.2) !important;
+    border-radius: 4px !important;
+}
+
+.k-window-titlebar .k-icon,
+.k-window-titlebar .k-svg-icon,
+.k-window-titlebar .k-font-icon,
+.k-window-titlebar .k-svg-icon svg {
     color: white !important;
+    fill: white !important;
     background: transparent !important;
+    width: 16px !important;
+    height: 16px !important;
 }
 
 /* Kendo Pickers */

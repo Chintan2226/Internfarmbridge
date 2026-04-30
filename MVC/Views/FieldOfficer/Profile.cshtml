@@ -95,23 +95,28 @@
         </div>
     </div>
 </div>
-<div id="changePasswordWindow" style="display:none;">
-    <div class="p-3">
-
-        <div class="mb-3">
-            <label>Email</label>
-            <input id="cpEmail" class="form-control" readonly />
+<!-- Custom Change Password Modal -->
+<div id="changePasswordModal" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div style="background:#fff; border-radius:12px; width:380px; max-width:95vw; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <!-- Header -->
+        <div style="background:#1b5e20; padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
+            <span style="color:white; font-weight:600; font-size:16px;">Change Password</span>
+            <button onclick="closePasswordPopup()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer; line-height:1; padding:0 4px;">&times;</button>
         </div>
-
-        <div class="mb-3">
-            <label>New Password</label>
-            <input id="cpPassword" type="password" class="form-control" />
+        <!-- Body -->
+        <div style="padding:24px;">
+            <div class="mb-3">
+                <label>Email</label>
+                <input id="cpEmail" class="form-control" readonly />
+            </div>
+            <div class="mb-3">
+                <label>New Password</label>
+                <input id="cpPassword" type="password" class="form-control" placeholder="Enter new password" />
+            </div>
+            <button class="btn btn-success profile-action-btn profile-update-btn" style="width:100%;" onclick="changePassword()">
+                Update Password
+            </button>
         </div>
-
-        <button class="btn btn-success profile-action-btn profile-update-btn" onclick="changePassword()">
-            Update Password
-        </button>
-
     </div>
 </div>
 @section Scripts {
@@ -173,22 +178,21 @@
         else if (type === 'warning') foWarning('Warning', msg);
         else foAlert(msg);
     }
-    let passwordWindow;
+    let passwordWindow = null; // kept for legacy compat
 
     function openPasswordPopup() {
-
         $("#cpEmail").val($("#email").val());
+        $("#cpPassword").val("");
+        var modal = document.getElementById("changePasswordModal");
+        modal.style.display = "flex";
+        // Close when clicking the backdrop
+        modal.onclick = function(e) {
+            if (e.target === modal) closePasswordPopup();
+        };
+    }
 
-        if (!passwordWindow) {
-            passwordWindow = $("#changePasswordWindow").kendoWindow({
-                width: "350px",
-                title: "Change Password",
-                modal: true,
-                visible: false
-            }).data("kendoWindow");
-        }
-
-        passwordWindow.center().open();
+    function closePasswordPopup() {
+        document.getElementById("changePasswordModal").style.display = "none";
     }
 
     function changePassword() {
@@ -207,7 +211,7 @@
             success: function (res) {
                 showToast(res.message, "success");
                 $("#cpPassword").val("");
-                passwordWindow.close();
+                closePasswordPopup();
             },
 
             error: function (err) {
