@@ -254,22 +254,12 @@ This is a **team internship project**. Contributions are made by multiple team m
 - Issue tracking and project management
 - Code reviews and collaborative development
 
-## 📝 License
-
-This project is currently unlicensed. Please check with the repository owner for licensing details.
-
 ## 🐛 Known Issues & TODOs
 
 - Python data import/loading scripts need completion
 - Full test coverage needed
 - API rate limiting to be implemented
 - Complete API endpoint documentation in Swagger
-
-## 📞 Support & Contact
-
-For questions or issues, please create an issue on the GitHub repository:
-- **Repository**: [Chintan2226/Internfarmbridge](https://github.com/Chintan2226/Internfarmbridge)
-- **Owner**: [Chintan2226](https://github.com/Chintan2226)
 
 ## 🎯 Future Enhancements
 
@@ -279,9 +269,3 @@ For questions or issues, please create an issue on the GitHub repository:
 - Blockchain for supply chain transparency
 - Advanced analytics dashboard
 - Multi-currency support
-
----
-
-**Project Status**: 🚧 Under Development
-
-Last Updated: May 14, 2026
