@@ -1,4 +1,4 @@
-# FarmBridge - Farm Management Platform
+# FarmBridge - B2B Agri-Procurement Pltform
 
 A comprehensive platform connecting farmers with vendors and facilitating agricultural procurement, payments, and inventory management. Built with C# .NET ecosystem and modern web technologies.
 
