@@ -15,30 +15,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#00450d",
-                        "primary-container": "#065f18",
-                        "on-surface": "#1a1c1a",
-                        "on-surface-variant": "#41493e",
-                    },
-                    fontFamily: {
-                        headline: ["Plus Jakarta Sans"],
-                        body: ["Plus Jakarta Sans"],
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="~/js/pages/vendor/login.js" asp-append-version="true"></script>
     
 <link rel="stylesheet" href="~/css/pages/vendor/login.css" asp-append-version="true" />
 
 </head>
-<body class="bg-mesh text-on-surface min-h-screen flex items-center justify-center antialiased overflow-y-auto py-10 px-4 sm:px-6">
+<body class="bg-mesh text-on-surface antialiased">
 
     <div id="notificationArea" class="fixed top-4 right-4 z-[9999] w-full max-w-sm flex flex-col gap-2 pointer-events-none"></div>
 
@@ -54,9 +36,9 @@
         </div>
     </div>
 
-    <main class="relative z-10 w-full flex items-center justify-center my-auto">
+    <main class="w-full flex items-center justify-center">
         
-        <div class="glass-card w-full max-w-[480px] rounded-[2rem] p-8 sm:p-12 flex flex-col items-center">
+        <div class="glass-card flex flex-col items-center">
             
             <div class="mb-6 flex items-center gap-3">
                 <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg">
@@ -174,143 +156,6 @@
         </div>
     </main>
 
-    <script>
-        const API_BASE = "http://localhost:5020";
-
-        // Eye toggles
-        window.togglePassword = function(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.textContent = 'visibility_off';
-            } else {
-                input.type = 'password';
-                icon.textContent = 'visibility';
-            }
-        };
-
-        // Toast Notifications
-        window.showToast = function(title, message, isError = false) {
-            const container = document.getElementById('notificationArea');
-            if (!container) return;
-
-            const bgClass = isError ? 'bg-red-600' : 'bg-primary';
-            const icon = isError ? 'error' : 'check_circle';
-
-            const toast = document.createElement('div');
-            toast.className = `${bgClass} text-white px-5 py-4 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] flex items-center gap-3 transform transition-all duration-500 translate-x-full opacity-0 pointer-events-auto border border-white/20 backdrop-blur-md`;
-            
-            toast.innerHTML = `
-                <span class="material-symbols-outlined text-2xl drop-shadow-md">${icon}</span>
-                <div>
-                    <h4 class="font-bold text-sm tracking-wide">${title}</h4>
-                    <p class="text-xs text-white/90 mt-0.5">${message}</p>
-                </div>
-            `;
-
-            container.appendChild(toast);
-
-            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
-            setTimeout(() => {
-                toast.classList.add('translate-x-full', 'opacity-0');
-                setTimeout(() => toast.remove(), 500);
-            }, 3500);
-        };
-
-        // Vendor Login
-        window.handleVendorLogin = async function() {
-            const emailOrPhone = document.getElementById('emailOrPhone').value.trim();
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
-
-            if (!emailOrPhone || !password) {
-                showToast("Missing Fields", "Please enter both Email/Phone and Password.", true);
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> Signing in...`;
-
-            try {
-                const response = await fetch(API_BASE + "/api/vendor/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ emailOrPhone: emailOrPhone, password: password })
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    showToast("Success", "Login successful! Redirecting...", false);
-                    document.cookie = "authToken=" + result.token + "; path=/; max-age=1800";
-                    setTimeout(() => { window.location.href = "/vendor/Catalog"; }, 1200);
-                } else {
-                    btn.disabled = false;
-                    btn.innerHTML = `<span>Sign In</span><span class="material-symbols-outlined text-lg">arrow_forward</span>`;
-                    showToast("Login Failed", result.message || "Invalid credentials.", true);
-                }
-            } catch (error) {
-                btn.disabled = false;
-                btn.innerHTML = `<span>Sign In</span><span class="material-symbols-outlined text-lg">arrow_forward</span>`;
-                showToast("Network Error", "Cannot connect to server. Please try again.", true);
-            }
-        };
-
-        // Vendor Forgot Password
-        window.handleVendorForgot = async function() {
-            const email = document.getElementById('forgotEmail').value.trim();
-            const btn = document.getElementById('forgotBtn');
-
-            if (!email) {
-                showToast("Missing Email", "Please enter your registered email address.", true);
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> Sending OTP...`;
-
-            try {
-                const response = await fetch(API_BASE + "/api/auth/forgot-password", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ Email: email })
-                });
-
-                if (response.ok) {
-                    localStorage.setItem("resetEmail", email);
-                    window.location.href = "/Vendor/ForgetPassword";
-                } else {
-                    const result = await response.json();
-                    btn.disabled = false;
-                    btn.innerHTML = `<span>Send OTP</span><span class="material-symbols-outlined text-lg">arrow_forward</span>`;
-                    showToast("Failed", result.message || "Failed to send OTP. Try again.", true);
-                }
-            } catch (error) {
-                btn.disabled = false;
-                btn.innerHTML = `<span>Send OTP</span><span class="material-symbols-outlined text-lg">arrow_forward</span>`;
-                showToast("Network Error", "Cannot connect to server.", true);
-            }
-        };
-
-        // â”€â”€ View Toggling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginSec = document.getElementById('loginSection');
-            const forgotSec = document.getElementById('forgotPasswordSection');
-
-            document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                loginSec.classList.add('hidden');
-                forgotSec.classList.remove('hidden');
-            });
-
-            document.getElementById('backToLoginLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                forgotSec.classList.add('hidden');
-                loginSec.classList.remove('hidden');
-            });
-        });
-    </script>
     <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
     <script src="~/js/layouts/site.js" asp-append-version="true"></script>
 </body>

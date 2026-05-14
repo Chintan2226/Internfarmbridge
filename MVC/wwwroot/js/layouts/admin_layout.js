@@ -443,4 +443,18 @@ window.toggleAdmDrawer = toggleAdmDrawer;
 window.admTab = admTab;
 window.getUnreadCount = getUnreadCount;
 
+
+// Logout functionality
+window.logout = function() {
+    // Remove JWT cookie
+    document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+
+    // Clear storage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Redirect to login
+    window.location.href = "/StaffAuth/Login";
+};
+
 console.log("Admin notification system loaded");

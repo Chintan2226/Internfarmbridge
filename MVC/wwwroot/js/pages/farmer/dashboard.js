@@ -18,10 +18,17 @@ $(document).ready(function () {
     }
 
     if (getCookie("ShowWelcomeGuide") === "true") {
-        $('#farmerWelcomeModal').addClass('show');
-        $('body').css('overflow', 'hidden'); 
-        eraseCookie("ShowWelcomeGuide"); 
+        // CSS uses class 'open' (not 'show') to display the overlay
+        $('#farmerWelcomeModal').addClass('open');
+        $('body').css('overflow', 'hidden');
+        eraseCookie("ShowWelcomeGuide");
     }
+
+    // Close handler called by the modal's close/dismiss buttons
+    window.closeWelcomeModal = function () {
+        $('#farmerWelcomeModal').removeClass('open');
+        $('body').css('overflow', '');
+    };
 
 
     /* ──────────────────────────────────────────────

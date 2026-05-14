@@ -7,44 +7,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
-    <style>
-        .news-search-bar {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            background: rgba(255,255,255,0.5);
-            border-radius: 14px;
-            padding: 10px 16px;
-            border: 1px solid rgba(255,255,255,0.7);
-            max-width: 480px;
-        }
-        .news-search-bar input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            outline: none;
-            font-size: 14px;
-            color: #0a2108;
-            font-family: inherit;
-        }
-        .news-search-bar input::placeholder { color: #94a3b8; }
-        .news-search-bar button {
-            background: linear-gradient(135deg, #10b981, #047857);
-            color: #fff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            font-family: inherit;
-            transition: all 0.2s;
-        }
-        .news-search-bar button:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .news-favicon { width:16px; height:16px; border-radius:4px; vertical-align:middle; margin-right:4px; }
-        .empty-state { text-align:center; padding:60px 20px; color:#5a7257; }
-        .empty-state i { font-size:48px; color:#d1fae5; display:block; margin-bottom:16px; }
-    </style>
+    <link rel="stylesheet" href="~/css/pages/farmer/news.css" asp-append-version="true" />
 }
 
 <div class="db-wrap">

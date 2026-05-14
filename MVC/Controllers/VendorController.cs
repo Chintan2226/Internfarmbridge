@@ -139,7 +139,7 @@ namespace MVC.Controllers
             return RedirectToAction("Login");
         }
 
-        public IActionResult ForgotPassword()
+        public IActionResult ForgetPassword()
         {
             return View();
         }
@@ -187,10 +187,6 @@ namespace MVC.Controllers
             return View();
         }
 
-        public IActionResult ForgetPassword()
-        {
-            return View();
-        }
 
         public IActionResult ResetPassword(string email)
         {

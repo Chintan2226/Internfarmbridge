@@ -57,9 +57,9 @@
 </head>
 <body data-role="@role" data-title="@title">
 
-    <div aria-hidden="true" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;">
-        <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(168,230,160,0.18) 0%,transparent 70%);top:-80px;left:-100px;filter:blur(40px);"></div>
-        <div style="position:absolute;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(181,221,245,0.12) 0%,transparent 70%);bottom:10%;right:-80px;filter:blur(40px);"></div>
+    <div aria-hidden="true" class="fb-bg-decor-wrap">
+        <div class="fb-bg-blob-1"></div>
+        <div class="fb-bg-blob-2"></div>
     </div>
 
     <nav class="fv-sidebar" id="fvSidebar">
@@ -200,113 +200,6 @@
     <script src="~/js/layouts/platform_i18n.js" asp-append-version="true"></script>
     <script src="~/js/layouts/fb_skeleton_helper.js" asp-append-version="true"></script>
 
-    <script>
-        // Premium Notification Helper
-        window.fbNotify = function(options) {
-            const { title, message, icon = 'success', type = 'toast', timer = 3000 } = options;
-            
-            if (type === 'toast') {
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: timer,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    }
-                });
-                Toast.fire({
-                    icon: icon,
-                    title: message || title
-                });
-            } else {
-                Swal.fire({
-                    title: title,
-                    text: message,
-                    icon: icon,
-                    confirmButtonColor: '#15803d',
-                    confirmButtonText: 'OK',
-                    borderRadius: '16px',
-                    customClass: {
-                        popup: 'glass-morphism',
-                        title: 'premium-title'
-                    }
-                });
-            }
-        };
-
-        function logoutVendor() {
-            Swal.fire({
-                title: window.fbT ? fbT('secure_logout') : 'Logout?',
-                text: "Are you sure you want to end your session?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#15803d',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'Yes, Logout',
-                borderRadius: '16px'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 UTC; path=/;";
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.href = "/Vendor/Login";
-                }
-            });
-        }
-
-        $(document).ready(() => {
-            syncGlobalBadges();
-            window.addEventListener('storage', syncGlobalBadges);
-            
-            try {
-                const token = typeof getAuthToken === 'function' ? getAuthToken() : null;
-                if(token) {
-                    const base64Url = token.split('.')[1];
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    }).join(''));
-                    const decoded = JSON.parse(jsonPayload);
-
-                    if(decoded && decoded.full_name) {
-                        const fvAvatarLetter = document.getElementById('fvAvatarLetter');
-                        if (fvAvatarLetter) {
-                            fvAvatarLetter.textContent = decoded.full_name.charAt(0).toUpperCase();
-                        }
-                        const fvAvatar = document.getElementById('fvAvatar');
-                        if (fvAvatar) {
-                            fvAvatar.title = decoded.full_name;
-                        }
-                    }
-
-                    fetch(window.API_BASE_URL + '/profile', {
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    })
-                    .then(res => res.json())
-                    .then(result => {
-                        if (result && result.success && result.data) {
-                            const imgUrl = result.data.profileImageUrl || result.data.ProfileImageUrl;
-                            if (imgUrl) {
-                                const avatarImg = document.getElementById('fvAvatarImg');
-                                const avatarLetter = document.getElementById('fvAvatarLetter');
-                                if (avatarImg) {
-                                    avatarImg.src = imgUrl;
-                                    avatarImg.onload = function() {
-                                        avatarImg.style.display = 'block';
-                                        if (avatarLetter) avatarLetter.style.display = 'none';
-                                    };
-                                }
-                            }
-                        }
-                    })
-                    .catch(e => console.warn("Avatar fetch fail", e));
-                }
-            } catch(e) { console.warn("Avatar parsing fail", e); }
-        });
-    </script>
 
     @RenderSection("Scripts", required: false)
 </body>

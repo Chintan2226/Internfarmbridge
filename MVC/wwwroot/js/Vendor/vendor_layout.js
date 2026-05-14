@@ -489,9 +489,129 @@ async function deleteNotification(id) {
 
 /* ===================== INIT ===================== */
 
+
+/* ===================== PREMIUM UTILS ===================== */
+
+window.fbNotify = function(options) {
+    const { title, message, icon = 'success', type = 'toast', timer = 3000 } = options;
+    if (typeof Swal === 'undefined') return;
+
+    if (type === 'toast') {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: timer,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+        Toast.fire({
+            icon: icon,
+            title: message || title
+        });
+    } else {
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: icon,
+            confirmButtonColor: '#15803d',
+            confirmButtonText: 'OK',
+            borderRadius: '16px',
+            customClass: {
+                popup: 'glass-morphism',
+                title: 'premium-title'
+            }
+        });
+    }
+};
+
+window.logoutVendor = function() {
+    if (typeof Swal === 'undefined') {
+        document.cookie = "authToken=; expires=Thu, 01 Jan 1970 UTC; path=/;";
+        window.location.href = "/Vendor/Login";
+        return;
+    }
+    const fbT = window.fbT || (k => k === 'secure_logout' ? 'Logout?' : k);
+    Swal.fire({
+        title: fbT('secure_logout'),
+        text: "Are you sure you want to end your session?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#15803d',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'Yes, Logout',
+        borderRadius: '16px'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 UTC; path=/;";
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = "/Vendor/Login";
+        }
+    });
+};
+
+/* ===================== AVATAR SYNC ===================== */
+
+function syncAvatarAndProfile() {
+    try {
+        const token = getAuthToken();
+        if(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const decoded = JSON.parse(jsonPayload);
+
+            if(decoded && decoded.full_name) {
+                const fvAvatarLetter = document.getElementById('fvAvatarLetter');
+                if (fvAvatarLetter) {
+                    fvAvatarLetter.textContent = decoded.full_name.charAt(0).toUpperCase();
+                }
+                const fvAvatar = document.getElementById('fvAvatar');
+                if (fvAvatar) {
+                    fvAvatar.title = decoded.full_name;
+                }
+            }
+
+            fetch((window.API_BASE_URL || 'http://localhost:5020/api/Vendor') + '/profile', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result && result.success && result.data) {
+                    const imgUrl = result.data.profileImageUrl || result.data.ProfileImageUrl;
+                    if (imgUrl) {
+                        const avatarImg = document.getElementById('fvAvatarImg');
+                        const avatarLetter = document.getElementById('fvAvatarLetter');
+                        if (avatarImg) {
+                            avatarImg.src = imgUrl;
+                            avatarImg.onload = function() {
+                                avatarImg.style.display = 'block';
+                                if (avatarLetter) avatarLetter.style.display = 'none';
+                            };
+                        }
+                    }
+                }
+            })
+            .catch(e => console.warn("Avatar fetch fail", e));
+        }
+    } catch(e) { console.warn("Avatar parsing fail", e); }
+}
+
+/* ===================== INIT ===================== */
+
 document.addEventListener('DOMContentLoaded', () => {
     getUnreadCount();
     loadNotifications();
+    syncGlobalBadges();
+    syncAvatarAndProfile();
+    
+    window.addEventListener('storage', syncGlobalBadges);
 
     setInterval(() => {
         getUnreadCount();

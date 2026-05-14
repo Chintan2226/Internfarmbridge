@@ -50,8 +50,8 @@
                 <li><a href="/Admin/Dashboard" class="adm-nav-link @(path.Contains("/admin/dashboard") ? "active" : "")">
                     <i class="fi fi-rr-apps"></i><span>Overview</span>
                 </a></li>
-                <li><a href="/Admin/FarmerManagment"
-                       class="adm-nav-link @(path.Contains("/admin/FarmerManagment") ? "active" : "")">
+                <li><a href="/Admin/FarmerManagement"
+                       class="adm-nav-link @(path.Contains("/admin/farmermanagement") ? "active" : "")">
                     <i class="fi fi-rr-users"></i><span>Farmers</span>
                 </a></li>
                 <li><a href="/Admin/vendor" class="adm-nav-link @(path.Contains("/admin/vendor") ? "active" : "")">
@@ -137,21 +137,6 @@
         <!-- Toast -->
         <div class="adm-toasts" id="admToasts"></div>
 
-        <script>
-                function logout() {
-
-                    // Remove JWT cookie
-                    document.cookie =
-                        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
-
-                    // Clear storage (optional but recommended)
-                    localStorage.clear();
-                    sessionStorage.clear();
-
-                    // Redirect to login
-                    window.location.href = "/StaffAuth/Login";
-                }
-        </script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://kendo.cdn.telerik.com/2023.1.117/js/kendo.all.min.js"></script>
@@ -160,7 +145,6 @@
             window.USER_ROLE = '@role';
             window.API_BASE = `http://localhost:5020/api/@role`;
         </script>
-
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="~/js/layouts/admin_layout.js" asp-append-version="true"></script>
         <script src="~/js/layouts/fb_skeleton_helper.js" asp-append-version="true"></script>

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MVC.Filters;
 using MVC.Models;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
 
@@ -56,7 +57,7 @@ namespace MVC.Controllers
 
             int index = 0;
 
-            var results = json["organic_results"]
+            var results = json["organic_results"]?
                 .Select(x => new GoogleSearchViewModel
                 {
                     Title = x["title"]?.ToString(),
@@ -91,7 +92,7 @@ namespace MVC.Controllers
             return View();
         }
 
-        public IActionResult FarmerManagment()
+        public IActionResult FarmerManagement()
         {
             return View();
         }

@@ -3,38 +3,56 @@
     Layout = "~/Views/Shared/Layouts/_AdminLayout.cshtml";
 }
 
-<link rel="stylesheet" href="~/css/pages/admin/warehouse.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/pages/admin/warehouse.css" asp-append-version="true"/>
 
 <div class="page">
-            <div class="page-top">
-                <div>
-                    <div class="page-title">Warehouse Inventory</div>
-                    <div class="page-sub">Monitor capacity, stock levels and regional operations</div>
-                </div>
-                <button class="btn-primary" onclick="openAddModal()">+ Add New Warehouse</button>
-            </div>
+    <div class="page-top">
+        <div>
+            <div class="page-title">Warehouse Inventory</div>
+            <div class="page-sub">Monitor capacity, stock levels and regional operations</div>
+        </div>
+        <button class="btn-primary" onclick="openAddModal()">+ Add New Warehouse</button>
+    </div>
 
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-strip" style="background:var(--green-main)"></div><div class="stat-label">Total Active Warehouses</div><div class="stat-value" style="color:var(--green-main)" id="kpi-total">—</div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--blue)"></div><div class="stat-label">Total Capacity</div><div class="stat-value" style="color:var(--blue)" id="kpi-cap">—</div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--amber)"></div><div class="stat-label">Avg. Utilization</div><div class="stat-value" style="color:var(--amber)" id="kpi-util">—</div></div>
-                <div class="stat-card"><div class="stat-strip" style="background:var(--red)"></div><div class="stat-label">Near Capacity (&gt;85%)</div><div class="stat-value" style="color:var(--red)" id="kpi-near">—</div></div>
-            </div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--green-main)"></div>
+            <div class="stat-label">Total Active Warehouses</div>
+            <div class="stat-value" style="color:var(--green-main)" id="kpi-total">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--blue)"></div>
+            <div class="stat-label">Total Capacity</div>
+            <div class="stat-value" style="color:var(--blue)" id="kpi-cap">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--amber)"></div>
+            <div class="stat-label">Avg. Utilization</div>
+            <div class="stat-value" style="color:var(--amber)" id="kpi-util">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-strip" style="background:var(--red)"></div>
+            <div class="stat-label">Near Capacity (&gt;85%)</div>
+            <div class="stat-value" style="color:var(--red)" id="kpi-near">—</div>
+        </div>
+    </div>
 
-            <div class="toolbar">
-                <div class="search-wrap">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
-                    <input type="text" id="search-input" class="search-input" placeholder="Search by name, state or district…" oninput="filterData()" />
-                </div>
-                <select id="filter-status" class="form-input" style="width:160px;" onchange="filterData()">
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-            </div>
+    <div class="toolbar">
+        <div class="search-wrap">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+            </svg>
+            <input type="text" id="search-input" class="search-input" placeholder="Search by name, state or district…" oninput="filterData()"/>
+        </div>
+        <select id="filter-status" class="form-input" style="width:160px;" onchange="filterData()">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+    </div>
 
-            <div id="wh-grid" class="wh-grid">
-            </div>
+    <div id="wh-grid" class="wh-grid">
+    </div>
 </div>
 
 <div class="fb-modal-overlay" id="whModalOverlay" onclick="closeModal('whModalOverlay')">
@@ -42,23 +60,35 @@
         <div class="fb-modal-header">
             <div>
                 <div class="fb-modal-header-title" id="m-title">—</div>
-                <div class="fb-modal-header-sub"   id="m-subtitle">—</div>
+                <div class="fb-modal-header-sub" id="m-subtitle">—</div>
             </div>
             <button class="close-btn" onclick="closeModal('whModalOverlay')">&times;</button>
         </div>
         <div class="fb-modal-body">
             <div class="m-stats">
-                <div class="m-stat-box"><div class="m-stat-val" id="m-cap">—</div><div class="m-stat-lbl">Total Capacity</div></div>
-                <div class="m-stat-box"><div class="m-stat-val" id="m-used">—</div><div class="m-stat-lbl">Used</div></div>
-                <div class="m-stat-box"><div class="m-stat-val" id="m-avail">—</div><div class="m-stat-lbl">Available</div></div>
-                <div class="m-stat-box"><div class="m-stat-val" style="color:var(--amber)" id="m-util">—</div><div class="m-stat-lbl">Utilization</div></div>
+                <div class="m-stat-box">
+                    <div class="m-stat-val" id="m-cap">—</div>
+                    <div class="m-stat-lbl">Total Capacity</div>
+                </div>
+                <div class="m-stat-box">
+                    <div class="m-stat-val" id="m-used">—</div>
+                    <div class="m-stat-lbl">Used</div>
+                </div>
+                <div class="m-stat-box">
+                    <div class="m-stat-val" id="m-avail">—</div>
+                    <div class="m-stat-lbl">Available</div>
+                </div>
+                <div class="m-stat-box">
+                    <div class="m-stat-val" style="color:var(--amber)" id="m-util">—</div>
+                    <div class="m-stat-lbl">Utilization</div>
+                </div>
             </div>
             <div class="tabs">
                 <div class="tab-item active" id="tab-btn-stock" onclick="switchTab('tab-stock',this)">Stock Catalog</div>
-                <div class="tab-item"        id="tab-btn-info"  onclick="switchTab('tab-info', this)">Warehouse Info</div>
+                <div class="tab-item" id="tab-btn-info" onclick="switchTab('tab-info', this)">Warehouse Info</div>
             </div>
             <div id="tab-stock" class="stock-grid"></div>
-            <div id="tab-info"  class="info-grid"  style="display:none;"></div>
+            <div id="tab-info" class="info-grid" style="display:none;"></div>
         </div>
         <div class="fb-modal-footer">
             <button class="btn-outline" style="padding:8px 20px;" onclick="closeModal('whModalOverlay')">Close</button>
@@ -78,27 +108,27 @@
                 <div class="form-grid">
                     <div class="form-col-full">
                         <label class="form-label">Warehouse Name *</label>
-                        <input type="text" class="form-input" name="Name" required placeholder="e.g. Ahmedabad Central Cold Store" />
+                        <input type="text" class="form-input" name="Name" required placeholder="e.g. Ahmedabad Central Cold Store"/>
                     </div>
                     <div>
                         <label class="form-label">State / Region</label>
-                        <input type="text" class="form-input" name="Region" placeholder="e.g. Gujarat" />
+                        <input type="text" class="form-input" name="Region" placeholder="e.g. Gujarat"/>
                     </div>
                     <div>
                         <label class="form-label">District</label>
-                        <input type="text" class="form-input" name="Type" placeholder="e.g. Ahmedabad" />
+                        <input type="text" class="form-input" name="Type" placeholder="e.g. Ahmedabad"/>
                     </div>
                     <div>
                         <label class="form-label">Daily Capacity (MT) *</label>
-                        <input type="number" class="form-input" name="CapacityMt" required min="1" placeholder="e.g. 500" />
+                        <input type="number" class="form-input" name="CapacityMt" required min="1" placeholder="e.g. 500"/>
                     </div>
                     <div>
                         <label class="form-label">Manager Name</label>
-                        <input type="text" class="form-input" name="ManagerName" placeholder="e.g. Ramesh Patel" />
+                        <input type="text" class="form-input" name="ManagerName" placeholder="e.g. Ramesh Patel"/>
                     </div>
                     <div class="form-col-full">
                         <label class="form-label">Full Address</label>
-                        <input type="text" class="form-input" name="LocationAddress" placeholder="Street, City, PIN" />
+                        <input type="text" class="form-input" name="LocationAddress" placeholder="Street, City, PIN"/>
                     </div>
                 </div>
             </div>
@@ -120,24 +150,24 @@
             <button class="close-btn" onclick="closeModal('editWhModalOverlay')">&times;</button>
         </div>
         <form id="editWhForm" onsubmit="submitWarehouse(event,'PUT')">
-            <input type="hidden" name="Id" id="editWhId" />
+            <input type="hidden" name="Id" id="editWhId"/>
             <div class="fb-modal-body">
                 <div class="form-grid">
                     <div class="form-col-full">
                         <label class="form-label">Warehouse Name *</label>
-                        <input type="text" class="form-input" name="Name" id="eName" required />
+                        <input type="text" class="form-input" name="Name" id="eName" required/>
                     </div>
                     <div>
                         <label class="form-label">State / Region</label>
-                        <input type="text" class="form-input" name="Region" id="eRegion" />
+                        <input type="text" class="form-input" name="Region" id="eRegion"/>
                     </div>
                     <div>
                         <label class="form-label">District</label>
-                        <input type="text" class="form-input" name="Type" id="eType" />
+                        <input type="text" class="form-input" name="Type" id="eType"/>
                     </div>
                     <div>
                         <label class="form-label">Daily Capacity (MT) *</label>
-                        <input type="number" class="form-input" name="CapacityMt" id="eCap" required min="1" />
+                        <input type="number" class="form-input" name="CapacityMt" id="eCap" required min="1"/>
                     </div>
                     <div>
                         <label class="form-label">Operational Status</label>
@@ -148,7 +178,7 @@
                     </div>
                     <div>
                         <label class="form-label">Manager Name</label>
-                        <input type="text" class="form-input" name="ManagerName" id="eMgr" />
+                        <input type="text" class="form-input" name="ManagerName" id="eMgr"/>
                     </div>
                     @* <div>
                         <label class="form-label">Temperature Range</label>
@@ -156,7 +186,7 @@
                     </div> *@
                     <div class="form-col-full">
                         <label class="form-label">Full Address</label>
-                        <input type="text" class="form-input" name="LocationAddress" id="eLoc" />
+                        <input type="text" class="form-input" name="LocationAddress" id="eLoc"/>
                     </div>
                 </div>
             </div>
@@ -170,468 +200,8 @@
 
 <div id="toast" class="toast"></div>
 
-<script>
-    (() => {
-    const WAREHOUSE_API_BASE = 'http://localhost:5020/api';
-    let allWarehouses = [];
-
-    document.addEventListener('DOMContentLoaded', loadData);
-
-    // â”€â”€ LOAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    async function loadData() {
-        try {
-            if (typeof FBSkeleton !== 'undefined') {
-                FBSkeleton.show('#wh-grid', 6, 'warehouse');
-            }
-            const [kpiRes, gridRes] = await Promise.all([
-                fetch(`${WAREHOUSE_API_BASE}/admin/kpi`),   // ✅ correct KPI url
-                fetch(`${WAREHOUSE_API_BASE}/admin/warehouses/all`) // <-- Fixed endpoint name
-            ]);
-
-            if (kpiRes.ok) {
-                const kpi = (await kpiRes.json()).data;
-                document.getElementById('kpi-total').textContent = kpi.totalWarehouses;
-                document.getElementById('kpi-cap').textContent   = Number(kpi.totalCapacityMt).toLocaleString('en-IN') + ' MT';
-                document.getElementById('kpi-util').textContent  = kpi.averageUtilization + '%';
-                document.getElementById('kpi-near').textContent  = kpi.nearCapacityCount;
-            }
-
-            if (gridRes.ok) {
-                const response = await gridRes.json();
-
-                allWarehouses = (response.data || []).map(w => {
-    const cap = Number(w.capacityMt ?? w.CapacityMt ?? w.totalCapacity ?? w.TotalCapacity ?? 0);
-    const used = Number(w.usedMt ?? w.UsedMt ?? w.used ?? w.Used ?? 0);
-    const avail = Number(w.availableMt ?? w.AvailableMt ?? w.available ?? w.Available ?? 0);
-    const util = Number(w.utilizationPercentage ?? w.UtilizationPercentage ?? w.utilization ?? w.Utilization ?? 0);
-
-   const isActiveRaw = w.isActive ?? w.IsActive ?? true;
-
-// force boolean conversion
-const isActive = (isActiveRaw === true || isActiveRaw === "true");
-console.log("Warehouse:", w.name, "isActive:", w.isActive, typeof w.isActive);
-
-    return {
-        ...w,
-        id: w.id || w.warehouseId || w.Id,
-        name: w.name || w.Name || 'Unknown Warehouse',
-        region: w.region || w.Region || w.state || w.State || '',
-        type: w.type || w.Type || w.district || w.District || '',
-        status: (w.status || w.Status || '').toLowerCase(),
-        isActive: isActive, // ✅ STORE IT
-        capacityMt: cap,
-        usedMt: used,
-        availableMt: avail,
-        utilizationPercentage: util
-    };
-});
-          
-                          // 👉 Clear Skeletons
-                document.getElementById('wh-grid').innerHTML = '';
-                renderGrid(allWarehouses);
-            } else {
-                renderEmpty('Failed to load warehouses.');
-            }
-        } catch (err) {
-            renderEmpty('API connection error.');
-            showToast('API connection error', true);
-        }
-    }
-
-    // â”€â”€ RENDER GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function renderGrid(data) {
-        const container = document.getElementById('wh-grid');
-        if (!data || !data.length) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 10V11"/></svg>
-                    <p>No warehouses found.</p>
-                </div>`;
-            return;
-        }
-
-        container.innerHTML = data.map(w => {
-const isInactive = (w.isActive === false);
-
-let statusClass = 'operational';
-let statusText = 'Operational';
-let barColor = 'var(--green-main)';
-
-if (isInactive) {
-    statusClass = 'stopped';
-    statusText = 'Stopped Temporarily';
-    barColor = 'var(--text-muted)';
-} 
-else if (w.utilizationPercentage > 85) {
-    statusClass = 'near-capacity';
-    statusText = 'Near Capacity';
-    barColor = 'var(--red)';
-} 
-else if (w.utilizationPercentage > 70) {
-    statusClass = 'high-load';
-    statusText = 'High Load';
-    barColor = 'var(--amber)';
+@section Scripts {
+    <script src="~/js/pages/admin/warehouse.js" asp-append-version="true"></script>
 }
-            const util = Math.min(Number(w.utilizationPercentage) || 0, 100);
-
-            return `
-            <div class="wh-card ${isInactive ? 'inactive' : ''}">
-                <div class="wh-header">
-                    <div>
-                        <div class="wh-name">${escHtml(w.name)}</div>
-                        <div class="wh-id">ID #${w.id}${w.region ? ' Â· ' + escHtml(w.region) : ''}</div>
-                    </div>
-                    <span class="wh-status ${statusClass}">${statusText}</span>
-                </div>
-                <div class="wh-body">
-                    <div><div class="wh-label">STATE</div>    <div class="wh-val">${escHtml(w.region) || '—'}</div></div>
-                    <div><div class="wh-label">DISTRICT</div> <div class="wh-val">${escHtml(w.type)   || '—'}</div></div>
-                    <div><div class="wh-label">CAPACITY</div> <div class="wh-val">${Number(w.capacityMt).toLocaleString('en-IN')} MT</div></div>
-                    <div><div class="wh-label">AVAILABLE</div><div class="wh-val">${Number(w.availableMt).toLocaleString('en-IN')} MT</div></div>
-                </div>
-                <div class="progress-sec">
-                    <div class="progress-text">
-                        <span>Utilization — ${Number(w.usedMt).toLocaleString('en-IN')} MT used</span>
-                        <span style="color:${barColor};font-weight:800;">${w.utilizationPercentage}%</span>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width:${util}%;background:${barColor};"></div>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-outline btn-edit" title="Edit Warehouse" onclick="openEditModal(${w.id})">
-                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    </button>
-                    <button class="btn-outline btn-manage"
-                        ${isInactive ? 'disabled title="Warehouse is stopped"' : `onclick="openManageModal(${w.id})"`}>
-                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                        ${isInactive ? 'Stock Locked' : 'Manage Stock'}
-                    </button>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    function renderEmpty(msg) {
-        document.getElementById('wh-grid').innerHTML = `<div class="empty-state"><p>${escHtml(msg)}</p></div>`;
-    }
-
-    // â”€â”€ MANAGE STOCK MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    async function openManageModal(id) {
-        const w = allWarehouses.find(x => x.id === id);
-        if (!w) return;
-
-        document.getElementById('m-title').textContent    = w.name;
-        document.getElementById('m-subtitle').textContent = `ID #${w.id}${w.region ? ' Â· ' + w.region : ''}${w.type ? ' Â· ' + w.type : ''}`;
-        
-        // Show temporary loading dots
-        document.getElementById('m-cap').textContent   = '...';
-        document.getElementById('m-used').textContent  = '...';
-        document.getElementById('m-avail').textContent = '...';
-        document.getElementById('m-util').textContent  = '...';
-
-        document.getElementById('tab-stock').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-muted);">Loading stock…</div>';
-        document.getElementById('tab-info').innerHTML  = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Loading info…</div>';
-        switchTab('tab-stock', document.getElementById('tab-btn-stock'));
-        
-        document.getElementById('whModalOverlay').classList.add('open');
-
-        try {
-            // FIX: Using the newly created API endpoint for BOTH KPIs and Stock!
-            const [invRes, infoRes] = await Promise.all([
-                fetch(`${WAREHOUSE_API_BASE}/Admin/${id}/inventory`),
-                fetch(`${WAREHOUSE_API_BASE}/Admin/${id}/Info`)
-            ]);
-
-            if (invRes.ok) {
-                const invData = await invRes.json();
-                if (invData.success) {
-                    const data = invData.data || invData.Data || {};
-
-                    // 1. Safely map KPI data (Case-Insensitive)
-                    const totalCap = data.totalCapacity ?? data.TotalCapacity ?? 0;
-                    const usedCap  = data.used ?? data.Used ?? 0;
-                    const availCap = data.available ?? data.Available ?? 0;
-                    const utilPct  = data.utilization ?? data.Utilization ?? 0;
-
-                    // 2. Bind to the 4 Top KPI Cards inside the Modal
-                    document.getElementById('m-cap').textContent   = Number(totalCap).toLocaleString('en-IN') + ' MT';
-                    document.getElementById('m-used').textContent  = Number(usedCap).toLocaleString('en-IN') + ' MT';
-                    document.getElementById('m-avail').textContent = Number(availCap).toLocaleString('en-IN') + ' MT';
-                    document.getElementById('m-util').textContent  = utilPct + '%';
-
-                    // 3. Bind Stock Grid with the new schema mapping
-                    const stock = data.stock ?? data.Stock ?? [];
-                    
-                    // ---> BIND THE PDF DOWNLOAD BUTTON <---
-                    document.getElementById('btnDownloadInv').onclick = () => downloadInventoryPDF(w.name, stock);
-                    
-                    document.getElementById('tab-stock').innerHTML = stock.length
-                        ? stock.map(s => {
-                            // Extract values mapping safely to new C# names
-                            const cropName = s.cropName ?? s.CropName ?? 'Unknown Crop';
-                            const variety  = s.variety ?? s.Variety ?? '—';
-                            const grade    = s.grade ?? s.Grade ?? '—';
-                            const qty      = Number(s.quantity ?? s.Quantity ?? 0);
-                            const unit     = s.unit ?? s.Unit ?? 'MT';
-                            const dtAdded  = new Date(s.dateAdded ?? s.DateAdded).toLocaleDateString('en-IN');
-                            
-                            // Calculate percentage manually since it was removed from backend
-                            const pct = totalCap > 0 ? Math.min((qty / totalCap) * 100, 100).toFixed(1) : 0;
-
-                            return `
-                            <div class="stock-card">
-                                <div class="stock-head">
-                                    <div><div class="stock-name">${escHtml(cropName)}</div><div class="stock-cat">${escHtml(variety)}</div></div>
-                                    <div class="stock-grade ${grade.toUpperCase().startsWith('B') ? 'grade-b' : ''}">${escHtml(grade)}</div>
-                                </div>
-                                <div class="stock-qty">${qty.toLocaleString('en-IN')} <span>${escHtml(unit)}</span></div>
-                                <div class="progress-sec" style="margin-top:12px;">
-                                    <div class="progress-bar-bg" style="height:4px;"><div class="progress-bar-fill" style="width:${pct}%;background:var(--green-main);"></div></div>
-                                    <div class="progress-text" style="font-weight:500;font-size:10px;">
-                                        <span>${pct}% of capacity</span>
-                                        <span>Updated: ${dtAdded}</span>
-                                    </div>
-                                </div>
-                            </div>`;
-                        }).join('')
-                        : '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;">No active stock in this warehouse.</div>';
-                }
-            }
-
-            if (infoRes.ok) {
-                const infoData = await infoRes.json();
-                const info = infoData.data || infoData.Data || {};
-                document.getElementById('tab-info').innerHTML = `
-                    <div class="info-box"><div class="info-box-lbl">NAME</div>    <div class="info-box-val">${escHtml(info.name || info.Name || '—')}</div></div>
-                    <div class="info-box"><div class="info-box-lbl">STATUS</div>  <div class="info-box-val">${(info.isActive ?? info.IsActive) ? '✅ Active' : '🔴 Inactive'}</div></div>
-                    <div class="info-box"><div class="info-box-lbl">STATE</div>   <div class="info-box-val">${escHtml(info.state || info.State || '—')}</div></div>
-                    <div class="info-box"><div class="info-box-lbl">DISTRICT</div><div class="info-box-val">${escHtml(info.district || info.District || '—')}</div></div>
-                    <div class="info-box" style="grid-column:1/-1;"><div class="info-box-lbl">ADDRESS</div><div class="info-box-val">${escHtml(info.location || info.Location || '—')}</div></div>`;
-            }
-        } catch (e) {
-            document.getElementById('tab-stock').innerHTML =
-                '<div style="grid-column:1/-1;text-align:center;color:var(--red);padding:24px;">Failed to load data.</div>';
-        }
-    }
-
-    // â”€â”€ ADD MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function openAddModal() {
-        document.getElementById('addWhForm').reset();
-        document.getElementById('addWhModalOverlay').classList.add('open');
-    }
-
-    // â”€â”€ EDIT MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    async function openEditModal(id) {
-        const w = allWarehouses.find(x => x.id === id);
-        if (!w) return;
-
-        // Fill immediately from cached data
-        document.getElementById('editWhId').value               = w.id;
-        document.getElementById('edit-wh-id-label').textContent = `Warehouse ID #${w.id}`;
-        document.getElementById('eName').value   = w.name       || '';
-        document.getElementById('eRegion').value = w.region     || '';
-        document.getElementById('eType').value   = w.type       || '';
-        document.getElementById('eCap').value    = w.capacityMt || '';
-        document.getElementById('eStatus').value = (w.isActive === false) ? 'Deactivated' : 'Operational';
-        document.getElementById('eLoc').value    = w.location;
-        document.getElementById('eMgr').value    = w.managerName;
-
-        document.getElementById('editWhModalOverlay').classList.add('open');
-
-        // Fetch extra detail fields in background
-        try {
-            const infoRes = await fetch(`${WAREHOUSE_API_BASE}/admin/${id}/Info`);
-            if (infoRes.ok) {
-                const info = (await infoRes.json()).data;
-                // Guard: only update if modal is still open for the same warehouse
-                if (document.getElementById('editWhModalOverlay').classList.contains('open')
-                    && String(document.getElementById('editWhId').value) === String(id)) {
-                    document.getElementById('eLoc').value  = info.location || info.Location || '';
-                    document.getElementById('eMgr').value  = info.managerName || info.ManagerName || '';
-                    document.getElementById('eTemp').value = info.temperature || info.Temperature || '';
-                    document.getElementById('eCert').value = info.certification || info.Certification || '';
-                }
-            }
-        } catch (e) { /* non-critical, form still works */ }
-    }
-
-    // â”€â”€ CLOSE MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function closeModal(modalId) {
-        document.getElementById(modalId).classList.remove('open');
-    }
-
-    // â”€â”€ SUBMIT (POST = add, PUT = edit) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    async function submitWarehouse(e, method) {
-        e.preventDefault();
-        const form = e.target;
-        const btn  = form.querySelector('button[type="submit"]');
-        const orig = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Saving…';
-
-        // Build clean payload — no FormData leakage
-        const raw = Object.fromEntries(new FormData(form).entries());
-
-        const payload = {
-            Name:             raw.Name             || '',
-            Region:           raw.Region           || null,
-            Type:             raw.Type             || null,
-            CapacityMt:       parseInt(raw.CapacityMt, 10) || 0,
-            LocationAddress:  raw.LocationAddress  || null,
-            ManagerName:      raw.ManagerName      || null,
-            TemperatureRange: raw.TemperatureRange || null,
-            Certification:    raw.Certification    || null,
-        };
-
-        // PUT extras
-        if (method === 'PUT') {
-            payload.Id       = parseInt(raw.Id, 10);
-            payload.IsActive = (raw.Status !== 'Deactivated');  // convert to bool
-        }
-
-        const url = method === 'POST'
-            ? `${WAREHOUSE_API_BASE}/admin/warehouse`
-            : `${WAREHOUSE_API_BASE}/admin/warehouse/${payload.Id}`;
-
-        try {
-            const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(payload)
-            });
-
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body.message || `Server error ${res.status}`);
-            }
-
-            showToast(`Warehouse ${method === 'POST' ? 'created' : 'updated'} successfully!`);
-            closeModal(method === 'POST' ? 'addWhModalOverlay' : 'editWhModalOverlay');
-            await loadData();
-
-        } catch (err) {
-            showToast(err.message || 'Failed to save. Please try again.', true);
-        } finally {
-            btn.disabled    = false;
-            btn.textContent = orig;
-        }
-    }
-
-    // â”€â”€ TAB SWITCH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function switchTab(tabId, element) {
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        if (element) element.classList.add('active');
-        document.getElementById('tab-stock').style.display = tabId === 'tab-stock' ? 'grid' : 'none';
-        document.getElementById('tab-info').style.display  = tabId === 'tab-info'  ? 'grid' : 'none';
-    }
-
-    // â”€â”€ FILTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function filterData() {
-        const q      = document.getElementById('search-input').value.toLowerCase();
-        const status = document.getElementById('filter-status').value;
-        renderGrid(allWarehouses.filter(w => {
-            const txt = (w.name||'').toLowerCase().includes(q)
-                     || (w.region||'').toLowerCase().includes(q)
-                     || (w.type||'').toLowerCase().includes(q);
-            return txt && (!status || w.status === status);
-        }));
-    }
-
-    // â”€â”€ GENERATE & DOWNLOAD PDF (Using Kendo UI) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function downloadInventoryPDF(warehouseName, stockData) {
-        const btn = document.getElementById('btnDownloadInv');
-        const origText = btn.textContent;
-        btn.textContent = 'Generating PDF...';
-        btn.disabled = true;
-
-        // 1. Clean the data to handle Case-Sensitivity safely
-        const cleanData = stockData.map(s => ({
-            Crop: s.cropName ?? s.CropName ?? 'Unknown',
-            Variety: s.variety ?? s.Variety ?? '—',
-            Grade: s.grade ?? s.Grade ?? '—',
-            Qty: Number(s.quantity ?? s.Quantity ?? 0).toLocaleString('en-IN'),
-            Unit: s.unit ?? s.Unit ?? 'MT',
-            DateAdded: new Date(s.dateAdded ?? s.DateAdded).toLocaleDateString('en-IN')
-        }));
-
-        // 2. Create the hidden div ON-SCREEN so Chrome actually calculates the text!
-        const tempDiv = document.createElement('div');
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.top = '0px';
-        tempDiv.style.left = '0px';
-        tempDiv.style.width = '800px';
-        
-        // CRITICAL FIX: Make it technically on-screen but invisible to the user
-        tempDiv.style.opacity = '0.01'; 
-        tempDiv.style.zIndex = '-1000'; 
-        tempDiv.style.pointerEvents = 'none'; 
-        
-        // Force standard black text so Kendo doesn't lose the font
-        tempDiv.style.color = '#000000';
-        tempDiv.style.fontFamily = 'Helvetica, Arial, sans-serif';
-        document.body.appendChild(tempDiv);
-
-        // 3. Initialize the Grid normally
-        const pdfGrid = $(tempDiv).kendoGrid({
-            dataSource: { data: cleanData },
-            pdf: {
-                allPages: true,
-                avoidLinks: true,
-                paperSize: "A4",
-                margin: { top: "2cm", left: "1cm", right: "1cm", bottom: "1cm" },
-                landscape: false,
-                repeatHeaders: true,
-                fileName: warehouseName.replace(/\s+/g, '_') + "_Inventory.pdf",
-                title: warehouseName + " - Active Inventory Report"
-            },
-            columns: [
-                { field: "Crop", title: "Crop Name", width: "120px" },
-                { field: "Variety", title: "Variety", width: "120px" },
-                { field: "Grade", title: "Grade", width: "80px" },
-                { field: "Qty", title: "Quantity", width: "100px" },
-                { field: "Unit", title: "Unit", width: "70px" },
-                { field: "DateAdded", title: "Date Stored", width: "100px" }
-            ]
-        }).data("kendoGrid");
-
-        // 4. Give Chrome 300ms to finish painting the text before taking the PDF snapshot!
-        setTimeout(() => {
-            pdfGrid.saveAsPDF().done(function() {
-                // Clean up memory after download completes
-                pdfGrid.destroy();
-                tempDiv.remove();
-                
-                // Restore the UI button
-                btn.textContent = origText;
-                btn.disabled = false;
-                showToast("PDF downloaded successfully!");
-            });
-        }, 300); 
-    }
-
-    // â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function escHtml(s) {
-        if (s === null || s === undefined) return '';
-        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
-
-    function showToast(msg, isError = false) {
-        const t = document.getElementById('toast');
-        t.textContent      = msg;
-        t.style.background = isError ? '#991B1B' : '#14532D';
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3500);
-    }
-
-    window.openManageModal = openManageModal;
-    window.openAddModal = openAddModal;
-    window.openEditModal = openEditModal;
-    window.closeModal = closeModal;
-    window.submitWarehouse = submitWarehouse;
-    window.switchTab = switchTab;
-    window.filterData = filterData;
-    })();
-</script>
 
 

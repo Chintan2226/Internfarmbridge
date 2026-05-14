@@ -1,20 +1,59 @@
-body { font-family: "Plus Jakarta Sans", sans-serif; }
-        
-        /* Premium Glass Card Effect */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-        }
+/* ── Base Reset ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Beautiful Teal/Green Gradient Background */
-        .bg-mesh {
-            background-color: #8ec5b0;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(153, 50%, 75%, 1) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, hsla(186, 61%, 38%, 1) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(160, 52%, 40%, 1) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, hsla(139, 45%, 68%, 1) 0px, transparent 50%);
-        }
+html, body {
+    height: 100%;
+    overflow: hidden; /* Page never scrolls — card handles its own overflow */
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* ── Full-screen gradient background ─────────── */
+.bg-mesh {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    background-color: #8ec5b0;
+    background-image:
+        radial-gradient(at 0%   0%,   hsla(153, 50%, 75%, 1) 0px, transparent 50%),
+        radial-gradient(at 100% 0%,   hsla(186, 61%, 38%, 1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, hsla(160, 52%, 40%, 1) 0px, transparent 50%),
+        radial-gradient(at 0%   100%, hsla(139, 45%, 68%, 1) 0px, transparent 50%);
+}
+
+/* ── Glass Card — scrollable if content overflows ── */
+.glass-card {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    /* Never taller than the viewport; inner content scrolls */
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 2rem;
+    padding: 2rem 2.5rem;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    /* Hide the scrollbar but keep scrollability */
+    scrollbar-width: none;
+}
+.glass-card::-webkit-scrollbar { display: none; }
+
+/* ── Tighten spacing inside the card on short viewports ── */
+@media (max-height: 700px) {
+    .glass-card { padding: 1.25rem 1.75rem; }
+    .glass-card .mb-6  { margin-bottom: 0.75rem !important; }
+    .glass-card .mb-8  { margin-bottom: 1rem    !important; }
+    .glass-card .my-6  { margin-top: 0.75rem !important; margin-bottom: 0.75rem !important; }
+    .glass-card .space-y-5 > * + * { margin-top: 0.75rem !important; }
+}
+
+@media (max-width: 480px) {
+    .glass-card { border-radius: 1.25rem; padding: 1.5rem 1.25rem; }
+}
+

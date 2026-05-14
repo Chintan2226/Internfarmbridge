@@ -6,51 +6,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/layouts/dashboard_shared.css" asp-append-version="true" />
-    <style>
-        /* Profile-specific skeleton — only applies here since Dashboard.css is not loaded */
-        .prof-skeleton {
-            background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
-            background-size: 200% 100%;
-            animation: prof-shimmer 1.5s infinite;
-            border-radius: 6px;
-            display: block;
-        }
-        @@keyframes prof-shimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        /* Avatar ring pulse while loading */
-        #farmerAvatarWrap.loading {
-            animation: ring-pulse 1.5s infinite;
-        }
-        @@keyframes ring-pulse {
-            0%, 100% { box-shadow: 0 0 0 4px rgba(16,185,129,0.15); }
-            50%       { box-shadow: 0 0 0 8px rgba(16,185,129,0.08); }
-        }
-        /* Stat value */
-        .stat-val {
-            font-size: 22px;
-            font-weight: 800;
-            color: #059669;
-            min-height: 28px;
-            min-width: 28px;
-            display: inline-block;
-        }
-        /* Form label */
-        .premium-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: #5a7257;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-        /* Responsive profile grid */
-        @@media (max-width: 900px) {
-            #profileLayoutGrid { grid-template-columns: 1fr !important; }
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/pages/farmer/profile.css" asp-append-version="true" />
 }
 
 <div class="db-wrap">
